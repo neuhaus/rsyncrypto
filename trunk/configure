@@ -3701,6 +3701,25 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
+# Find out whether we have a "rsyncable" supporting gzip
+echo "$as_me:$LINENO: checking for gzip with \"rsyncable\" support" >&5
+echo $ECHO_N "checking for gzip with \"rsyncable\" support... $ECHO_C" >&6
+if ( gzip --rsyncable >/dev/null </dev/null )
+then
+    echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+    echo "$as_me:$LINENO: result: no!" >&5
+echo "${ECHO_T}no!" >&6
+    { echo "$as_me:$LINENO: WARNING: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >&5
+echo "$as_me: WARNING: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ! gzip must support the \"--rsyncable\" flag for proper rsyncrypto operation.         !" >&5
+echo "$as_me: WARNING: ! gzip must support the \"--rsyncable\" flag for proper rsyncrypto operation.         !" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ! This does not affect compilation, but a proper gzip must be available at runtime. !" >&5
+echo "$as_me: WARNING: ! This does not affect compilation, but a proper gzip must be available at runtime. !" >&2;}
+    { echo "$as_me:$LINENO: WARNING: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >&5
+echo "$as_me: WARNING: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >&2;}
+fi
 # Checks for library functions.
           ac_config_files="$ac_config_files Makefile"
 
