@@ -396,7 +396,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
         unsigned char iv[AES_BLOCK_SIZE];
         AES_KEY aeskey;
         
-        AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
+        AES_set_decrypt_key(aes_header->key, header->key_size*8, &aeskey);
 
         /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
         while((numread=read(fromfd, buffer+position, AES_BLOCK_SIZE))==AES_BLOCK_SIZE && !error ) {
