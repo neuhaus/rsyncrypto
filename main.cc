@@ -32,6 +32,7 @@ void usage()
             "-d                   Decrypt.\n"
             "-r                   <plain> <cypher> and <keys> are all directory names. The encryption\n"
             "                     will apply to all files in them recursively\n"
+            "--trim               Number of directory entries to trim from the begining of the path. Default 1\n"
             "-b keysize           Must be one of 128, 192 or 256 bits. Not valid for decryption.\n"
             "--roll-win           Rollover window size. Default is 8192 byte\n"
             "--roll-min           Minimal number of guaranteed non-rolled bytes. Default 8192.\n"
@@ -51,7 +52,7 @@ startup_options options;
 
 int parse_cmdline( int argc, char *argv[] )
 {
-    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE };
+    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM };
     int c;
     const struct option long_options[]={
 	{ "roll-win", 1, NULL, ROLL_WIN },
@@ -63,6 +64,7 @@ int parse_cmdline( int argc, char *argv[] )
         { "help", 0, NULL, 'h' },
         { "verbose", 0, NULL, 'v' },
         { "no-archive-mode", 0, NULL, NO_ARCHIVE },
+        { "trim", 0, NULL, TRIM },
 	{ NULL, 0, NULL, 0 }};
     
     while( (c=getopt_long(argc, argv, "b:dhrv", long_options, NULL ))!=-1 )
@@ -138,6 +140,13 @@ int parse_cmdline( int argc, char *argv[] )
                 throw rscerror("--no-archive option given twice");
             options.archive=false;
             break;
+        case TRIM:
+            if( options.trim!=-1 )
+                throw rscerror("--trim option given twice");
+            if( !options.recurse )
+                throw rscerror("Cannot trim names when not doing directory recursion");
+            options.trim=atoi(optarg);
+            break;
         case '?':
             throw rscerror("Unrecognized option given");
             break;
@@ -168,6 +177,8 @@ int parse_cmdline( int argc, char *argv[] )
         options.rollmin=8192;
     if( options.rollsens==0 )
         options.rollsens=options.rollmin;
+    if( options.trim==-1 )
+        options.trim=1;
 
     return optind;
 }
