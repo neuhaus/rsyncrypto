@@ -43,6 +43,28 @@ static void copy_metadata( const char *destfilename, const struct stat *data )
 	throw rscerror("Setting time failed", errno, destfilename );
 }
 
+static int calc_trim( const char *path, int trim_count )
+{
+    int ret=0;
+
+    if( path[0]=='\0' )
+        throw rscerror("Cannot trim empty path");
+
+    do {
+        if( (path[ret]=='/' || path[ret]=='\0') && ret!=0 && path[ret-1]!='/' )
+            trim_count--;
+    } while( trim_count>0 && path[ret++]!='\0' );
+
+    if( trim_count>0 )
+        throw rscerror("Not enough directories to trim");
+
+    // Skip trailing slashes
+    while( path[ret]=='/' )
+        ret++;
+
+    return ret;
+}
+
 static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
         encryptfunc op, int src_offset )
 {
@@ -99,33 +121,8 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
         encryptfunc op )
 {
     int ret=0;
-    int src_offset=0; // How many bytes of src_dir to skip when creating dirs under dst_dir
-
-    // Sanitize dst_dir
-    do {
-        switch( src_dir[src_offset] ) {
-        case '/':
-            src_offset++;
-            break;
-        case '.':
-            {
-                switch( src_dir[src_offset+1] ) {
-                case '.':
-                    if( src_dir[src_offset+2]=='/' || src_dir[src_offset+2]=='\0' ) {
-                        src_offset+=3;
-                    }
-                    break;
-                case '/':
-                    src_offset+=2;
-                    break;
-                case '\0':
-                    src_offset++;
-                    break;
-                }
-            }
-            break;
-        }
-    } while( src_dir[src_offset]=='/' );
+    // How many bytes of src_dir to skip when creating dirs under dst_dir
+    int src_offset=calc_trim( src_dir, options.trim ); 
 
     // Implement standard recursive descent on src_dir
     if( mkdir( (std::string(dst_dir)+"/"+(src_dir+src_offset)).c_str(), S_IRWXU|S_IRGRP|S_IXGRP )!=0 &&

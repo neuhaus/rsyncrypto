@@ -64,7 +64,7 @@ int parse_cmdline( int argc, char *argv[] )
         { "help", 0, NULL, 'h' },
         { "verbose", 0, NULL, 'v' },
         { "no-archive-mode", 0, NULL, NO_ARCHIVE },
-        { "trim", 0, NULL, TRIM },
+        { "trim", 1, NULL, TRIM },
 	{ NULL, 0, NULL, 0 }};
     
     while( (c=getopt_long(argc, argv, "b:dhrv", long_options, NULL ))!=-1 )
