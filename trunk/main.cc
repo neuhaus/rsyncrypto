@@ -93,7 +93,11 @@ int main_enc( int argc, char * argv[] )
     }
 
     RSA *rsa=extract_public_key(argv[4]);
-    autofd infd(open(argv[1], O_LARGEFILE|O_RDONLY)); /* XXX Add O_NOATIME after proper configure tests */
+    autofd infd(open(argv[1], O_LARGEFILE|O_RDONLY
+#ifdef HAVE_NOATIME
+                |O_NOATIME
+#endif
+                ));
     fstat64(infd, &status);
     autofd outfd(open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa, infd, outfd );
