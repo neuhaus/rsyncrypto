@@ -15,14 +15,6 @@ Description: rsync friendly encryption
  that local changes to the plain text file result in local changes to the
  cipher text file.
  .
- Install rsyncrypto if you need to synchronize (using rsync) changing
- encrypted files over the network. Rsync is capable of detecting, and
- transferring, only the changed area of a file, thus being network efficient.
- Without rsyncrypto, any change to the plain text file will make the entire
- cipher text file, from the point of the change to its end, change.  This will
- eliminate the network efficiency of rsync.
- .
- rsyncrypto compresses the plain text file prior to encrypting it. This
- requires gzip with the "rsyncable" patch applied.
+ rsyncrypto compresses the plain text file prior to encrypting it.
  .
   Homepage: http://sourceforge.net/projects/rsyncrypto

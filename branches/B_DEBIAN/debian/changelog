@@ -1,3 +1,10 @@
+rsyncrypto (0.06-2) unstable; urgency=low
+
+  * Trim the package's description
+  * Remove unnecessary dir "/usr/sbin" from the package
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Sat, 19 Feb 2005 18:15:07 +0200
+
 rsyncrypto (0.06-1) unstable; urgency=low
 
   * Initial Release.
