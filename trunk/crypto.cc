@@ -29,22 +29,6 @@
 
 #define VERSION_MAGIC_1 0xD657EA1Cul
 
-#if 0
-struct key_header {
-    unsigned long version;
-    enum CYPHER_TYPE cypher;
-    size_t key_size; /* key size IN BYTES! */
-    unsigned int restart_buffer, min_norestart, sum_mod; /* checksum recycle policy parameters */
-};
-
-
-struct key_header_aes {
-    struct key_header header;
-    unsigned char iv[AES_BLOCK_SIZE];
-    unsigned char key[0];
-};
-#endif
-
 /* Public/Private key handling */
 RSA *extract_public_key( const char *pem_filename )
 {
