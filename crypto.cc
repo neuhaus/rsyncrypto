@@ -84,7 +84,7 @@ void write_header( const char *filename, const key *head )
     off_t headsize=head->exported_length();
     if( lseek( newhead, headsize-1, SEEK_SET )!=headsize-1 ||
             write( newhead, &newhead, 1 )!=1 )
-        throw rscerror(errno);
+        throw rscerror("write failed", errno, filename );
 
     autommap headfilemap( NULL, headsize, PROT_WRITE, MAP_SHARED, newhead, 0 );
     head->export_key( headfilemap.get() );
@@ -153,7 +153,7 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
     {
         int iopipe[2];
         if( pipe(iopipe)!=0 )
-            throw rscerror(errno);
+            throw rscerror("Couldn't create pipe", errno);
 
         switch(child_pid=fork())
         {
@@ -171,7 +171,7 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
             break;
         case -1:
             /* Running gzip failed */
-            throw rscerror(errno);
+            throw rscerror("Failed to spawn child process", errno);
             break;
         default:
             /* Parent */

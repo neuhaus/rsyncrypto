@@ -28,11 +28,11 @@ class autodir {
     autodir( const autodir & );
     autodir &operator=( const autodir & );
 public:
-    explicit autodir( DIR *init ) : dir(init)
+    explicit autodir( const char *dirname ) : dir(opendir(dirname))
     {
 #if defined(EXCEPT_CLASS)
         if( dir==NULL )
-            throw rscerror(errno);
+            throw rscerror("opendir failed", errno, dirname);
 #endif
     }
     ~autodir()

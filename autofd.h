@@ -46,7 +46,7 @@ public:
     autofd( int fd_p, bool except ) : fd(fd_p)
     {
         if( fd==-1 )
-            throw EXCEPT_CLASS(errno);
+            throw EXCEPT_CLASS("file open failed", errno);
     }
 #endif
     ~autofd()
@@ -109,7 +109,7 @@ public:
         ssize_t res=::read( fd, buf, count );
 
         if( res==-1 )
-            throw rscerror(errno);
+            throw rscerror("read failed", errno);
 
         return res;
     }
@@ -122,7 +122,7 @@ public:
         ssize_t res=::write( fd, buf, count );
 
         if( res!=static_cast<ssize_t>(count) )
-            throw rscerror(errno);
+            throw rscerror("write failed", errno);
     }
     void write( void *buf, size_t count )
     {

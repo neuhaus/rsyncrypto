@@ -105,7 +105,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 bin_PROGRAMS = rsyncrypto
 
-rsyncrypto_SOURCES = main.cc crypto.cc crypt_key.cc aes_crypt.cc
+rsyncrypto_SOURCES = main.cc crypto.cc crypt_key.cc aes_crypt.cc file.cc
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -115,7 +115,7 @@ bin_PROGRAMS = rsyncrypto$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
 am_rsyncrypto_OBJECTS = main.$(OBJEXT) crypto.$(OBJEXT) \
-	crypt_key.$(OBJEXT) aes_crypt.$(OBJEXT)
+	crypt_key.$(OBJEXT) aes_crypt.$(OBJEXT) file.$(OBJEXT)
 rsyncrypto_OBJECTS = $(am_rsyncrypto_OBJECTS)
 rsyncrypto_LDADD = $(LDADD)
 rsyncrypto_DEPENDENCIES =
@@ -126,7 +126,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/aes_crypt.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/crypt_key.Po ./$(DEPDIR)/crypto.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main.Po
+@AMDEP_TRUE@	./$(DEPDIR)/file.Po ./$(DEPDIR)/main.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -214,6 +214,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aes_crypt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypt_key.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .cc.o:
