@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #include "rsyncrypto.h"
 #include "aes_crypt.h"
 

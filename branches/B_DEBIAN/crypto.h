@@ -16,6 +16,15 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
+ * In addition, as a special exception, the rsyncrypto authors give permission
+ * to link the code of this program with the OpenSSL library (or with modified
+ * versions of OpenSSL that use the same license as OpenSSL), and distribute
+ * linked combinations including the two. You must obey the GNU General Public
+ * License in all respects for all of the code used other than OpenSSL. If you
+ * modify this file, you may extend this exception to your version of the file,
+ * but you are not obligated to do so. If you do not wish to do so, delete this
+ * exception statement from your version.
+ *
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 

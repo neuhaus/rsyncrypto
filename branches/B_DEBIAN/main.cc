@@ -16,6 +16,15 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
+ * In addition, as a special exception, the rsyncrypto authors give permission
+ * to link the code of this program with the OpenSSL library (or with modified
+ * versions of OpenSSL that use the same license as OpenSSL), and distribute
+ * linked combinations including the two. You must obey the GNU General Public
+ * License in all respects for all of the code used other than OpenSSL. If you
+ * modify this file, you may extend this exception to your version of the file,
+ * but you are not obligated to do so. If you do not wish to do so, delete this
+ * exception statement from your version.
+ *
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
@@ -36,6 +45,7 @@ void usage()
             "--trim               Number of directory entries to trim from the begining of\n"
             "                     the path. Default is 1\n"
             "--delete             In recursive mode, delete files in <dst> not in <src>\n"
+            "--delete-keys        In recursive mode, delete also keys. Implies --detelte\n"
             "--filelist           <src> is a file (or \"-\" for stdin) with file and directory\n"
             "                     names to process.\n"
             "-b keysize           Must be one of 128, 192 or 256 bits. Encryption only.\n"
@@ -59,7 +69,8 @@ startup_options options;
 
 int parse_cmdline( int argc, char *argv[] )
 {
-    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM, DELETE, FILELIST };
+    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM, DELETE_KEY, DELETE,
+        FILELIST };
     int c;
     const struct option long_options[]={
 	{ "roll-win", 1, NULL, ROLL_WIN },
@@ -73,6 +84,7 @@ int parse_cmdline( int argc, char *argv[] )
         { "no-archive-mode", 0, NULL, NO_ARCHIVE },
         { "trim", 1, NULL, TRIM },
         { "delete", 0, NULL, DELETE },
+        { "delete-keys", 0, NULL, DELETE_KEY },
         { "filelist", 0, NULL, FILELIST },
 	{ NULL, 0, NULL, 0 }};
     
@@ -162,6 +174,9 @@ int parse_cmdline( int argc, char *argv[] )
                 throw rscerror("Cannot trim names when not doing directory recursion");
             options.trim=atoi(optarg);
             break;
+        case DELETE_KEY:
+            options.delkey=true;
+            // No break - fallthrough to DELETE
         case DELETE:
             if( options.del )
                 throw rscerror("--delete option given twice");

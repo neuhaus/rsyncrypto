@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([rsyncrypt],[0.11])
+AC_INIT([rsyncrypt],[0.12])
 AM_INIT_AUTOMAKE
 AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
@@ -15,7 +15,6 @@ AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl
         
 # Checks for header files.
 AC_SYS_LARGEFILE
-AC_CHECK_HEADERS()
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_MSG_CHECKING([for O_NOATIME support in open])
