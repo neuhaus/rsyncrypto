@@ -38,8 +38,10 @@ void usage()
             "--roll-win           Rollover window size. Default is 256 byte\n"
             "--roll-min           Minimal number of guarenteed non-rolled bytes. Default 8192.\n"
             "--roll-sensitivity   How sensitive are we to cutting a block. Default is \"roll-win\"\n"
-            "-f                   Force new rollover parameters, even if previous encryption used a\n"
-            "                     different setting.\n\n"
+            "--fr                 Force new rollover parameters, even if previous encryption used a\n"
+            "                     different setting.\n"
+            "--fk                 Force new key size, even if previous encryption used a different\n"
+            "                     setting\n\n"
             "Currently only AES encryption is supported\n");
 
     exit(1);
@@ -72,7 +74,7 @@ int main( int argc, char * argv[] )
     struct key_header *head=NULL;
     int infd, outfd, headfd;
     struct stat64 status;
-    
+
     headfd=open( argv[3], O_RDONLY );
     if( headfd!=-1 ) {
         head=read_header( headfd );
@@ -90,6 +92,11 @@ int main( int argc, char * argv[] )
     fstat64(infd, &status);
     outfd=open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode);
     encrypt_file( head, rsa, infd, outfd );
+    if( headfd==-1 ) {
+        headfd=open(argv[3], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
+        write_header(headfd, head);
+        close(headfd);
+    }
     free(head);
 
     return 0;
