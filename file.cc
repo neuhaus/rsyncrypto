@@ -65,6 +65,47 @@ static int calc_trim( const char *path, int trim_count )
     return ret;
 }
 
+void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir, RSA *rsa_key,
+        encryptfunc op, const char *opname )
+{
+    autofd srcfd;
+
+    if( strcmp(src, "-")==0 ) {
+        // Src is stdin
+        srcfd=autofd(dup(STDIN_FILENO), true);
+    } else {
+        srcfd=autofd(open(src, O_RDONLY), true);
+    }
+
+    while( !srcfd.eof() ) {
+        std::string srcname=srcfd.readline();
+
+        if( srcname!="" ) try {
+            if( options.verbosity>=1 )
+                std::cerr<<"Processing "<<srcname<<std::endl;
+
+            struct stat filestat=autofd::stat( srcname.c_str() );
+
+            switch( filestat.st_mode&S_IFMT ) {
+            case S_IFREG:
+                {
+                    std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str() );
+                    std::string keyfile=autofd::combine_paths( key_dir, srcname.c_str() );
+
+                    op( src, dstfile.c_str(), keyfile.c_str(), rsa_key );
+                }
+                break;
+            case S_IFDIR:
+                break;
+            default:
+                break;
+            }
+        } catch( const rscerror &err ) {
+            std::cerr<<"Error in encryption of "<<srcname<<": "<<err.error()<<std::endl;
+        }
+    }
+}
+
 static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
         encryptfunc op, int src_offset, bool op_handle_dir, const char *opname )
 {
@@ -238,6 +279,8 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
         infd=autofd(open(source_file, open_flags), true);
     else
         infd=autofd(dup(STDIN_FILENO), true);
+
+    autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0755 );
     autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_RDWR, status.st_mode), true);
     encrypt_file( head.get(), rsa_key, infd, outfd );
     if( headfd==-1 ) {
@@ -267,6 +310,8 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
 
     autofd infd(open(src_file, O_RDONLY), true);
     fstat(infd, &status);
+
+    autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0750 );
     autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
     if( headfd==-1 ) {
