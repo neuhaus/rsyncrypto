@@ -6,4 +6,5 @@ Makefile
 .*.swp
 .deps
 rsyncrypto
+blocksizes
 stamp-h1
