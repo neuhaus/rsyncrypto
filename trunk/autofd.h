@@ -104,7 +104,7 @@ public:
     }
 
     // Standard io operations
-    ssize_t read( void *buf, size_t count ) const
+    static ssize_t read( int fd, void *buf, size_t count )
     {
         ssize_t res=::read( fd, buf, count );
 
@@ -112,6 +112,10 @@ public:
             throw rscerror(errno);
 
         return res;
+    }
+    ssize_t read( void *buf, size_t count ) const
+    {
+        return read( fd, buf, count );
     }
     static void write( int fd, void *buf, size_t count )
     {

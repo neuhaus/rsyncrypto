@@ -13,6 +13,8 @@ aes_key::aes_key( uint16_t key_size,  uint32_t sum_span, uint32_t sum_mod, uint3
 
     memcpy( aes_header.iv, import->iv, sizeof(aes_header.iv) );
     memcpy( secret_key.get(), import->key, key_size );
+
+    update_keys();
 }
 
 aes_key::aes_key( size_t keybits, uint32_t sum_span, uint32_t sum_mod, uint32_t sum_min_dist ) :
@@ -22,6 +24,8 @@ aes_key::aes_key( size_t keybits, uint32_t sum_span, uint32_t sum_mod, uint32_t 
     if( !RAND_bytes(aes_header.iv, sizeof( aes_header.iv )) ||
                 !RAND_bytes(secret_key.get(), header.key_size) )
             throw rscerror("No random entropy for key and IV");
+
+    update_keys();
 }
 
 aes_key::aes_key( const aes_key &that ) : key( that->header.key_size, CYPHER_AES, that->header.sum_span,
@@ -29,6 +33,8 @@ aes_key::aes_key( const aes_key &that ) : key( that->header.key_size, CYPHER_AES
 {
     memcpy( aes_header.iv, that->aes_header.iv, sizeof( aes_header.iv ) );
     memcpy( secret_key.get(), that->secret_key.get(), header.key_size );
+
+    update_keys();
 }
 
 size_t aes_key::export_key( void *buffer ) const

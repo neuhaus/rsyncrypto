@@ -12,6 +12,13 @@ class aes_key : public key {
     } aes_header;
     auto_array<unsigned char> secret_key;
     aes_key( const aes_key &that );
+
+    AES_KEY encrypt_key, decrypt_key;
+    void update_keys()
+    {
+        AES_set_decrypt_key( secret_key.get(), header.key_size*8, &decrypt_key );
+        AES_set_encrypt_key( secret_key.get(), header.key_size*8, &encrypt_key );
+    }
 protected:
     virtual key *gen_pad_key() const;
 public:

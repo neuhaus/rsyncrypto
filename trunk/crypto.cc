@@ -382,26 +382,29 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
 
 key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
 {
+    std::auto_ptr<key> new_header;
     if( header==NULL ) {
         /* Need to reconstruct the header from the encrypted file */
-        header=decrypt_header( fromfd, prv );
+        new_header=std::auto_ptr<key>(decrypt_header( fromfd, prv ));
+        header=new_header.get();
     }
 
+    /* If file does not contain a valid header - abort */
     if( header==NULL )
         throw rscerror("Couldn't extract encryption header");
 
-    /* If file does not contain a valid header - abort */
-    if( header!=NULL ) {
-        const struct key_header_aes *aes_header=(const void *)header;
-        int child_pid;
-        struct stat64 filestat;
-        off64_t currpos;
+    int child_pid;
+    struct stat64 filestat;
+    off64_t currpos;
 
-        fstat64( fromfd, &filestat );
+    fstat64( fromfd, &filestat );
 
-        /* Skip the header */
-        currpos=lseek64(fromfd, RSA_size(prv), SEEK_SET);
+    /* Skip the header */
+    currpos=lseek64(fromfd, RSA_size(prv), SEEK_SET);
 
+    autofd opipe;
+
+    {
         /* pipe, fork and run gzip */
         int iopipe[2];
         pipe(iopipe);
@@ -421,32 +424,100 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
             break;
         case -1:
             /* Running gzip failed */
-            free(header);
-            return NULL;
+            throw rscerror("Couldn't create gzip process");
+            break;
         default:
             /* Parent */
             close(iopipe[0]);
+            opipe=autofd(iopipe[1]);
+        }
+    }
+
+    size_t numread;
+    const size_t block_size=header->block_size();
+    auto_array<unsigned char> buffer(new unsigned char [block_size]);
+    bool done=false;
+    bool new_block=true;
+    //unsigned int numdecrypted=0;
+    //unsigned int sum=0;
+    //unsigned int position=0;
+    //int error=0, rollover=1;
+    //size_t buffer_size=header->restart_buffer*2;
+    //buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
+    //unsigned char *buffer=malloc(buffer_size);
+    //unsigned char iv[AES_BLOCK_SIZE];
+    //AES_KEY aeskey;
+    //int done=0;
+
+    //AES_set_decrypt_key(aes_header->key, header->key_size*8, &aeskey);
+
+    /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
+    while( (numread=autofd::read(fromfd, buffer.get(), block_size))!=0 && !done ) {
+        currpos+=numread;
+        if( numread>0 && numread<block_size )
+            throw rscerror("Unexpected file end");
+
+        if( new_block ) {
+            header->init_encrypt();
+            new_block=false;
         }
 
-        int numread;
-        unsigned int numdecrypted=0;
-        unsigned int sum=0;
-        unsigned int position=0;
-        int error=0, rollover=1;
-        size_t buffer_size=header->restart_buffer*2;
-        buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
-        unsigned char *buffer=malloc(buffer_size);
-        unsigned char iv[AES_BLOCK_SIZE];
-        AES_KEY aeskey;
-        int done=0;
-        
-        AES_set_decrypt_key(aes_header->key, header->key_size*8, &aeskey);
+        header->decrypt_block( buffer.get(), block_size );
 
-        /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
-        while((numread=read(fromfd, buffer+position, AES_BLOCK_SIZE))==AES_BLOCK_SIZE && !error && !done ) {
-            currpos+=numread;
-            if( rollover ) {
-                memcpy( iv, aes_header->iv, sizeof(iv) );
+        unsigned int i;
+        for( i=0; i<block_size && !new_block; ++i ) {
+            new_block=header->calc_boundry(buffer[i]);
+        }
+
+        if( currpos>=filestat.st_size-block_size ) {
+            done=true;
+
+            // Oops - file is not a whole multiple of block size
+            if( currpos>filestat.st_size-block_size )
+                throw rscerror("Uneven file end");
+        } else {
+            opipe.write( buffer.get(), i );
+        }
+
+        // If this was not a full block, the remaining bytes should be zero
+        for( ; i<block_size; ++i )
+            if( buffer[i]!=0 )
+                throw rscerror("Error in encrypted stream");
+    }
+    
+    // The next block will tell us how many bytes of the last block should be written.
+    auto_array<unsigned char> buffer2(new unsigned char [block_size]);
+    if( autofd::read(fromfd, buffer2.get(), block_size)!=static_cast<ssize_t>(block_size) )
+        throw rscerror("Unexcpeted end of file past sanity checks");
+
+    header->init_encrypt();
+    header->decrypt_block( buffer2.get(), block_size );
+    for( unsigned int i=1; i<block_size; ++i )
+        if( buffer2[i]!=0 )
+            throw rscerror("Error in encrypted stream (trailer)");
+    if( buffer2[0]>block_size )
+        throw rscerror("Error in encrypted stream (trailer 2)");
+
+    opipe.write( buffer.get(), buffer2[0] );
+    opipe.clear();
+
+    int child_status;
+    do {
+        waitpid( child_pid, &child_status, 0 );
+    } while( !WIFEXITED(child_status) );
+
+    if( WEXITSTATUS(child_status)!=0 )
+        throw rscerror("gunzip failed to run");
+
+    new_header.release();
+    
+    return header;
+}
+#if 0
+    while((numread=read(fromfd, buffer+position, AES_BLOCK_SIZE))==AES_BLOCK_SIZE && !error && !done ) {
+        currpos+=numread;
+        if( rollover ) {
+            memcpy( iv, aes_header->iv, sizeof(iv) );
                 rollover=0;
             }
             
@@ -464,9 +535,6 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
                 }
             }
 
-            if( currpos==filestat.st_size-AES_BLOCK_SIZE )
-                done=1;
-            else {
                 /* Write the decrypted set to the pipe */
                 write( iopipe[1], buffer+position, i );
                 numdecrypted+=i;
@@ -512,3 +580,4 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
 
     return (struct key_header *)header;
 }
+#endif
