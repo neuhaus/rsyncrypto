@@ -9,6 +9,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* struct stat has nanosecond resolution */
+#undef HAVE_STAT_NSEC
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -47,3 +50,12 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* atime nsec access replacement */
+#undef st_atime_nsec
+
+/* ctime nsec access replacement */
+#undef st_ctime_nsec
+
+/* mtime nsec access replacement */
+#undef st_mtime_nsec
