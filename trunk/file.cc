@@ -151,7 +151,7 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
                 case S_IFREG:
                 case S_IFLNK:
                     if( options.verbosity>=2 )
-                        std::cout<<"Delete files "<<dst_file<<", "<<key_file<<std::endl;
+                        std::cout<<"Delete files "<<source_file<<", "<<key_file<<std::endl;
                     if( unlink( source_file )!=0 )
                         throw rscerror("Erasing file", errno, source_file );
                     if( unlink( key_file )!=0 && errno!=ENOENT )
