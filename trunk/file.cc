@@ -128,7 +128,6 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
 {
     struct stat status;
 
-    std::cout<<"Delete files. src:"<<source_file<<" dst:"<<dst_file<<" key:"<<key_file<<std::endl;
     if( lstat( dst_file, &status )!=0 ) {
         if( errno==ENOENT ) {
             // Need to erase file
@@ -136,13 +135,15 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
                 switch( status.st_mode & S_IFMT ) {
                 case S_IFDIR:
                     // Need to erase directory
-                    std::cout<<"Delete dirs. src:"<<source_file<<" dst:"<<dst_file<<" key:"<<key_file<<std::endl;
+                    if( options.verbosity>=2 )
+                        std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
                     rmdir( source_file );
                     rmdir( key_file );
                     break;
                 case S_IFREG:
                 case S_IFLNK:
-                    std::cout<<"Delete files. src:"<<source_file<<" dst:"<<dst_file<<" key:"<<key_file<<std::endl;
+                    if( options.verbosity>=2 )
+                        std::cout<<"Delete files "<<dst_file<<", "<<key_file<<std::endl;
                     if( unlink( source_file )!=0 )
                         throw rscerror("Erasing file", errno, source_file );
                     if( unlink( key_file )!=0 && errno!=ENOENT )

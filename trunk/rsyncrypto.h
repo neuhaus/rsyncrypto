@@ -76,7 +76,7 @@ struct startup_options {
 };
 
 extern startup_options options;
-extern std::ostream *report0, *report1, *report2;
+extern std::ostream *report0, *report1, *report2, *report3;
 
 #define EXCEPT_CLASS rscerror
 
