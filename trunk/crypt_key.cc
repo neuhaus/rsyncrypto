@@ -42,3 +42,18 @@ key *key::newkey( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint32
 
     return ret.release();
 }
+
+size_t key::export_key( void *buffer ) const
+{
+    struct ext_key_header *export_buff=static_cast<ext_key_header *>(buffer);
+
+    bzero(export_buff, sizeof(*export_buff));
+    export_buff.version=htonl(header.version);
+    export_buff.cypher=htons(header.cypher);
+    export_buff.key_size=htons(header.key_size);
+    export_buff.sum_span=htonl(header.sum_span);
+    export_buff.sum_mod=htonl(header.sum_mod);
+    export_buff.sum_min_dist=htonl(header.sum_min_dist);
+
+    return key::exported_length();
+}

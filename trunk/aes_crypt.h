@@ -19,6 +19,11 @@ public:
     {
         return AES_BLOCK_SIZE;
     }
+    virtual size_t exported_length() const
+    {
+        return key::exported_length()+header.key_size+block_size();
+    }
+    virtual void export_key( void *buffer ) const;
 };
 
 #endif // AES_CRYPT_H

@@ -1,6 +1,6 @@
 /*
- * This file is part of OleDb, an OLE DB provider for PostgreSQL
- * Copyright (C) 2004 Shachar Shemesh for Lingnu Open Source Consulting (http://www.lignu.com)
+ * This file is part of rsyncrypto - rsync friendly encryption
+ * Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting (http://www.lignu.com)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,15 +31,8 @@
  *
  */
 
-/*
- * auto_array is exactly the same as auto_ptr, except that the free is performed as
- * "delete [] pointer", and indexing operators are exported.
- *
- * This code is adapted from the SGI STL 3.3 implementation of auto_ptr
- */
-
-#ifndef _AUTOARRAY_H
-#define _AUTOARRAY_H
+#ifndef _AUTOMAP_H
+#define _AUTOMAP_H
 
 #if defined(__SGI_STL_USE_auto_array_CONVERSIONS) && \
     defined(__STL_MEMBER_TEMPLATES)

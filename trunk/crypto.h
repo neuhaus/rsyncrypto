@@ -22,6 +22,7 @@
 #ifndef CRYPTO_H
 #define CRYPTO_H
 #include <openssl/rsa.h>
+#include "crypt_key.h"
 
 enum CYPHER_TYPE { CYPHER_AES };
 
@@ -33,7 +34,7 @@ int write_header( int headfd, struct key_header *head );
 int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );
 RSA *extract_public_key( const char *pem_filename );
 RSA *extract_private_key( const char *key_filename );
-int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tofd );
+int encrypt_file( const key *header, RSA *rsa, int fromfd, int tofd );
 struct key_header *decrypt_file( const struct key_header *header, RSA *prv,
         int fromfd, int tofd );
 
