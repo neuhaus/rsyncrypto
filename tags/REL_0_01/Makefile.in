@@ -1,0 +1,17 @@
+CPPFLAGS=@CPPFLAGS@
+CXXFLAGS=@CXXFLAGS@ -fexceptions
+LDFLAGS=@LDFLAGS@
+LDLIBS=@LIBS@
+
+all: rsyncrypto
+
+rsyncrypto: main.o crypto.o crypt_key.o aes_crypt.o
+	$(CXX) $(LDFLAGS) $+ $(LOADLIBES) $(LDLIBS) -o $@
+
+main.o: rsyncrypto.h crypto.h
+crypto.o: rsyncrypto.h crypto.h crypt_key.h
+crypto_key.o: rsyncrypto.h crypt_key.h aes_crypt.h
+
+.PHONY: clean
+clean:
+	-rm *.o rsyncrypto
