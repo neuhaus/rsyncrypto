@@ -32,6 +32,7 @@ void usage()
             "-d                   Decrypt.\n"
             "-r                   <plain> <cypher> and <keys> are all directory names. The encryption\n"
             "                     will apply to all files in them recursively\n"
+            "-c                   Only encrypt changed files - works only in recursive mode\n"
             "--trim               Number of directory entries to trim from the begining of the path.\n"
             "                     Default 1\n"
             "--delete             In recursive mode, delete files in <dst> not in <src>\n"
@@ -70,7 +71,7 @@ int parse_cmdline( int argc, char *argv[] )
         { "delete", 0, NULL, DELETE },
 	{ NULL, 0, NULL, 0 }};
     
-    while( (c=getopt_long(argc, argv, "b:dhrv", long_options, NULL ))!=-1 )
+    while( (c=getopt_long(argc, argv, "b:cdhrv", long_options, NULL ))!=-1 )
     {
         switch(c) {
         case 'h':
@@ -86,6 +87,12 @@ int parse_cmdline( int argc, char *argv[] )
                 // Invalid option
                 throw rscerror("Invalid -b parameter given");
             }
+            break;
+        case 'c':
+            if( options.changed ) {
+                throw rscerror("-c option specified twice");
+            }
+            options.changed=true;
             break;
         case 'd':
             if( options.decrypt ) {
