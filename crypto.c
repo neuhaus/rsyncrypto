@@ -279,7 +279,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
     unsigned char *buffer=malloc(buffer_size);
     unsigned char iv[AES_BLOCK_SIZE];
-    int numbytes=0;
+    unsigned char numbytes=0;
     AES_KEY aeskey;
     AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
 
@@ -329,6 +329,11 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
         write( tofd, buffer+start_position, AES_BLOCK_SIZE );
     }
 
+    /* Write out how many bytes of the last block were actual data */
+    buffer[0]=numbytes;
+    AES_cbc_encrypt(buffer, buffer, 1, &aeskey, iv, AES_ENCRYPT );
+    write( tofd, buffer, AES_BLOCK_SIZE );
+
     close(iopipe[0]);
     free(buffer);
 
@@ -363,9 +368,13 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
     if( header!=NULL ) {
         const struct key_header_aes *aes_header=(const void *)header;
         int child_pid;
+        struct stat64 filestat;
+        off64_t currpos;
+
+        fstat64( fromfd, &filestat );
 
         /* Skip the header */
-        lseek64(fromfd, RSA_size(private), SEEK_SET);
+        currpos=lseek64(fromfd, RSA_size(private), SEEK_SET);
 
         /* pipe, fork and run gzip */
         int iopipe[2];
@@ -403,11 +412,13 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
         unsigned char *buffer=malloc(buffer_size);
         unsigned char iv[AES_BLOCK_SIZE];
         AES_KEY aeskey;
+        int done=0;
         
         AES_set_decrypt_key(aes_header->key, header->key_size*8, &aeskey);
 
         /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
-        while((numread=read(fromfd, buffer+position, AES_BLOCK_SIZE))==AES_BLOCK_SIZE && !error ) {
+        while((numread=read(fromfd, buffer+position, AES_BLOCK_SIZE))==AES_BLOCK_SIZE && !error && !done ) {
+            currpos+=numread;
             if( rollover ) {
                 memcpy( iv, aes_header->iv, sizeof(iv) );
                 rollover=0;
@@ -427,9 +438,13 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
                 }
             }
 
-            /* Write the decrypted set to the pipe */
-            write( iopipe[1], buffer+position, i );
-            numdecrypted+=i;
+            if( currpos==filestat.st_size-AES_BLOCK_SIZE )
+                done=1;
+            else {
+                /* Write the decrypted set to the pipe */
+                write( iopipe[1], buffer+position, i );
+                numdecrypted+=i;
+            }
 
             if( !rollover ) {
                 position=MOD_ADD(position,AES_BLOCK_SIZE,buffer_size);
@@ -444,7 +459,10 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
             }
         }
 
-        if( error || numread!=0 ) {
+        if( !error && done ) {
+            AES_cbc_encrypt(buffer+position, buffer+position, 1, &aeskey, iv, AES_DECRYPT );
+            write( iopipe[1], buffer+MOD_SUB(position, AES_BLOCK_SIZE, buffer_size), buffer[position] );
+        } else {
             /* Error in encrypted stream */
             free(header);
             header=NULL;
