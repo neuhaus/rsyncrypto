@@ -38,7 +38,7 @@ public:
     explicit rscerror( const char *msg_p ) : msg(msg_p)
     {
     }
-    explicit rscerror( const char *msg_p, int error, const char *param_p=NULL ) : msg(msg_p),
+    explicit rscerror( const char *msg_p, int error, const char *param_p="" ) : msg(msg_p),
                                                                                 sysmsg(strerror(error)),
                                                                                 param(param_p)
     {
