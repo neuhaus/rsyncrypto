@@ -1,0 +1,10 @@
+config.log
+config.status
+config.h
+autom4te.cache
+Makefile
+.*.swp
+.deps
+rsyncrypto
+blocksizes
+stamp-h1
