@@ -27,7 +27,9 @@ void usage()
 {
     fprintf(stderr, "Usage: " PACKAGE_NAME " <sourcedir> <destdir> <keysdir> <publickey file>\n"
             "Options:\n"
-            "-b keysize           Must be one of 128, 256 or 512 bits.\n"
+            "-h                   Help - this page\n"
+            "-d                   Decrypt.\n"
+            "-b keysize           Must be one of 128, 256 or 512 bits. Not valid for decryption.\n"
             "--roll-win           Rollover window size. Default is 256 byte\n"
             "--roll-min           Minimal number of guarenteed non-rolled bytes. Default 8192.\n"
             "--roll-sensitivity   How sensitive are we to cutting a block. Default is \"roll-win\"\n"
@@ -38,19 +40,14 @@ void usage()
             "--gzip               path to gzip program to use\n\n"
             "Currently only AES encryption is supported\n");
 
-    exit(1);
+    exit(0);
 }
 
-struct options {
-    const char *srcdir;
-    const char *dstdir;
-    const char *keysdis;
-    const char *key;
-};
+startup_options options;
 
 int parse_cmdline( int argc, char *argv[] )
 {
-    enum options { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP };
+    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP };
     int c;
     const struct option long_options[]={
 	{ "roll-win", 1, NULL, ROLL_WIN },
@@ -59,17 +56,94 @@ int parse_cmdline( int argc, char *argv[] )
 	{ "fr", 0, NULL, FR },
 	{ "fk", 0, NULL, FK },
 	{ "gzip", 1, NULL, GZIP },
+        { "help", 0, NULL, 'h' },
+        { "verbose", 0, NULL, 'v' },
 	{ NULL, 0, NULL, 0 }};
     
-    while( (c=getopt_long(argc, argv, "b:", long_options, NULL ))!=-1 )
+    while( (c=getopt_long(argc, argv, "b:dhv", long_options, NULL ))!=-1 )
     {
         switch(c) {
+        case 'h':
+            usage();
+            break;
         case 'b':
+            if( options.keysize!=0 ) {
+                // Can't say "-b" twice
+                throw rscerror("-b option specified twice");
+            }
+            options.keysize=atol(optarg);
+            if( options.keysize==0 ) {
+                // Invalid option
+                throw rscerror("Invalid -b parameter given");
+            }
+            break;
+        case 'd':
+            if( options.decrypt ) {
+                throw rscerror("-d option given twice");
+            }
+            options.decrypt=true;
+            break;
+        case 'v':
+            options.verbosity++;
+            break;
+        case ROLL_WIN:
+            if( options.rollwin!=0 )
+                throw rscerror("--roll-win option given twice");
+            options.rollwin=strtoul(optarg, NULL, 10);
+            if( options.rollwin==0 )
+                throw rscerror("Invalid --roll-win parameter given");
+            break;
+        case ROLL_MIN:
+            if( options.rollmin!=0 )
+                throw rscerror("--roll-min option given twice");
+            options.rollmin=strtoul(optarg, NULL, 10);
+            if( options.rollmin==0 )
+                throw rscerror("Invalid --roll-min parameter given");
+            break;
+        case ROLL_SENS:
+            if( options.rollsens!=0 )
+                throw rscerror("--roll-sensitivity option given twice");
+            options.rollsens=strtoul(optarg, NULL, 10);
+            if( options.rollsens==0 )
+                throw rscerror("Invalid --roll-sensitivity parameter given");
+            break;
+        case FR:
+            if( options.fr )
+                throw rscerror("--fr option given twice");
+            options.fr=true;
+            break;
+        case FK:
+            if( options.fk )
+                throw rscerror("--fr option given twice");
+            options.fr=true;
+            break;
+        case GZIP:
+            if( options.gzip!=NULL )
+                throw rscerror("--gzip option given twice");
+            options.gzip=optarg;
+            break;
+        case 0:
+            throw rscerror("Unrecognized option given");
+            break;
+        default:
+            throw rscerror("Internal parameter processing error");
             break;
         }
     }
 
-    return 0;
+    // Some sanity check of the options
+    if( options.keysize!=0 && options.decrypt )
+        throw rscerror("Cannot specify key size for decryption");
+
+    // Apply default values
+    if( options.rollwin==0 )
+        options.rollwin=256;
+    if( options.rollmin==0 )
+        options.rollmin=8192;
+    if( options.rollsens==0 )
+        options.rollsens=options.rollmin;
+
+    return optind;
 }
 
 void copy_metadata( const char *destfilename, const struct stat *data )
@@ -90,15 +164,19 @@ void copy_metadata( const char *destfilename, const struct stat *data )
 	throw rscerror(errno);
 }
 
-int main_enc( int argc, char * argv[] )
+int main_enc( int argc, char * args[] )
 {
     std::auto_ptr<key> head;
     autofd headfd;
     struct stat status;
 
+    if( argc!=4 ) {
+        usage();
+    }
+
     // Read in the header, or generate a new one if can't
     {
-        headfd=autofd(open( argv[3], O_RDONLY ));
+        headfd=autofd(open( args[2], O_RDONLY ));
         if( headfd!=-1 ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
@@ -107,57 +185,57 @@ int main_enc( int argc, char * argv[] )
         }
     }
 
-    RSA *rsa=extract_public_key(argv[4]);
-    autofd infd(open(argv[1], O_LARGEFILE|O_RDONLY
+    RSA *rsa=extract_public_key(args[3]);
+    autofd infd(open(args[0], O_LARGEFILE|O_RDONLY
 #ifdef HAVE_NOATIME
                 |O_NOATIME
 #endif
                 ));
     fstat(infd, &status);
-    autofd outfd(open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
+    autofd outfd(open(args[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa, infd, outfd );
     if( headfd==-1 ) {
-        write_header( argv[3], head.get() );
+        write_header( args[2], head.get() );
     }
 
     // Set the times on the encrypted file to match the plaintext file
     infd.release();
     outfd.release();
-    copy_metadata( argv[2], &status );
+    copy_metadata( args[1], &status );
     RSA_free(rsa);
 
     return 0;
 }
 
-int main_dec( int argc, char * argv[] )
+int main_dec( int argc, char * args[] )
 {
     std::auto_ptr<key> head;
     // int infd, outfd, headfd;
     struct stat status;
 
     /* Decryption */
-    autofd headfd(open( argv[3], O_RDONLY ));
+    autofd headfd(open( args[2], O_RDONLY ));
     if( headfd!=-1 ) {
         head=std::auto_ptr<key>(read_header( headfd ));
         close(headfd);
     }
     /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
 
-    RSA *rsa=extract_private_key(argv[4]);
+    RSA *rsa=extract_private_key(args[3]);
     if( rsa==NULL ) /* No private key - get public key instead */
     {
-        rsa=extract_public_key(argv[4]);
+        rsa=extract_public_key(args[3]);
     }
-    autofd infd(open(argv[2], O_LARGEFILE|O_RDONLY), true);
+    autofd infd(open(args[1], O_LARGEFILE|O_RDONLY), true);
     fstat(infd, &status);
-    autofd outfd(open(argv[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
+    autofd outfd(open(args[0], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa, infd, outfd ));
     if( headfd==-1 ) {
-        write_header( argv[3], head.get());
+        write_header( args[2], head.get());
     }
     infd.release();
     outfd.release();
-    copy_metadata( argv[1], &status );
+    copy_metadata( args[0], &status );
     RSA_free(rsa);
 
     return 0;
@@ -170,14 +248,14 @@ int main( int argc, char *argv[] )
     ERR_load_crypto_strings();
 
     try {
-        switch( argv[1][0] )
+        int argskip=parse_cmdline( argc, argv );
+        argv+=argskip;
+        argc-=argskip;
+        if( !options.decrypt )
         {
-            case 'e':
-                return main_enc(argc-1, argv+1);
-            case 'd':
-                return main_dec(argc-1, argv+1);
-            default:
-                fprintf(stderr, "Prefix either \"d\" or \"e\" to the arguments to decrypt/encrypt\n");
+            ret=main_enc(argc, argv);
+        } else {
+            ret=main_dec(argc, argv);
         }
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
