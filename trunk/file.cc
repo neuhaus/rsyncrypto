@@ -128,6 +128,7 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
 {
     struct stat status;
 
+    std::cout<<"Delete files. src:"<<source_file<<" dst:"<<dst_file<<" key:"<<key_file<<std::endl;
     if( lstat( dst_file, &status )!=0 ) {
         if( errno==ENOENT ) {
             // Need to erase file
@@ -178,8 +179,16 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
 
     ret=recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false );
 
-    if( options.del )
-        ret=recurse_dir_enc( dst_dir, src_dir, key_dir, rsa_key, file_delete, src_offset, true );
+    if( options.del ) {
+        std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
+        std::string dst_src_name(dst_dir);
+        if( dst_src_name[dst_src_name.length()-1]!='/' )
+            dst_src_name+="/";
+        int dst_src_offset=dst_src_name.length();
+        dst_src_name+=src_dir+src_offset;
+        ret=recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
+                dst_src_offset, true );
+    }
     return ret;
 }
 
