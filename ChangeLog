@@ -5,6 +5,7 @@ Version 0.06
 	* Fix a (mostly visual) error in file delete directory - extra / at
 	  end
 	* Change the verbosity level for deletion from 2 to 1
+	* Add a manual page for rsyncrypto
 
 2005-02-13 Shachar Shemesh
 	* Fix bug in procssing of the "gzip" option
