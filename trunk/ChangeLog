@@ -1,3 +1,6 @@
+2005-02-17 Shachar Shemesh
+	* Add an option for only encrypting modified files
+
 2005-02-13 Shachar Shemesh
 	* Fix bug in procssing of the "gzip" option
 	* Add a "blocksize" utility for doing tests for optimal roll parameters
