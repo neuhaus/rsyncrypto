@@ -11,6 +11,9 @@ class aes_key : public key {
         unsigned char key[0];
     } aes_header;
     auto_array<unsigned char> secret_key;
+    aes_key( const aes_key &that );
+protected:
+    virtual key *gen_pad_key() const;
 public:
     aes_key( uint16_t key_size,  uint32_t sum_span, uint32_t sum_mod, uint32_t sum_min_dist,
             const unsigned char *buffer );

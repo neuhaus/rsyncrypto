@@ -21,6 +21,7 @@
 #define _AUTOMMAP_H
 
 #include <sys/mman.h>
+#include <errno.h>
 
 // automap will auto-release mmaped areas
 class autommap {
