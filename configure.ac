@@ -45,6 +45,18 @@ AC_COMPILE_IFELSE([ dnl check for Linux st_mtim
             [AC_MSG_RESULT([no])
             AC_MSG_WARN([file times will have a 1 second resolution])])])
 
+# Find out whether we have a "rsyncable" supporting gzip
+AC_MSG_CHECKING([for gzip with "rsyncable" support])
+if ( gzip --rsyncable >/dev/null </dev/null )
+then
+    AC_MSG_RESULT([yes])
+else
+    AC_MSG_RESULT([no!])
+    AC_MSG_WARN([!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!])
+    AC_MSG_WARN([! gzip must support the "--rsyncable" flag for proper rsyncrypto operation.         !])
+    AC_MSG_WARN([! This does not affect compilation, but a proper gzip must be available at runtime. !])
+    AC_MSG_WARN([!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!])
+fi
 # Checks for library functions.
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_HEADER(config.h)
