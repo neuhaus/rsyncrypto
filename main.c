@@ -119,6 +119,10 @@ int main_dec( int argc, char * argv[] )
     /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
 
     RSA *rsa=extract_private_key(argv[4]);
+    if( rsa==NULL ) /* No private key - get public key instead */
+    {
+        rsa=extract_public_key(argv[4]);
+    }
     infd=open(argv[2], O_LARGEFILE|O_RDONLY);
     fstat64(infd, &status);
     outfd=open(argv[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode);
