@@ -14,14 +14,12 @@
 #include <utime.h>
 #include <dirent.h>
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <getopt.h>
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #include <openssl/rand.h>
 #include <openssl/bio.h>
