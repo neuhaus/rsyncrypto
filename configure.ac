@@ -7,15 +7,15 @@ AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulti
 
 # Checks for programs.
 AC_PROG_CXX
+AC_LANG(C++)
 
 # Checks for libraries.
 AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl not found])])
         
 # Checks for header files.
-AC_CHECK_HEADERS([unistd.h])
+AC_CHECK_HEADERS()
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_LANG(C++)
 AC_MSG_CHECKING([for O_NOATIME support in open])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
 #include <sys/stat.h>
