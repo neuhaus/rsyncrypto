@@ -1,5 +1,7 @@
 2005-02-20 Shachar Shemesh
 	* Fix incorrect hyphens in manual page
+	* Change autofd's copying method - use mutable "owner" boolean
+	* Fix file descriptor leak in code
 
 Version 0.06
 2005-02-17 Shachar Shemesh
