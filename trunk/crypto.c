@@ -197,6 +197,39 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
     return keysize;
 }
 
+/* Decrypt the file's header */
+struct key_header *decrypt_header( int fromfd, RSA *private )
+{
+    size_t key_size=RSA_size(private);
+    struct key_header *decrypted_buff=malloc(key_size);
+    unsigned char *verify_buff=NULL;
+    unsigned char *filemap=mmap(NULL, key_size, PROT_READ, MAP_SHARED, fromfd, 0);
+    int ok=0;
+
+    RSA_private_decrypt(key_size, filemap, (unsigned char *)decrypted_buff, private,
+            RSA_NO_PADDING);
+
+    if( decrypted_buff->version==VERSION_MAGIC_1 ) {
+        verify_buff=malloc(key_size);
+        encrypt_header( decrypted_buff, private, verify_buff );
+
+        int i;
+        ok=1;
+        for( i=0; ok && i<key_size; ++i )
+            if( verify_buff[i]!=filemap[i] )
+                ok=0;
+    }
+    
+    munmap(filemap, key_size);
+    free(verify_buff);
+    if( !ok ) {
+        free(decrypted_buff);
+        decrypted_buff=NULL;
+    }
+
+    return decrypted_buff;
+}
+
 int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tofd )
 {
     size_t key_size=RSA_size(rsa);
@@ -306,24 +339,3 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
 
     return 0;
 }
-
-#if 0
-    {
-        unsigned char secondbuff[2048];
-        int i;
-        
-        RSA *decryptkey=extract_private_key("tests/test.key");
-        
-        /* Let's see if decrypting the encryption yields the same results */
-        RSA_private_decrypt(keysize, to, secondbuff, decryptkey, RSA_NO_PADDING);
-
-        for( i=0; i<(sizeof(*aes_header)+header->key_size) &&
-                ((unsigned char *)aes_header)[i]==secondbuff[i]; ++i )
-            ;
-        if( i==sizeof(*aes_header)+header->key_size )
-            printf("success\n");
-        else
-            printf("Error\n");
-    }
-}
-#endif
