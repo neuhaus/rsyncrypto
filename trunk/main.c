@@ -34,7 +34,12 @@ void usage()
 {
     fprintf(stderr, "Usage: " PACKAGE_NAME " <sourcedir> <destdir> <keysdir> <publickey file>\n"
             "Options:\n"
-            "\t-b keysize\tMust be one of 128, 256 or 512 bits.\n\n"
+            "-b keysize           Must be one of 128, 256 or 512 bits.\n"
+            "--roll-win           Rollover window size. Default is 256 byte\n"
+            "--roll-min           Minimal number of guarenteed non-rolled bytes. Default 8192.\n"
+            "--roll-sensitivity   How sensitive are we to cutting a block. Default is \"roll-win\"\n"
+            "-f                   Force new rollover parameters, even if previous encryption used a\n"
+            "                     different setting.\n\n"
             "Currently only AES encryption is supported\n");
 
     exit(1);
@@ -75,6 +80,7 @@ int main( int argc, char * argv[] )
     fstat64(in, &status);
     out=open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode);
     encrypt_file( head, rsa, in, out );
+    free(head);
 
     return 0;
 }
