@@ -8,6 +8,9 @@ all: rsyncrypto
 rsyncrypto: main.o crypto.o
 	$(CC) $(LDFLAGS) $+ $(LOADLIBES) $(LDLIBS) -o $@
 
+main.o: crypto.h
+crypto.o: crypto.h
+
 .PHONY: clean
 clean:
 	-rm *.o rsyncrypto

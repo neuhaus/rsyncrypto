@@ -161,6 +161,13 @@ struct key_header *read_header( int headfd )
     return newheader;
 }
 
+int write_header( int headfd, struct key_header *head )
+{
+    struct key_header_aes *aes_header=(void *)head;
+
+    return write(headfd, aes_header, sizeof(*aes_header))==sizeof(*aes_header);
+}
+
 /* Encrypt the file's header */
 int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to )
 {
