@@ -1,0 +1,29 @@
+2005-02-13 Shachar Shemesh
+	* Fix bug in procssing of the "gzip" option
+	* Add a "blocksize" utility for doing tests for optimal roll parameters
+
+Version 0.05
+2005-02-12 Shachar Shemesh
+	* Implement recursive decryption of directory structure
+
+2005-02-10 Shachar Shemesh
+	* Implement recursive encryption of directory structures
+	* Improve error reporting
+	* Add "trim" to trim the begining of the path
+
+2005-02-08 Shachar Shemesh
+	* Implement encrypting a file from stdin. Useful for piping tar into
+	  rsyncrytpo.
+
+Version 0.04
+2005-02-08 Shachar Shemesh
+	* Add a "no-archive-mode" switch, which means file permissions and
+	  timestamp are not copied.
+	* Add a verbosity 3 printout for block sizes used
+	* Change default roll-win to 8192, for higher standard deviation on
+	  window sizes
+
+Version 0.03
+2005-02-06 Shachar Shemesh
+	* Fix compilation problem on *BSD
+	* Add an autoconf test for large files access
