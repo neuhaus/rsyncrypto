@@ -53,9 +53,10 @@ struct startup_options {
     const char *gzip;
     int verbosity;
     bool decrypt;
+    bool archive;
 
     startup_options() : keysize(0), rollwin(0), rollmin(0), rollsens(0), fr(false), fk(false),
-			gzip("gzip"), verbosity(0), decrypt(false)
+			gzip("gzip"), verbosity(0), decrypt(false), archive(true)
     {
     }
 };

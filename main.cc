@@ -37,6 +37,7 @@ void usage()
             "                     different setting.\n"
             "--fk                 Force new key size, even if previous encryption used a different\n"
             "                     setting\n"
+            "--no-archive-mode    Do not try to preserve timestamps, permissions etc.\n"
             "--gzip               path to gzip program to use\n\n"
             "Currently only AES encryption is supported\n");
 
@@ -47,7 +48,7 @@ startup_options options;
 
 int parse_cmdline( int argc, char *argv[] )
 {
-    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP };
+    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE };
     int c;
     const struct option long_options[]={
 	{ "roll-win", 1, NULL, ROLL_WIN },
@@ -58,6 +59,7 @@ int parse_cmdline( int argc, char *argv[] )
 	{ "gzip", 1, NULL, GZIP },
         { "help", 0, NULL, 'h' },
         { "verbose", 0, NULL, 'v' },
+        { "no-archive-mode", 0, NULL, NO_ARCHIVE },
 	{ NULL, 0, NULL, 0 }};
     
     while( (c=getopt_long(argc, argv, "b:dhv", long_options, NULL ))!=-1 )
@@ -121,6 +123,11 @@ int parse_cmdline( int argc, char *argv[] )
             if( options.gzip!=NULL )
                 throw rscerror("--gzip option given twice");
             options.gzip=optarg;
+            break;
+        case NO_ARCHIVE:
+            if( !options.archive )
+                throw rscerror("--no-archive option given twice");
+            options.archive=false;
             break;
         case '?':
             throw rscerror("Unrecognized option given");
@@ -195,12 +202,17 @@ int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const
         }
     }
 
-    autofd infd(open(plaintext_file, O_RDONLY
+    int open_flags=O_RDONLY;
+    if( options.archive ) {
 #ifdef HAVE_NOATIME
-                |O_NOATIME
+        open_flags|=O_NOATIME;
 #endif
-                ));
-    fstat(infd, &status);
+        stat(plaintext_file, &status);
+    } else {
+        status.st_mode=S_IRUSR|S_IWUSR|S_IRGRP;
+    }
+
+    autofd infd(open(plaintext_file, open_flags));
     autofd outfd(open(cyphertext_file, O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa_key, infd, outfd );
     if( headfd==-1 ) {
@@ -210,7 +222,8 @@ int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const
     // Set the times on the encrypted file to match the plaintext file
     infd.release();
     outfd.release();
-    copy_metadata( cyphertext_file, &status );
+    if( options.archive )
+        copy_metadata( cyphertext_file, &status );
 
     return 0;
 }
