@@ -54,14 +54,17 @@ struct startup_options {
     uint32_t rollwin, rollmin, rollsens;
     bool fr, fk;
     const char *gzip;
+    int verbosity;
+    bool decrypt;
 
-    startup_options() : keysize(0), rollwin(256), rollmin(8192), rollsens(8192), fr(false), fk(false),
-			gzip("gzip")
+    startup_options() : keysize(0), rollwin(0), rollmin(0), rollsens(0), fr(false), fk(false),
+			gzip("gzip"), verbosity(0), decrypt(false)
     {
     }
 };
 
 extern startup_options options;
+extern std::ostream *report0, *report1, *report2;
 
 #define EXCEPT_CLASS rscerror
 

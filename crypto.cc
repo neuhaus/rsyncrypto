@@ -177,9 +177,9 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
             /* child */
             /* Redirect stdout to the pipe, and gzip the fromfd */
             close(iopipe[0]);
-            dup2(iopipe[1],1);
+            dup2(iopipe[1],STDOUT_FILENO);
             close(iopipe[1]);
-            dup2(fromfd, 0);
+            dup2(fromfd, STDIN_FILENO);
             close(fromfd);
             close(tofd);
             execlp("gzip", "gzip", "--rsyncable", (char *)NULL);
@@ -282,9 +282,9 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
             /* child:
              * Redirect stdout to the file, and gunzip from the pipe */
             close(iopipe[1]);
-            dup2(iopipe[0],0);
+            dup2(iopipe[0],STDIN_FILENO);
             close(iopipe[0]);
-            dup2(tofd, 1);
+            dup2(tofd, STDOUT_FILENO);
             close(tofd);
             close(fromfd);
             execlp("gzip", "gzip", "-d", (char *)NULL);
