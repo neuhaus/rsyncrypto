@@ -1,3 +1,4 @@
+Version 0.12
 2005-03-27 Shachar Shemesh
 	* Change the license to explicitly allow linking with OpenSSL
 	* Make new file permissions adhere to umask rather than source
