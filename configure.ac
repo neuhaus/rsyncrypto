@@ -27,14 +27,22 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
         [AC_MSG_RESULT([no])])
             
 AC_MSG_CHECKING([whether struct stat has nanosecond resolution])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]],[[struct stat st; st.st_mtim.tv_nsec=0;]])]
-        ,[AC_DEFINE([HAVE_STAT_NSEC],[1], [Define to 1 if struct stat support nanosecond resolution])
+AC_COMPILE_IFELSE([ dnl check for Linux st_mtim
+        AC_LANG_PROGRAM([[#include <sys/stat.h>]],[[struct stat st; st.st_mtim.tv_nsec=0;]])],
+        [AC_DEFINE([HAVE_STAT_NSEC],[1], [Define to 1 if struct stat supports nanosecond resolution])
         AC_DEFINE([st_mtime_nsec],[st_mtim.tv_nsec],[mtime nsec access replacement])
         AC_DEFINE([st_atime_nsec],[st_atim.tv_nsec],[atime nsec access replacement])
         AC_DEFINE([st_ctime_nsec],[st_ctim.tv_nsec],[ctime nsec access replacement])
         AC_MSG_RESULT([st_mtim is a struct timespec])],
-        [AC_MSG_RESULT([no])
-        AC_MSG_WARN([file times will have a 1 second resolution])])
+        [ dnl check for FreeBSD st_mtimespec
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]],[[struct stat st; st.st_mtimespec.tv_nsec=0;]])],
+            [AC_DEFINE([HAVE_STAT_NSEC],[1])
+            AC_DEFINE([st_mtime_nsec],[st_mtimespec.tv_nsec])
+            AC_DEFINE([st_atime_nsec],[st_atimespec.tv_nsec])
+            AC_DEFINE([st_ctime_nsec],[st_ctimespec.tv_nsec])
+            AC_MSG_RESULT([st_mtimespec is a struct timespec])],
+            [AC_MSG_RESULT([no])
+            AC_MSG_WARN([file times will have a 1 second resolution])])])
 
 # Checks for library functions.
 AC_CONFIG_FILES(Makefile)

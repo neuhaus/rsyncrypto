@@ -12,7 +12,7 @@
 /* Define to 1 if "open" supports O_NOATIME */
 #undef HAVE_NOATIME
 
-/* Define to 1 if struct stat support nanosecond resolution */
+/* Define to 1 if struct stat supports nanosecond resolution */
 #undef HAVE_STAT_NSEC
 
 /* Define to 1 if you have the <stdint.h> header file. */
