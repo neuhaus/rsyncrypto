@@ -1,3 +1,11 @@
+   Note:
+   rsyncrypto is distributed under the terms and conditions of the GNU General
+   Public license, with the clarification that it is allowed to link it with
+   the OpenSSL library, or any derivative of it that is distributed under
+   either or both of its current licenses (as of version 0.9.7 of openssl).
+
+--------------------------------------------------------------------------------
+
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
 
