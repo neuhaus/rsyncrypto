@@ -1,10 +1,6 @@
 #ifndef CRYPT_KEY_H
 #define CRYPT_KEY_H
 
-#ifndef _STDINT_H
-#include <stdint.h>
-#endif
-
 class key {
 private:
     static const uint32_t VERSION_MAGIC_1=0xD657EA1Cul;
