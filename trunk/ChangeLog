@@ -1,3 +1,11 @@
+Version 0.10
+2005-02-28 Shachar Shemesh
+	* Fix accidental use of automake 1.4 to build the makefiles.
+	* Fix bug where you couldn't use --trim with --filelist
+	* Fix serious bug when --trim=0 and --delete where all encrypted files
+	  were deleted, always.
+
+Version 0.09
 2005-02-27 Shachar Shemesh
 	* Make sure that directories for key and encrypted files are created
 	  when needed.
