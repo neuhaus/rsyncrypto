@@ -182,7 +182,7 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
             dup2(fromfd, STDIN_FILENO);
             close(fromfd);
             close(tofd);
-            execlp("gzip", "gzip", "--rsyncable", (char *)NULL);
+            execlp( options.gzip, options.gzip, "--rsyncable", (char *)NULL);
             exit(1);
             break;
         case -1:
@@ -287,7 +287,7 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
             dup2(tofd, STDOUT_FILENO);
             close(tofd);
             close(fromfd);
-            execlp("gzip", "gzip", "-d", (char *)NULL);
+            execlp(options.gzip, options.gzip, "-d", (char *)NULL);
             exit(1);
             break;
         case -1:
