@@ -32,6 +32,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <netinet/in.h>
+
 #include <openssl/rand.h>
 #include <openssl/bio.h>
 #include <openssl/pem.h>
@@ -130,13 +132,26 @@ void write_header( const char *filename, const key *head )
     head->export_key( headfilemap.get() );
 }
 
+const uint32_t HEADER_ENCRYPTION_VERSION=0;
+
+size_t header_size( const RSA *rsa )
+{
+    return RSA_size(rsa)+sizeof(HEADER_ENCRYPTION_VERSION);
+}
+
 /* Encrypt the file's header */
 void encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 {
+    size_t export_size=header->exported_length();
+
+    *reinterpret_cast<uint32_t *>(to)=htonl(HEADER_ENCRYPTION_VERSION);
+
+    to+=sizeof(HEADER_ENCRYPTION_VERSION);
+
     header->export_key( to );
 
     /* Encrypt the whole thing in place */
-    if( RSA_public_encrypt(header->exported_length(), to, to, rsa, RSA_PKCS1_OAEP_PADDING)==-1 ) {
+    if( RSA_public_encrypt(export_size, to, to, rsa, RSA_PKCS1_OAEP_PADDING)==-1 ) {
         unsigned long rsaerr=ERR_get_error();
         throw rscerror(ERR_error_string(rsaerr, NULL));
     }
@@ -146,14 +161,19 @@ void encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 key *decrypt_header( int fromfd, RSA *prv )
 {
     const size_t key_size=RSA_size(prv);
-    autommap filemap(NULL, key_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fromfd, 0);
+    autommap filemap(NULL, header_size(prv), PROT_READ|PROT_WRITE, MAP_PRIVATE, fromfd, 0);
 
-    if( RSA_private_decrypt(key_size, filemap.get_uc(), filemap.get_uc(), prv, RSA_PKCS1_OAEP_PADDING)==-1 ) {
+    if( *static_cast<uint32_t *>(filemap.get())!=htonl(HEADER_ENCRYPTION_VERSION) )
+        throw rscerror("Wrong file or header encrypted with wrong encryption");
+
+    unsigned char *buff=filemap.get_uc()+sizeof(HEADER_ENCRYPTION_VERSION);
+
+    if( RSA_private_decrypt(key_size, buff, buff, prv, RSA_PKCS1_OAEP_PADDING)==-1 ) {
         unsigned long rsaerr=ERR_get_error();
         throw rscerror(ERR_error_string(rsaerr, NULL));
     }
 
-    std::auto_ptr<key> ret(key::read_key( filemap.get_uc() ));
+    std::auto_ptr<key> ret(key::read_key( buff ));
 
     // Let's verify that we have read the correct data from the file, by reencoding the key we got and comparing
     // the cyphertexts.
@@ -168,7 +188,7 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
     int child_pid;
 
     /* Skip the header. We'll only write it out once the file itself is written */
-    lseek64(tofd, key_size, SEEK_SET);
+    lseek64(tofd, header_size(rsa), SEEK_SET);
 
     /* pipe, fork and run gzip */
     autofd ipipe;
@@ -274,7 +294,7 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
     fstat64( fromfd, &filestat );
 
     /* Skip the header */
-    currpos=lseek64(fromfd, RSA_size(prv), SEEK_SET);
+    currpos=lseek64(fromfd, header_size(prv), SEEK_SET);
 
     autofd opipe;
 
@@ -357,9 +377,12 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
     for( unsigned int i=1; i<block_size; ++i )
         if( buffer2[i]!=0 )
             throw rscerror("Error in encrypted stream (trailer)");
-    if( buffer2[0]>block_size )
+    if( buffer2[0]>=block_size )
         throw rscerror("Error in encrypted stream (trailer 2)");
 
+    if( buffer2[0]==0 )
+        buffer2[0]=block_size;
+    
     opipe.write( buffer.get(), buffer2[0] );
     opipe.clear();
 
