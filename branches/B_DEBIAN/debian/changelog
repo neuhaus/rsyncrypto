@@ -1,3 +1,9 @@
+rsyncrypto (0.08-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Tue, 22 Feb 2005 09:27:04 +0200
+
 rsyncrypto (0.07-2) unstable; urgency=low
 
   * Initial release. (Closes: #296284: ITP: rsyncrypto -- rsync friendly
