@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <assert.h>
@@ -36,10 +37,13 @@
 
 #include "crypto.h"
 
-/*
- * RAND_bytes should work right off the bat. If not, call
- * RAND_status first.
- */
+#define CRYPT_RESTART_BUFFER 8192
+#define CRYPT_MIN_NORESTART 8192
+#define CRYPT_SUM_MOD 8192
+
+/* Cyclic add and subtract */
+#define MOD_ADD(a,b,mod) (((a)+(b))%(mod))
+#define MOD_SUB(a,b,mod) MOD_ADD((a), (mod)-(b), (mod))
 
 #define VERSION_MAGIC_1 0xD657EA1Cul
 
@@ -105,11 +109,13 @@ struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
     
     header=malloc(sizeof(struct key_header_aes)+key_length);
     if( header!=NULL ) {
+        bzero(header, sizeof(header));
         header->header.version=VERSION_MAGIC_1;
         header->header.cypher=cypher;
         header->header.key_size=(key_length+7)/8;
 
-        if( !RAND_bytes(header->key, header->header.key_size + AES_BLOCK_SIZE) )
+        if( !RAND_bytes(header->key, header->header.key_size) ||
+                !RAND_bytes(header->iv, AES_BLOCK_SIZE) )
         {
             free(header);
             header=NULL;
@@ -150,34 +156,97 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
 
 int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tofd )
 {
-    size_t PAGESIZE=sysconf(_SC_PAGESIZE);
     size_t key_size=RSA_size(rsa);
-    size_t block_size;
-    struct stat64 in_stat, out_stat;
+    const struct key_header_aes *aes_header=(const void *)header;
+    int child_pid;
 
-    /* Create the file in it's minimal end required length */
-    fstat64(fromfd, &in_stat);
-    lseek64(tofd, in_stat.st_size+key_size-1, SEEK_SET);
-    write(tofd, &in_stat, 1);
+    /* Skip the header. We'll only write it out once the file itself is written */
+    lseek64(tofd, key_size, SEEK_SET);
 
-    /* Calculate the block size for our operations. It will be the maximum of PAGESIZE
-     * and st_blksize */
-    fstat64(tofd, &out_stat);
-    block_size=out_stat.st_blksize>PAGESIZE ? out_stat.st_blksize : PAGESIZE;
-
-    /* Write out the encrypted header */
-    unsigned char *to=mmap64(NULL, block_size*2, PROT_READ|PROT_WRITE, MAP_SHARED, tofd,
-            0 );
-    unsigned char *from=mmap64(NULL, block_size*2, PROT_READ|PROT_WRITE, MAP_PRIVATE,
-            fromfd, 0 );
-    off64_t fromoff=0, tooff=0;
-
-    tooff+=encrypt_header(header, rsa, to);
-
-    while( fromoff<in_stat.st_size ) {
+    /* pipe, fork and run gzip */
+    int iopipe[2];
+    pipe(iopipe);
+    switch(child_pid=fork())
+    {
+    case 0:
+	/* child */
+	/* Redirect stdout to the pipe, and gzip the fromfd */
+	close(iopipe[0]);
+	dup2(iopipe[1],1);
+	close(iopipe[1]);
+	dup2(fromfd, 0);
+	close(fromfd);
+	close(tofd);
+	execlp("gzip", "gzip", "--rsyncable", (char *)NULL);
+	exit(1);
+	break;
+    case -1:
+        /* Running gzip failed */
+        return -1;
+    default:
+        /* Parent */
+        close(iopipe[1]);
+        close(fromfd);
+        fromfd=-1;
     }
 
-    return 0;
+    int numread;
+    unsigned int start_position=0, end_position=0; /* Position along cyclic buffer */
+    unsigned int numencrypted=0; /* Number of bytes encrypted without restarting from IV */
+    unsigned long sum=0;
+    int rollover=1; /* Whether we need to restart the encryption */
+    size_t buffer_size=CRYPT_RESTART_BUFFER*2;
+    /* make sure buffer_size is a multiple of BLOCK_SIZE */
+    buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
+    unsigned char *buffer=malloc(buffer_size);
+    unsigned char iv[AES_BLOCK_SIZE];
+    AES_KEY aeskey;
+    AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
+
+    /* Read the pipe one byte at a time, block encrypt and write to the file */
+    while((numread=read(iopipe[0], buffer+end_position, 1 ))>0) {
+        if( rollover ) {
+            /* Need to restart the encryption */
+            memcpy( iv, aes_header->iv, AES_BLOCK_SIZE);
+            rollover=0;
+        }
+
+        /* Update the rolling sum */
+        sum=sum+buffer[end_position];
+        if( numencrypted>=CRYPT_MIN_NORESTART )
+            sum-=buffer[MOD_SUB(end_position,CRYPT_RESTART_BUFFER,buffer_size)];
+
+        end_position=MOD_ADD(end_position,1,buffer_size);
+
+        if( numencrypted>=CRYPT_MIN_NORESTART && sum%CRYPT_SUM_MOD==0 ) {
+            /* The sum zeroed out - need to restart another block */
+            rollover=1;
+            numencrypted=0;
+        }
+
+        int numbytes=MOD_SUB(end_position, start_position, buffer_size);
+        if( numbytes>=AES_BLOCK_SIZE || rollover ) {
+            /* Time to encrypt another block */
+            AES_cbc_encrypt(buffer+start_position, buffer+start_position, numbytes,
+                    &aeskey, iv, AES_ENCRYPT );
+            write( tofd, buffer+start_position, AES_BLOCK_SIZE );
+            if( !rollover ) {
+                start_position=MOD_ADD(start_position, AES_BLOCK_SIZE, buffer_size);
+                numencrypted+=AES_BLOCK_SIZE;
+            } else {
+                numencrypted=0;
+                start_position=0;
+                end_position=0;
+            }
+        }
+    }
+
+    int childstatus;
+    do {
+        wait(&childstatus);
+    } while( !WIFEXITED(childstatus) );
+
+    return WEXITSTATUS(childstatus);
 }
 
 #if 0
