@@ -452,7 +452,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
             } else {
                 while( i<AES_BLOCK_SIZE && !error ) {
                     /* If a block was interrupted, the remaining bytes should be zero */
-                    error=(buffer[position+i]==0);
+                    error=(buffer[position+i]!=0);
                     ++i;
                 }
                 position=0;
