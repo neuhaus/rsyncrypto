@@ -122,7 +122,7 @@ int parse_cmdline( int argc, char *argv[] )
                 throw rscerror("--gzip option given twice");
             options.gzip=optarg;
             break;
-        case 0:
+        case '?':
             throw rscerror("Unrecognized option given");
             break;
         default:
@@ -132,8 +132,12 @@ int parse_cmdline( int argc, char *argv[] )
     }
 
     // Some sanity check of the options
-    if( options.keysize!=0 && options.decrypt )
-        throw rscerror("Cannot specify key size for decryption");
+    if( options.decrypt ) {
+        if( options.keysize!=0 )
+            throw rscerror("Cannot specify key size for decryption");
+        if( options.fr || options.fk )
+            throw rscerror("\"force\" options incompatible with -d option");
+    }
 
     // Apply default values
     if( options.rollwin==0 )
