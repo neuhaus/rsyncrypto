@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "February 17, 2005" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "February 20, 2005" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -17,7 +17,7 @@ local changes to the cipher text file. This, in turn, ensures that doing
 \fBrsync\fP to synchronize the encrypted files to another machine will have
 only a small impact on \fBrsync\fP's efficiency.
 .PP
-\fBrsyncrypto\fP will encrypt files using a symetric block cypher (AES). Each
+\fBrsyncrypto\fP will encrypt files using a symmetric block cipher (AES). Each
 file is encrypted using a unique key. The file key is stored in two locations.
 One is the "\fIkey\fP" file, and the second is inside the encrypted file
 itself. The second copy is encrypted using a RSA public key, which can be
@@ -39,7 +39,7 @@ encrypted files in whatever way (secure or insecure, but probably \fBrsync\fP
 :), and keep the plain text file, as well as the key file, secure. As long as
 you saved the RSA private key, you can reconstruct them both.
 .SH PARAMETERS
-The parameters meaning depend on the existance of the \fI-r\fP and \fI-d\fP
+The parameters meaning depend on the existence of the \fI-r\fP and \fI-d\fP
 flags.
 .TP
 \fIsrcfile\fP or \fIsrcdir\fP
@@ -84,7 +84,7 @@ starting with two dashes (`-').
 Show summary of options.
 .TP
 .B \-d
-Decrypt \fIsrc\fP into \fIdst\fP. The default behaviour is to encrypt \fIsrc\fP
+Decrypt \fIsrc\fP into \fIdst\fP. The default behavior is to encrypt \fIsrc\fP
 into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
 .TP
 .B \-r
@@ -96,12 +96,12 @@ created for each file under \fIkeydir\fP.
 .B \-c
 Check the src and destination modified time (in one second resolution) prior
 to performing the operation. If the modified time is the same, assume that the
-files are also the same, and skip the operation. Notive that unlike \fBrsync\fP,
+files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
 during the encryption (and thus decryption) operation.
 .TP
 .BR \-\-trim =num
-Determine how many directory levels to trim from the begining of the \fIsrcdir\fP
+Determine how many directory levels to trim from the beginning of the \fIsrcdir\fP
 path when creating directories under \fIdstdir\fP. The default value is 1. See
 .B "THE TRIM OPTION"
 for more details.
@@ -111,7 +111,7 @@ When in recursive mode, delete files and directories under \fIdstdir\fP that do
 not exist under \fIsrcdir\fP.
 .TP
 .BI \-b " num"
-Specify the block cypher's key size. For AES, these can be 128, 192 or 256.
+Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
 Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
 will only affect files for which no \fIkeyfile\fP exists.
 .TP
@@ -121,7 +121,7 @@ it. In order not to become rsync unfriendly due to the compression,
 \fBrsyncrypto\fP will search the path for an instance of
 .BR gzip (1)
 that supports the \fI\-\-rsyncable\fP option. If the system's default gzip does
-not support this option (only debian's does, at the time of this writing), use
+not support this option (only Debian's does, at the time of this writing), use
 this option to tell \fBrsyncrypto\fP to use a different instance of gzip. The
 tests directory of rsyncrypto's source has a file called "gzip", that does NULL
 compression by redirecting the input and output to
@@ -142,7 +142,7 @@ Increase verbosity level. Specify several time to be more verbose.
 .SH NOTES
 .B encrypting stdin
 .P
-If \fIsrcdile\fP is given as `-', the plain text data will be read fro stdin.
+If \fIsrcfile\fP is given as `-', the plain text data will be read fro stdin.
 This does not yet work for decompression (see \fBBUGS\fP).
 .P
 .BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
@@ -171,7 +171,7 @@ running \fBrsyncrypto\fP with \fIsrcdir\fP of "a/b", and \fIdstdir\fP of "f"
 will create "f/b/c/file".
 .P
 The \fI\-\-trim\fP options lets the user say how many parts to trim from
-\fIsrcdir\fP when creating dirs under \fIdstdir\fP and \fIkeydir\fP. If, in the
+\fIsrcdir\fP when creating directories under \fIdstdir\fP and \fIkeydir\fP. If, in the
 above example, we said
 .IR \-\-trim =0
 then "f/a/b/c/file" would have been created. Likewise, if we said
@@ -184,7 +184,7 @@ directory parts actually in \fIsrcdir\fP. In the above example,
 would result in an error.
 .SH SECURITY
 The roll values affect, to a not totally known degree, how much information
-is "leaked" between plain text and cypher text. The default values are supposed
+is "leaked" between plain text and cipher text. The default values are supposed
 to leak less than 20 bits of aggregated information about the plain text file
 for every 8KB, in the worst case. These values, we hope, will be considered
 secure enough for most usages. However, if your country's fate is at stake, use
