@@ -1,0 +1,3 @@
+2005-02-06 Shachar Shemesh
+	* Fix compilation problem on *BSD
+	* Add an autoconf test for large files access
