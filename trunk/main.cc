@@ -144,6 +144,12 @@ int parse_cmdline( int argc, char *argv[] )
             throw rscerror("Cannot specify key size for decryption");
         if( options.fr || options.fk )
             throw rscerror("\"force\" options incompatible with -d option");
+        if( strcmp(argv[optind], "-")==0 ) {
+            // Plaintext file is standard input/output
+            if( options.archive ) {
+                throw rscerror("Must use \"--no-archive-mode\" if plaintext file is stdin");
+            }
+        }
     }
 
     // Apply default values
@@ -213,7 +219,11 @@ int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const
         status.st_mode=S_IRUSR|S_IWUSR|S_IRGRP;
     }
 
-    autofd infd(open(plaintext_file, open_flags));
+    autofd infd;
+    if( strcmp(plaintext_file, "-")!=0 )
+        infd=autofd(open(plaintext_file, open_flags));
+    else
+        infd=autofd(dup(STDIN_FILENO));
     autofd outfd(open(cyphertext_file, O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa_key, infd, outfd );
     if( headfd==-1 ) {

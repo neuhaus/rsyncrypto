@@ -1,3 +1,7 @@
+2005-02-08 Shachar Shemesh
+	* Implement encrypting a file from stdin. Useful for piping tar into
+	  rsyncrytpo.
+
 Version 0.04
 2005-02-08 Shachar Shemesh
 	* Add a "no-archive-mode" switch, which means file permissions and
