@@ -54,9 +54,6 @@ struct key_header_aes {
     struct key_header header;
     unsigned char iv[AES_BLOCK_SIZE];
     unsigned char key[0];
-    /* char iv[AES_BLOCK_SIZE]; NOTE: This is the IV for the PADDING. It is not encrypted, but is stored in the plain file after
-     * the key
-     * XXX this is currently not used. Find out whether we want predictable padding */
 };
 
 /* Public/Private key handling */
@@ -106,7 +103,7 @@ struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
 {
     struct key_header_aes *header;
     
-    header=malloc(sizeof(struct key_header_aes)+key_length+AES_BLOCK_SIZE);
+    header=malloc(sizeof(struct key_header_aes)+key_length);
     if( header!=NULL ) {
         header->header.version=VERSION_MAGIC_1;
         header->header.cypher=cypher;
@@ -129,11 +126,15 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
     unsigned char iv[AES_BLOCK_SIZE];
     AES_KEY aeskey;
     const struct key_header_aes *aes_header=(const void *)header;
+    int i;
     
     assert((sizeof(struct key_header_aes)+header->key_size)<=keysize);
 
     /* Create the padding data */
-    memcpy(iv, aes_header->key+header->key_size, sizeof(iv));
+    /* Use the 1's complement of the file's IV for the padding data */
+    for( i=0; i<AES_BLOCK_SIZE; ++i )
+        iv[i]=~aes_header->iv[i];
+    
     AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
     bzero(to, keysize);
     AES_cbc_encrypt(to, to, keysize, &aeskey, iv, AES_ENCRYPT );
