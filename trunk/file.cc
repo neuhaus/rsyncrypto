@@ -66,7 +66,7 @@ static int calc_trim( const char *path, int trim_count )
 }
 
 static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op, int src_offset )
+        encryptfunc op, int src_offset, bool op_handle_dir )
 {
     int ret;
 
@@ -96,12 +96,19 @@ static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char
         case S_IFDIR:
             // Directory
             if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
-                if( mkdir( dst_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST )
-                    throw rscerror("mkdir failed", errno, dst_filename.c_str());
-                if( mkdir( key_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST )
-                    throw rscerror("mkdir failed", errno, key_filename.c_str());
+                if( !op_handle_dir ) {
+                    if( mkdir( dst_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST )
+                        throw rscerror("mkdir failed", errno, dst_filename.c_str());
+                    if( mkdir( key_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST )
+                        throw rscerror("mkdir failed", errno, key_filename.c_str());
 
-                recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset );
+                    recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
+                            op_handle_dir );
+                } else {
+                    recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
+                            op_handle_dir );
+                    op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+                }
             }
             break;
         case S_IFLNK:
@@ -115,6 +122,43 @@ static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char
     }
 
     return ret;
+}
+
+static int file_delete( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
+{
+    struct stat status;
+
+    if( lstat( dst_file, &status )!=0 ) {
+        if( errno==ENOENT ) {
+            // Need to erase file
+            if( lstat( source_file, &status )==0  ) {
+                switch( status.st_mode & S_IFMT ) {
+                case S_IFDIR:
+                    // Need to erase directory
+                    std::cout<<"Delete dirs. src:"<<source_file<<" dst:"<<dst_file<<" key:"<<key_file<<std::endl;
+                    rmdir( source_file );
+                    rmdir( key_file );
+                    break;
+                case S_IFREG:
+                case S_IFLNK:
+                    std::cout<<"Delete files. src:"<<source_file<<" dst:"<<dst_file<<" key:"<<key_file<<std::endl;
+                    if( unlink( source_file )!=0 )
+                        throw rscerror("Erasing file", errno, source_file );
+                    if( unlink( key_file )!=0 && errno!=ENOENT )
+                        throw rscerror("Erasing file", errno, key_file );
+                    break;
+                default:
+                    throw rscerror("Unhandled file type", 0, source_file );
+                }
+            } else if( errno!=ENOENT )
+                throw rscerror("Can't stat file to delete", errno, source_file );
+            else
+                throw rscerror("Internal error", errno, source_file );
+        } else
+            throw rscerror("Stat failed", errno, dst_file);
+    }
+
+    return 0;
 }
 
 int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
@@ -131,8 +175,11 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
     if( mkdir( (std::string(key_dir)+"/"+(src_dir+src_offset)).c_str(), S_IRWXU|S_IRGRP|S_IXGRP )!=0 &&
             errno!=EEXIST )
         throw rscerror("mkdir failed", errno, key_dir);
-    ret=recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset );
 
+    ret=recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false );
+
+    if( options.del )
+        ret=recurse_dir_enc( dst_dir, src_dir, key_dir, rsa_key, file_delete, src_offset, true );
     return ret;
 }
 
