@@ -20,7 +20,10 @@
 #ifndef _AUTOMMAP_H
 #define _AUTOMMAP_H
 
+#include <sys/types.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <errno.h>
 
 // automap will auto-release mmaped areas

@@ -13,7 +13,9 @@ class aes_key : public key {
     auto_array<unsigned char> secret_key;
     aes_key( const aes_key &that );
 
+    unsigned char cbc_base[AES_BLOCK_SIZE];
     AES_KEY encrypt_key, decrypt_key;
+
     void update_keys()
     {
         AES_set_decrypt_key( secret_key.get(), header.key_size*8, &decrypt_key );
@@ -33,7 +35,13 @@ public:
     {
         return key::exported_length()+header.key_size+block_size();
     }
-    virtual void export_key( void *buffer ) const;
+    virtual size_t export_key( void *buffer ) const;
+
+    // Encryption/decryption functions
+    virtual void init_encrypt(); // Reset the IV values
+    // Encrypt/decrypt in place. "size" is not guarenteed to work if bigger than block_size
+    virtual void encrypt_block( unsigned char *data, size_t size );
+    virtual void decrypt_block( unsigned char *data, size_t size );
 };
 
 #endif // AES_CRYPT_H
