@@ -1,12 +1,15 @@
 #!/bin/sh
 
+rm tests/A
+rm tests/A.key
+
 times=$1
 fail=0
 ulimit -c unlimited
 
 while [ $times -ne 0 -a $fail -eq 0 ]
 do
-    dd if=/dev/urandom count=3 bs=1 >> tests/A 2>/dev/null
+    dd if=/dev/urandom count=$2 bs=1 >> tests/A 2>/dev/null
     let times--
 #rm tests/A.*
     ./rsyncrypto e tests/A tests/A.enc tests/A.key tests/cert.crt
@@ -17,5 +20,5 @@ done
 
 if [ $fail -ne 0 ]
 then
-    echo "Test failed on length $(( ($1-$times)*3 ))"
+    echo "Test failed on length $(( ($1-$times)*$2 ))"
 fi
