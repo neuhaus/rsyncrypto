@@ -104,16 +104,25 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 bin_PROGRAMS = rsyncrypto
+noinst_PROGRAMS = blocksizes
 
 rsyncrypto_SOURCES = main.cc crypto.cc crypt_key.cc aes_crypt.cc file.cc
+blocksizes_SOURCES = crypt_key.cc aes_crypt.cc blocksizes.cc
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 bin_PROGRAMS = rsyncrypto$(EXEEXT)
-PROGRAMS = $(bin_PROGRAMS)
+noinst_PROGRAMS = blocksizes$(EXEEXT)
+PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
+am_blocksizes_OBJECTS = crypt_key.$(OBJEXT) aes_crypt.$(OBJEXT) \
+	blocksizes.$(OBJEXT)
+blocksizes_OBJECTS = $(am_blocksizes_OBJECTS)
+blocksizes_LDADD = $(LDADD)
+blocksizes_DEPENDENCIES =
+blocksizes_LDFLAGS =
 am_rsyncrypto_OBJECTS = main.$(OBJEXT) crypto.$(OBJEXT) \
 	crypt_key.$(OBJEXT) aes_crypt.$(OBJEXT) file.$(OBJEXT)
 rsyncrypto_OBJECTS = $(am_rsyncrypto_OBJECTS)
@@ -125,19 +134,20 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/aes_crypt.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/crypt_key.Po ./$(DEPDIR)/crypto.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/file.Po ./$(DEPDIR)/main.Po
+@AMDEP_TRUE@	./$(DEPDIR)/blocksizes.Po ./$(DEPDIR)/crypt_key.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/crypto.Po ./$(DEPDIR)/file.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-DIST_SOURCES = $(rsyncrypto_SOURCES)
+DIST_SOURCES = $(blocksizes_SOURCES) $(rsyncrypto_SOURCES)
 DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/configure AUTHORS \
 	COPYING ChangeLog INSTALL Makefile.am NEWS aclocal.m4 \
 	config.guess config.h.in config.sub configure configure.ac \
 	depcomp install-sh missing mkinstalldirs
-SOURCES = $(rsyncrypto_SOURCES)
+SOURCES = $(blocksizes_SOURCES) $(rsyncrypto_SOURCES)
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -201,6 +211,12 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+blocksizes$(EXEEXT): $(blocksizes_OBJECTS) $(blocksizes_DEPENDENCIES) 
+	@rm -f blocksizes$(EXEEXT)
+	$(CXXLINK) $(blocksizes_LDFLAGS) $(blocksizes_OBJECTS) $(blocksizes_LDADD) $(LIBS)
 rsyncrypto$(EXEEXT): $(rsyncrypto_OBJECTS) $(rsyncrypto_DEPENDENCIES) 
 	@rm -f rsyncrypto$(EXEEXT)
 	$(CXXLINK) $(rsyncrypto_LDFLAGS) $(rsyncrypto_OBJECTS) $(rsyncrypto_LDADD) $(LIBS)
@@ -212,6 +228,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aes_crypt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blocksizes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypt_key.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file.Po@am__quote@
@@ -437,7 +454,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -486,16 +504,17 @@ ps-am:
 uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic ctags dist dist-all dist-gzip distcheck distclean \
-	distclean-compile distclean-generic distclean-hdr \
-	distclean-tags distcleancheck distdir distuninstallcheck dvi \
-	dvi-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-info-am
+	clean-generic clean-noinstPROGRAMS ctags dist dist-all \
+	dist-gzip distcheck distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-tags distcleancheck \
+	distdir distuninstallcheck dvi dvi-am info info-am install \
+	install-am install-binPROGRAMS install-data install-data-am \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
