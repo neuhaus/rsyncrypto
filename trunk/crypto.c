@@ -103,6 +103,7 @@ RSA *extract_private_key( const char *key_filename )
 
     return rsa;
 }
+
 /* Generate a new AES file header. Make up an IV and key for the file */
 struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
 {
@@ -127,6 +128,37 @@ struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
     }
 
     return (struct key_header *)header;
+}
+
+struct key_header *read_header( int headfd )
+{
+    const struct key_header *buffer;
+    struct key_header *newheader;
+    struct stat64 stat;
+    
+    if( fstat64(headfd, &stat)!=0 ) {
+        perror("Couldn't stat encryption header file");
+        return NULL;
+    }
+
+    if( stat.st_size<sizeof(*buffer) ) {
+        fprintf(stderr, "encryption header file corrupt\n");
+        return NULL;
+    }
+    
+    buffer=mmap64(NULL, stat.st_size, PROT_READ, MAP_SHARED, headfd, 0 );
+    if( buffer->version==VERSION_MAGIC_1 ) {
+        newheader=malloc(stat.st_size);
+        if( newheader!=NULL ) {
+            memcpy( newheader, buffer, stat.st_size );
+        }
+        munmap((void *)buffer, stat.st_size);
+    } else {
+        fprintf(stderr, "Wrong magic in encryption header file\n");
+        return NULL;
+    }
+    
+    return newheader;
 }
 
 /* Encrypt the file's header */
