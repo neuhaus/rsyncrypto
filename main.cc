@@ -63,6 +63,24 @@ int parse_cmdline( int argc, char *argv[] )
     return 0;
 }
 
+void copy_metadata( const char *destfilename, const struct stat *data )
+{
+    struct timeval tv[2];
+
+    tv[0].tv_sec=data->st_atime;
+    tv[1].tv_sec=data->st_mtime;
+#if HAVE_STAT_NSEC
+    tv[0].tv_usec=data->st_atime_nsec/1000;
+    tv[1].tv_usec=data->st_mtime_nsec/1000;
+#else
+    tv[0].tv_usec=0;
+    tv[1].tv_usec=0;
+#endif
+
+    if( utimes( destfilename, tv )==-1 )
+	throw rscerror(errno);
+}
+
 int main_enc( int argc, char * argv[] )
 {
     std::auto_ptr<key> head;
@@ -96,22 +114,7 @@ int main_enc( int argc, char * argv[] )
     // Set the times on the encrypted file to match the plaintext file
     infd.release();
     outfd.release();
-    {
-        struct timeval tv[2];
-
-        tv[0].tv_sec=status.st_atime;
-        tv[1].tv_sec=status.st_mtime;
-#if HAVE_STAT_NSEC
-        tv[0].tv_usec=status.st_atime_nsec/1000;
-        tv[1].tv_usec=status.st_mtime_nsec/1000;
-#else
-        tv[0].tv_usec=0;
-        tv[1].tv_usec=0;
-#endif
-
-        if( utimes( argv[2], tv )==-1 )
-            throw rscerror(errno);
-    }
+    copy_metadata( argv[2], &status );
     RSA_free(rsa);
 
     return 0;
@@ -143,6 +146,9 @@ int main_dec( int argc, char * argv[] )
     if( headfd==-1 ) {
         write_header( argv[3], head.get());
     }
+    infd.release();
+    outfd.release();
+    copy_metadata( argv[1], &status );
     RSA_free(rsa);
 
     return 0;
