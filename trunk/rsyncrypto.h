@@ -15,6 +15,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 #include <assert.h>
 #include <string.h>
@@ -47,6 +48,20 @@ public:
         return msg.c_str();
     }
 };
+
+struct startup_options {
+    size_t keysize;
+    uint32_t rollwin, rollmin, rollsens;
+    bool fr, fk;
+    const char *gzip;
+
+    startup_options() : keysize(0), rollwin(256), rollmin(8192), rollsens(8192), fr(false), fk(false),
+			gzip("gzip")
+    {
+    }
+};
+
+extern startup_options options;
 
 #define EXCEPT_CLASS rscerror
 
