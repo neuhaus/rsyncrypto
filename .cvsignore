@@ -3,7 +3,6 @@ config.status
 config.h
 autom4te.cache
 Makefile
-configure
 .*.swp
 .deps
 rsyncrypto
