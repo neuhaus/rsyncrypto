@@ -1,0 +1,9 @@
+!!!!!!!!!!!!!!!!!!!!!!! Important Note !!!!!!!!!!!!!!!!!!!!!!!
+In version 0.05 the meaning of the parameters have changed incompatibly!
+The first variable now means "source file" and second one means "destination
+file". Before, the first file was the "plain text file" and the second was
+"cypher text file".
+
+As a result of this change, encryption still behaves the same, but for
+decryption argument order must be reversed. Don't forget this or you may erase
+your encrypted files!
