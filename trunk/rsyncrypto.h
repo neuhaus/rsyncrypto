@@ -65,9 +65,10 @@ struct startup_options {
     bool decrypt;
     bool archive;
     bool recurse;
+    int trim;
 
     startup_options() : keysize(0), rollwin(0), rollmin(0), rollsens(0), fr(false), fk(false),
-			gzip("gzip"), verbosity(0), decrypt(false), archive(true), recurse(false)
+			gzip("gzip"), verbosity(0), decrypt(false), archive(true), recurse(false), trim(-1)
     {
     }
 };

@@ -1,5 +1,7 @@
 2005-02-10 Shachar Shemesh
 	* Implement recursive encryption of directory structures
+	* Improve error reporting
+	* Add "trim" to trim the begining of the path
 
 2005-02-08 Shachar Shemesh
 	* Implement encrypting a file from stdin. Useful for piping tar into
