@@ -19,19 +19,6 @@
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
-#define _LARGEFILE64_SOURCE
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <utime.h>
-#include <stdlib.h>
-
-#include <memory>
-#include <iostream>
-
-#include <openssl/err.h>
 
 #include "rsyncrypto.h"
 #include "crypto.h"
@@ -80,7 +67,7 @@ int main_enc( int argc, char * argv[] )
 {
     std::auto_ptr<key> head;
     autofd headfd;
-    struct stat64 status;
+    struct stat status;
 
     // Read in the header, or generate a new one if can't
     {
@@ -99,7 +86,7 @@ int main_enc( int argc, char * argv[] )
                 |O_NOATIME
 #endif
                 ));
-    fstat64(infd, &status);
+    fstat(infd, &status);
     autofd outfd(open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa, infd, outfd );
     if( headfd==-1 ) {
@@ -134,7 +121,7 @@ int main_dec( int argc, char * argv[] )
 {
     std::auto_ptr<key> head;
     // int infd, outfd, headfd;
-    struct stat64 status;
+    struct stat status;
 
     /* Decryption */
     autofd headfd(open( argv[3], O_RDONLY ));
@@ -150,7 +137,7 @@ int main_dec( int argc, char * argv[] )
         rsa=extract_public_key(argv[4]);
     }
     autofd infd(open(argv[2], O_LARGEFILE|O_RDONLY), true);
-    fstat64(infd, &status);
+    fstat(infd, &status);
     autofd outfd(open(argv[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa, infd, outfd ));
     if( headfd==-1 ) {

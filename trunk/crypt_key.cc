@@ -1,6 +1,3 @@
-#include <memory>
-#include <stdint.h>
-#include <netinet/in.h>
 #include "rsyncrypto.h"
 #include "crypt_key.h"
 #include "aes_crypt.h"

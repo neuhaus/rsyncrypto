@@ -19,35 +19,9 @@
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
-#define _LARGEFILE64_SOURCE
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdint.h>
-
-#include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include <netinet/in.h>
-
-#include <openssl/rand.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
-
-#include <iostream>
 
 #include "rsyncrypto.h"
-
 #include "crypto.h"
-
-#define CRYPT_RESTART_BUFFER 8192
-#define CRYPT_MIN_NORESTART 8192
-#define CRYPT_SUM_MOD 8192
 
 /* Cyclic add and subtract */
 #define MOD_ADD(a,b,mod) (((a)+(b))%(mod))
@@ -123,7 +97,7 @@ key *read_header( int headfd )
 void write_header( const char *filename, const key *head )
 {
     autofd newhead(open(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR), true);
-    off64_t headsize=head->exported_length();
+    off_t headsize=head->exported_length();
     if( lseek( newhead, headsize-1, SEEK_SET )!=headsize-1 ||
             write( newhead, &newhead, 1 )!=1 )
         throw rscerror(errno);
@@ -188,7 +162,7 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
     int child_pid;
 
     /* Skip the header. We'll only write it out once the file itself is written */
-    lseek64(tofd, header_size(rsa), SEEK_SET);
+    lseek(tofd, header_size(rsa), SEEK_SET);
 
     /* pipe, fork and run gzip */
     autofd ipipe;
@@ -288,13 +262,13 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
         throw rscerror("Couldn't extract encryption header");
 
     int child_pid;
-    struct stat64 filestat;
-    off64_t currpos;
+    struct stat filestat;
+    off_t currpos;
 
-    fstat64( fromfd, &filestat );
+    fstat( fromfd, &filestat );
 
     /* Skip the header */
-    currpos=lseek64(fromfd, header_size(prv), SEEK_SET);
+    currpos=lseek(fromfd, header_size(prv), SEEK_SET);
 
     autofd opipe;
 

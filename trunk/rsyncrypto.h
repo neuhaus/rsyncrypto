@@ -1,6 +1,34 @@
 #ifndef RSYNCRYPTO_H
 #define RSYNCRYPTO_H
 
+#define _FILE_OFFSET_BITS 64
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <sys/time.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <utime.h>
+
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <assert.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+
+#include <openssl/rand.h>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
+
+#include <memory>
+#include <iostream>
 #include <string>
 
 #include "config.h"
