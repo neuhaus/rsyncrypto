@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <utime.h>
+#include <dirent.h>
 
 #include <stdint.h>
 #include <stdlib.h>
