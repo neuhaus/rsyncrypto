@@ -65,11 +65,9 @@ static int calc_trim( const char *path, int trim_count )
     return ret;
 }
 
-static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
+static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
         encryptfunc op, int src_offset, bool op_handle_dir, const char *opname )
 {
-    int ret;
-
     autodir dir(src_dir);
 
     struct dirent *ent;
@@ -128,11 +126,9 @@ static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char
             break;
         }
     }
-
-    return ret;
 }
 
-static int file_delete( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
+static void file_delete( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
 {
     struct stat status;
 
@@ -167,14 +163,11 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
         } else
             throw rscerror("Stat failed", errno, dst_file);
     }
-
-    return 0;
 }
 
-int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
+void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
         encryptfunc op, const char *opname )
 {
-    int ret=0;
     // How many bytes of src_dir to skip when creating dirs under dst_dir
     int src_offset=calc_trim( src_dir, options.trim ); 
 
@@ -186,7 +179,7 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
             errno!=EEXIST )
         throw rscerror("mkdir failed", errno, key_dir);
 
-    ret=recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
+    recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
 
     if( options.del ) {
         std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
@@ -198,13 +191,12 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
         if( dst_src_name[dst_src_name.length()-1]=='/' ) {
             dst_src_name.erase(dst_src_name.length()-1);
         }
-        ret=recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
+        recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
                 dst_src_offset, true, NULL );
     }
-    return ret;
 }
 
-int file_encrypt( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
+void file_encrypt( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
 {
     std::auto_ptr<key> head;
     autofd headfd;
@@ -257,11 +249,9 @@ int file_encrypt( const char *source_file, const char *dst_file, const char *key
     outfd.clear();
     if( options.archive )
         copy_metadata( dst_file, &status );
-
-    return 0;
 }
 
-int file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key)
+void file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key)
 {
     std::auto_ptr<key> head;
     // int infd, outfd, headfd;
@@ -285,6 +275,4 @@ int file_decrypt( const char *src_file, const char *dst_file, const char *key_fi
     infd.clear();
     outfd.clear();
     copy_metadata( dst_file, &status );
-
-    return 0;
 }
