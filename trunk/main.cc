@@ -199,13 +199,13 @@ int main_enc( int argc, char * args[] )
     }
 
     RSA *rsa=extract_public_key(args[3]);
-    autofd infd(open(args[0], O_LARGEFILE|O_RDONLY
+    autofd infd(open(args[0], O_RDONLY
 #ifdef HAVE_NOATIME
                 |O_NOATIME
 #endif
                 ));
     fstat(infd, &status);
-    autofd outfd(open(args[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
+    autofd outfd(open(args[1], O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa, infd, outfd );
     if( headfd==-1 ) {
         write_header( args[2], head.get() );
@@ -239,9 +239,9 @@ int main_dec( int argc, char * args[] )
     {
         rsa=extract_public_key(args[3]);
     }
-    autofd infd(open(args[1], O_LARGEFILE|O_RDONLY), true);
+    autofd infd(open(args[1], O_RDONLY), true);
     fstat(infd, &status);
-    autofd outfd(open(args[0], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
+    autofd outfd(open(args[0], O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa, infd, outfd ));
     if( headfd==-1 ) {
         write_header( args[2], head.get());
