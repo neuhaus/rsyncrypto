@@ -158,7 +158,7 @@ int parse_cmdline( int argc, char *argv[] )
         case TRIM:
             if( options.trim!=-1 )
                 throw rscerror("--trim option given twice");
-            if( !options.recurse )
+            if( !options.recurse && !options.filelist )
                 throw rscerror("Cannot trim names when not doing directory recursion");
             options.trim=atoi(optarg);
             break;
