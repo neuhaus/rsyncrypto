@@ -64,13 +64,14 @@ struct startup_options {
     bool archive;
     bool recurse;
     int trim;
+    bool delkey;
     bool del;
     bool changed;
     bool filelist;
 
     startup_options() : keysize(0), rollwin(0), rollmin(0), rollsens(0), fr(false), fk(false),
 			gzip(NULL), verbosity(0), decrypt(false), archive(true), recurse(false), trim(-1),
-                        del(false), changed(false), filelist(false)
+                        delkey(false), del(false), changed(false), filelist(false)
     {
     }
 };
