@@ -50,7 +50,7 @@
 struct key_header {
     unsigned long version;
     enum CYPHER_TYPE cypher;
-    int key_size; /* key size IN BYTES! */
+    size_t key_size; /* key size IN BYTES! */
     unsigned int restart_buffer, min_norestart, sum_mod; /* checksum recycle policy parameters */
 };
 
@@ -104,17 +104,22 @@ RSA *extract_private_key( const char *key_filename )
     return rsa;
 }
 
+static size_t header_length( const struct key_header *header ) {
+    return sizeof(struct key_header_aes)+header->key_size;
+}
+
 /* Generate a new AES file header. Make up an IV and key for the file */
 struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
 {
     struct key_header_aes *header;
+    int key_length_bytes=(key_length+7)/8;
     
-    header=malloc(sizeof(struct key_header_aes)+key_length);
+    header=malloc(sizeof(struct key_header_aes)+key_length_bytes);
     if( header!=NULL ) {
-        bzero(header, sizeof(header));
+        bzero(header, sizeof(header)+key_length_bytes);
         header->header.version=VERSION_MAGIC_1;
         header->header.cypher=cypher;
-        header->header.key_size=(key_length+7)/8;
+        header->header.key_size=key_length_bytes;
         header->header.restart_buffer=CRYPT_RESTART_BUFFER;
         header->header.min_norestart=CRYPT_MIN_NORESTART;
         header->header.sum_mod=CRYPT_SUM_MOD;
@@ -165,7 +170,7 @@ int write_header( int headfd, struct key_header *head )
 {
     struct key_header_aes *aes_header=(void *)head;
 
-    return write(headfd, aes_header, sizeof(*aes_header))==sizeof(*aes_header);
+    return write(headfd, aes_header, header_length(head))==header_length(head);
 }
 
 /* Encrypt the file's header */
@@ -177,7 +182,7 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
     const struct key_header_aes *aes_header=(const void *)header;
     int i;
     
-    assert((sizeof(struct key_header_aes)+header->key_size)<=keysize);
+    assert(header_length(header)<=keysize);
 
     /* Create the padding data */
     /* Use the 1's complement of the file's IV for the padding data */
@@ -189,7 +194,7 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
     AES_cbc_encrypt(to, to, keysize, &aeskey, iv, AES_ENCRYPT );
 
     /* Now place the header over it */
-    memcpy(to, aes_header, sizeof(*aes_header)+header->key_size);
+    memcpy(to, aes_header, header_length(header));
 
     /* Encrypt the whole thing in place */
     RSA_public_encrypt(keysize, to, to, rsa, RSA_NO_PADDING);
@@ -253,7 +258,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
 	dup2(fromfd, 0);
 	close(fromfd);
 	close(tofd);
-	execlp("gzip", "gzip", "--rsyncable", (char *)NULL);
+	execlp("./gzip", "gzip", "--rsyncable", (char *)NULL);
 	exit(1);
 	break;
     case -1:
@@ -352,7 +357,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
         int child_pid;
 
         /* Skip the header */
-        lseek64(fromfd, header->key_size, SEEK_SET);
+        lseek64(fromfd, RSA_size(private), SEEK_SET);
 
         /* pipe, fork and run gzip */
         int iopipe[2];
@@ -368,7 +373,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
             dup2(tofd, 1);
             close(tofd);
             close(fromfd);
-            execlp("gzip", "gzip", "-d", (char *)NULL);
+            execlp("./gzip", "gzip", "-d", (char *)NULL);
             exit(1);
             break;
         case -1:
