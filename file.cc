@@ -138,7 +138,11 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                     dststat.st_mtime!=status.st_mtime ) {
                 if( options.verbosity>=1 && opname!=NULL )
                     std::cerr<<opname<<" "<<src_filename<<std::endl;
-                op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+                try {
+                    op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+                } catch( const rscerror &err ) {
+                    std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
+                }
             } else {
                 if( options.verbosity>=2 && opname!=NULL )
                     std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
