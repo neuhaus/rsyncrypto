@@ -16,7 +16,7 @@ aes_key::aes_key( uint16_t key_size,  uint32_t sum_span, uint32_t sum_mod, uint3
 }
 
 aes_key::aes_key( size_t keybits, uint32_t sum_span, uint32_t sum_mod, uint32_t sum_min_dist ) :
-    key(keybits==0?16:(keybits+7)/8, CYPHER_AES, sum_span, sum_mod, sum_min_dist ),
+    key(keybits==0?32:(keybits+7)/8, CYPHER_AES, sum_span, sum_mod, sum_min_dist ),
     secret_key(new unsigned char[header.key_size])
 {
     if( !RAND_bytes(aes_header.iv, sizeof( aes_header.iv )) ||
