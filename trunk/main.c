@@ -139,9 +139,9 @@ int main( int argc, char *argv[] )
     switch( argv[1][0] )
     {
     case 'e':
-        return main_enc(argc, argv);
+        return main_enc(argc-1, argv+1);
     case 'd':
-        return main_dec(argc, argv);
+        return main_dec(argc-1, argv+1);
     default:
         fprintf(stderr, "Prefix either \"d\" or \"e\" to the arguments to decrypt/encrypt\n");
     }
