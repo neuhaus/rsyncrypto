@@ -22,10 +22,11 @@
 
 #include "rsyncrypto.h"
 #include "crypto.h"
+#include "autodir.h"
 
 void usage()
 {
-    fprintf(stderr, "Usage: " PACKAGE_NAME " <plain> <cypher> <keys> <publickey file>\n"
+    fprintf(stderr, "Usage: " PACKAGE_NAME " <src> <dst> <keys> <publickey file>\n"
             "Options:\n"
             "-h                   Help - this page\n"
             "-d                   Decrypt.\n"
@@ -64,7 +65,7 @@ int parse_cmdline( int argc, char *argv[] )
         { "no-archive-mode", 0, NULL, NO_ARCHIVE },
 	{ NULL, 0, NULL, 0 }};
     
-    while( (c=getopt_long(argc, argv, "b:dhv", long_options, NULL ))!=-1 )
+    while( (c=getopt_long(argc, argv, "b:dhrv", long_options, NULL ))!=-1 )
     {
         switch(c) {
         case 'h':
@@ -89,6 +90,12 @@ int parse_cmdline( int argc, char *argv[] )
             break;
         case 'v':
             options.verbosity++;
+            break;
+        case 'r':
+            if( options.recurse ) {
+                throw rscerror("-r option given twice");
+            }
+            options.recurse=true;
             break;
         case ROLL_WIN:
             if( options.rollwin!=0 )
@@ -183,8 +190,103 @@ void copy_metadata( const char *destfilename, const struct stat *data )
 	throw rscerror(errno);
 }
 
-int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const char *key_file,
-        RSA *rsa_key )
+typedef int (* encryptfunc)(const char *source, const char *dest, const char *key, RSA *rsa);
+
+static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
+        encryptfunc op, int src_offset )
+{
+    int ret;
+
+    autodir dir(opendir( src_dir ));
+
+    struct dirent *ent;
+    while( (ent=dir.read())!=NULL ) {
+        std::string src_filename(src_dir);
+        src_filename+="/";
+        src_filename+=ent->d_name;
+
+        std::string dst_filename(dst_dir);
+        dst_filename+="/";
+        dst_filename+=src_filename.c_str()+src_offset;
+        
+        std::string key_filename(key_dir);
+        key_filename+="/";
+        key_filename+=src_filename.c_str()+src_offset;
+        
+        struct stat status;
+        stat( src_filename.c_str(), &status );
+        switch( status.st_mode & S_IFMT ) {
+        case S_IFREG:
+            // Regular file
+            
+            break;
+        case S_IFDIR:
+            // Directory
+            if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
+                if( mkdir( dst_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST ||
+                        mkdir( key_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST )
+                    throw rscerror(errno);
+
+                recurse_dir_enc( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key, op,
+                        src_offset );
+            }
+            break;
+        case S_IFLNK:
+            // Symbolic link
+            break;
+        default:
+            // Unhandled type
+            throw rscerror("Unhandled file type");
+            break;
+        }
+    }
+
+    return ret;
+}
+int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
+        encryptfunc op )
+{
+    int ret=0;
+    int src_offset=0; // How many bytes of src_dir to skip when creating dirs under dst_dir
+
+    // Sanitize dst_dir
+    do {
+        switch( src_dir[src_offset] ) {
+        case '/':
+            src_offset++;
+            break;
+        case '.':
+            {
+                switch( src_dir[src_offset+1] ) {
+                case '.':
+                    if( src_dir[src_offset+2]=='/' || src_dir[src_offset+2]=='\0' ) {
+                        src_offset+=3;
+                    }
+                    break;
+                case '/':
+                    src_offset+=2;
+                    break;
+                case '\0':
+                    src_offset++;
+                    break;
+                }
+            }
+            break;
+        }
+    } while( src_dir[src_offset]=='/' );
+
+    // Implement standard recursive descent on src_dir
+    if( mkdir( (std::string(dst_dir)+"/"+(src_dir+src_offset)).c_str(), S_IRWXU|S_IRGRP|S_IXGRP )!=0 &&
+            errno!=EEXIST ||
+            mkdir( (std::string(key_dir)+"/"+(src_dir+src_offset)).c_str(), S_IRWXU|S_IRGRP|S_IXGRP )!=0 &&
+            errno!=EEXIST )
+        throw rscerror(errno);
+    ret=recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset );
+
+    return ret;
+}
+
+int file_encrypt( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
 {
     std::auto_ptr<key> head;
     autofd headfd;
@@ -216,17 +318,17 @@ int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const
 #ifdef HAVE_NOATIME
         open_flags|=O_NOATIME;
 #endif
-        stat(plaintext_file, &status);
+        stat(source_file, &status);
     } else {
         status.st_mode=S_IRUSR|S_IWUSR|S_IRGRP;
     }
 
     autofd infd;
-    if( strcmp(plaintext_file, "-")!=0 )
-        infd=autofd(open(plaintext_file, open_flags));
+    if( strcmp(source_file, "-")!=0 )
+        infd=autofd(open(source_file, open_flags));
     else
         infd=autofd(dup(STDIN_FILENO));
-    autofd outfd(open(cyphertext_file, O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
+    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa_key, infd, outfd );
     if( headfd==-1 ) {
         write_header( key_file, head.get() );
@@ -236,13 +338,12 @@ int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const
     infd.release();
     outfd.release();
     if( options.archive )
-        copy_metadata( cyphertext_file, &status );
+        copy_metadata( dst_file, &status );
 
     return 0;
 }
 
-int file_decrypt( const char *plaintext_file, const char *cyphertext_file, const char *key_file,
-        RSA *rsa_key)
+int file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key)
 {
     std::auto_ptr<key> head;
     // int infd, outfd, headfd;
@@ -256,16 +357,16 @@ int file_decrypt( const char *plaintext_file, const char *cyphertext_file, const
     }
     /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
 
-    autofd infd(open(cyphertext_file, O_RDONLY), true);
+    autofd infd(open(src_file, O_RDONLY), true);
     fstat(infd, &status);
-    autofd outfd(open(plaintext_file, O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
+    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
     if( headfd==-1 ) {
         write_header( key_file, head.get());
     }
     infd.release();
     outfd.release();
-    copy_metadata( plaintext_file, &status );
+    copy_metadata( dst_file, &status );
 
     return 0;
 }
@@ -289,11 +390,17 @@ int main( int argc, char *argv[] )
             rsa_key=extract_public_key(argv[3]);
         }
 
-        if( !options.decrypt )
-        {
-            ret=file_encrypt(argv[0], argv[1], argv[2], rsa_key);
+        encryptfunc op;
+
+        if( options.decrypt )
+            op=file_decrypt;
+        else
+            op=file_encrypt;
+
+        if( options.recurse ) {
+            ret=dir_encrypt(argv[0], argv[1], argv[2], rsa_key, op);
         } else {
-            ret=file_decrypt(argv[0], argv[1], argv[2], rsa_key);
+            ret=op(argv[0], argv[1], argv[2], rsa_key);
         }
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
