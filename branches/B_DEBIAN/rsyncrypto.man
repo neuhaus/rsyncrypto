@@ -73,7 +73,7 @@ If \fIdst\fP does not exist, it will be created. The directory in which it
 is to be created must exist prior to running \fBrsyncrypto\fP.
 .P
 If encrypting, and a symmetric key for the file is found, the same parameters
-will be used for the encryption unless the \fI--fr\fP or \fI--fk\fP options
+will be used for the encryption unless the \fI\-\-fr\fP or \fI\-\-fk\fP options
 are used. If that's the case, the key file is going to be replaced with the
 correct parameters.
 .SH OPTIONS
@@ -112,7 +112,7 @@ not exist under \fIsrcdir\fP.
 .TP
 .BI \-b " num"
 Specify the block cypher's key size. For AES, these can be 128, 192 or 256.
-Note that unless the \fI--fr\fP or \fI--fk\P options are also specified, this
+Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
 will only affect files for which no \fIkeyfile\fP exists.
 .TP
 .BI \-\-gzip =path
@@ -132,9 +132,9 @@ Affects the rolling block algorithm. See \fBNOTES\fP.
 .TP
 .BR \-\-fk ", " \-\-fr
 If command line, or a version with different defaults, dictate different
-values for the \fI--roll-*\fP options or the \fI-b\fP option, these will only
+values for the \fI\-\-roll\-*\fP options or the \fI\-b\fP option, these will only
 affect files for which \fIkeyfile\fP does not yet exist. specifying the
-\fI--fk\fP or \fI--fr\fP will recreate \fIkeyfile\fP if it has values different
+\fI\-\-fk\fP or \fI\-\-fr\fP will recreate \fIkeyfile\fP if it has values different
 than those in the previous key file.
 .TP
 .B \-v
