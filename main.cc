@@ -32,7 +32,9 @@ void usage()
             "-d                   Decrypt.\n"
             "-r                   <plain> <cypher> and <keys> are all directory names. The encryption\n"
             "                     will apply to all files in them recursively\n"
-            "--trim               Number of directory entries to trim from the begining of the path. Default 1\n"
+            "--trim               Number of directory entries to trim from the begining of the path.\n"
+            "                     Default 1\n"
+            "--delete             In recursive mode, delete files in <dst> not in <src>\n"
             "-b keysize           Must be one of 128, 192 or 256 bits. Not valid for decryption.\n"
             "--roll-win           Rollover window size. Default is 8192 byte\n"
             "--roll-min           Minimal number of guaranteed non-rolled bytes. Default 8192.\n"
@@ -52,7 +54,7 @@ startup_options options;
 
 int parse_cmdline( int argc, char *argv[] )
 {
-    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM };
+    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM, DELETE };
     int c;
     const struct option long_options[]={
 	{ "roll-win", 1, NULL, ROLL_WIN },
@@ -65,6 +67,7 @@ int parse_cmdline( int argc, char *argv[] )
         { "verbose", 0, NULL, 'v' },
         { "no-archive-mode", 0, NULL, NO_ARCHIVE },
         { "trim", 1, NULL, TRIM },
+        { "delete", 0, NULL, DELETE },
 	{ NULL, 0, NULL, 0 }};
     
     while( (c=getopt_long(argc, argv, "b:dhrv", long_options, NULL ))!=-1 )
@@ -146,6 +149,11 @@ int parse_cmdline( int argc, char *argv[] )
             if( !options.recurse )
                 throw rscerror("Cannot trim names when not doing directory recursion");
             options.trim=atoi(optarg);
+            break;
+        case DELETE:
+            if( options.del )
+                throw rscerror("--delete option given twice");
+            options.del=true;
             break;
         case '?':
             throw rscerror("Unrecognized option given");
