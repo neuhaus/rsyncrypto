@@ -66,7 +66,7 @@ static int calc_trim( const char *path, int trim_count )
 }
 
 static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op, int src_offset, bool op_handle_dir )
+        encryptfunc op, int src_offset, bool op_handle_dir, const char *opname )
 {
     int ret;
 
@@ -86,12 +86,20 @@ static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char
         key_filename+="/";
         key_filename+=src_filename.c_str()+src_offset;
         
-        struct stat status;
+        struct stat status, dststat;
         lstat( src_filename.c_str(), &status );
         switch( status.st_mode & S_IFMT ) {
         case S_IFREG:
             // Regular file
-            op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+            if( !options.changed || lstat( dst_filename.c_str(), &dststat )!=0 ||
+                    dststat.st_mtime!=status.st_mtime ) {
+                if( options.verbosity>=1 && opname!=NULL )
+                    std::cerr<<opname<<" "<<src_filename<<std::endl;
+                op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+            } else {
+                if( options.verbosity>=2 && opname!=NULL )
+                    std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
+            }
             break;
         case S_IFDIR:
             // Directory
@@ -103,10 +111,10 @@ static int recurse_dir_enc( const char *src_dir, const char *dst_dir, const char
                         throw rscerror("mkdir failed", errno, key_filename.c_str());
 
                     recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
-                            op_handle_dir );
+                            op_handle_dir, opname );
                 } else {
                     recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
-                            op_handle_dir );
+                            op_handle_dir, opname );
                     op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
                 }
             }
@@ -135,15 +143,15 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
                 switch( status.st_mode & S_IFMT ) {
                 case S_IFDIR:
                     // Need to erase directory
-                    if( options.verbosity>=2 )
+                    if( options.verbosity>=1 )
                         std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
                     rmdir( source_file );
                     rmdir( key_file );
                     break;
                 case S_IFREG:
                 case S_IFLNK:
-                    if( options.verbosity>=2 )
-                        std::cout<<"Delete files "<<dst_file<<", "<<key_file<<std::endl;
+                    if( options.verbosity>=1 )
+                        std::cout<<"Delete files "<<source_file<<", "<<key_file<<std::endl;
                     if( unlink( source_file )!=0 )
                         throw rscerror("Erasing file", errno, source_file );
                     if( unlink( key_file )!=0 && errno!=ENOENT )
@@ -164,7 +172,7 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
 }
 
 int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op )
+        encryptfunc op, const char *opname )
 {
     int ret=0;
     // How many bytes of src_dir to skip when creating dirs under dst_dir
@@ -178,7 +186,7 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
             errno!=EEXIST )
         throw rscerror("mkdir failed", errno, key_dir);
 
-    ret=recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false );
+    ret=recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
 
     if( options.del ) {
         std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
@@ -187,8 +195,11 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
             dst_src_name+="/";
         int dst_src_offset=dst_src_name.length();
         dst_src_name+=src_dir+src_offset;
+        if( dst_src_name[dst_src_name.length()-1]=='/' ) {
+            dst_src_name.erase(dst_src_name.length()-1);
+        }
         ret=recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
-                dst_src_offset, true );
+                dst_src_offset, true, NULL );
     }
     return ret;
 }

@@ -67,10 +67,11 @@ struct startup_options {
     bool recurse;
     int trim;
     bool del;
+    bool changed;
 
     startup_options() : keysize(0), rollwin(0), rollmin(0), rollsens(0), fr(false), fk(false),
 			gzip(NULL), verbosity(0), decrypt(false), archive(true), recurse(false), trim(-1),
-                        del(false)
+                        del(false), changed(false)
     {
     }
 };
