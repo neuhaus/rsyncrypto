@@ -51,6 +51,7 @@ struct key_header {
     unsigned long version;
     enum CYPHER_TYPE cypher;
     int key_size; /* key size IN BYTES! */
+    unsigned int restart_buffer, min_norestart, sum_mod; /* checksum recycle policy parameters */
 };
 
 
@@ -113,6 +114,9 @@ struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
         header->header.version=VERSION_MAGIC_1;
         header->header.cypher=cypher;
         header->header.key_size=(key_length+7)/8;
+        header->header.restart_buffer=CRYPT_RESTART_BUFFER;
+        header->header.min_norestart=CRYPT_MIN_NORESTART;
+        header->header.sum_mod=CRYPT_SUM_MOD;
 
         if( !RAND_bytes(header->key, header->header.key_size) ||
                 !RAND_bytes(header->iv, AES_BLOCK_SIZE) )
