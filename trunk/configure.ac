@@ -15,7 +15,6 @@ AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl
         
 # Checks for header files.
 AC_SYS_LARGEFILE
-AC_CHECK_HEADERS()
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_MSG_CHECKING([for O_NOATIME support in open])
