@@ -187,9 +187,11 @@ int main_enc( int argc, char * args[] )
 
             if( options.fr && ( head->get_sum_span()!=options.rollwin ||
                         head->get_sum_mod()!=options.rollsens ||
-                        head->get_sum_min_dist()!=options.rollmin) ) {
+                        head->get_sum_min_dist()!=options.rollmin) ||
+                    options.fk && head->get_key_size()!=options.keysize ) {
                 headfd.clear();
             }
+                
         }
         if( headfd==-1 ) {
             head=std::auto_ptr<key>(key::new_key());
