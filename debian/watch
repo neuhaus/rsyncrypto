@@ -1,0 +1,3 @@
+version=2
+
+ftp://sourceforge.cs.umn.edu/pub/sourceforge/r/rs/rsyncrypto/rsyncrypto-([\w\d.]+)\.tar\.gz debian
