@@ -4,6 +4,7 @@ Version 0.10
 	* Fix bug where you couldn't use --trim with --filelist
 	* Fix serious bug when --trim=0 and --delete where all encrypted files
 	  were deleted, always.
+	* Officially announce as "Beta"
 
 Version 0.09
 2005-02-27 Shachar Shemesh
