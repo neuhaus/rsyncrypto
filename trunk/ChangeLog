@@ -1,6 +1,7 @@
 2005-02-08 Shachar Shemesh
 	* Add a "no-archive-mode" switch, which means file permissions and
 	  timestamp are not copied.
+	* Add a verbosity 3 printout for block sizes used
 
 Version 0.03
 
