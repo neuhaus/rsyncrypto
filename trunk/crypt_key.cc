@@ -63,7 +63,11 @@ void key::pad_area( unsigned char *buffer, size_t size ) const
     std::auto_ptr<key> pad_key(gen_pad_key());
 
     bzero( buffer, size );
-    pad_key->encrypt_block( buffer, size );
+    pad_key->init_encrypt();
+
+    const size_t blocksize=block_size();
+    for( unsigned int i=0; i<size; i+=blocksize )
+        pad_key->encrypt_block( buffer+i, blocksize );
 }
 
 void key::init_encrypt()

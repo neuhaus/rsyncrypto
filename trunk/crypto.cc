@@ -33,9 +33,9 @@
 #include <stdlib.h>
 
 #include <openssl/rand.h>
-#include <openssl/aes.h>
 #include <openssl/bio.h>
 #include <openssl/pem.h>
+#include <openssl/err.h>
 
 #include <iostream>
 
@@ -131,35 +131,27 @@ void write_header( const char *filename, const key *head )
 }
 
 /* Encrypt the file's header */
-int encrypt_header( const key *header, RSA *rsa, unsigned char *to )
+void encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 {
-    const size_t keysize=RSA_size(rsa);
-    //unsigned char iv[AES_BLOCK_SIZE];
-    //AES_KEY aeskey;
-    
-    assert(header->exported_length()<=keysize);
-
-    header->pad_area( to, keysize );
-
-    /* Now place the header over it */
     header->export_key( to );
 
     /* Encrypt the whole thing in place */
-    RSA_public_encrypt(keysize, to, to, rsa, RSA_NO_PADDING);
-
-    return keysize;
+    if( RSA_public_encrypt(header->exported_length(), to, to, rsa, RSA_PKCS1_OAEP_PADDING)==-1 ) {
+        unsigned long rsaerr=ERR_get_error();
+        throw rscerror(ERR_error_string(rsaerr, NULL));
+    }
 }
 
 /* Decrypt the file's header */
 key *decrypt_header( int fromfd, RSA *prv )
 {
     const size_t key_size=RSA_size(prv);
-    //auto_array<unsigned char> decrypted_buff(new unsigned char [key_size]);
-    // unsigned char *verify_buff=NULL;
     autommap filemap(NULL, key_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fromfd, 0);
-    //int ok=0;
 
-    RSA_private_decrypt(key_size, filemap.get_uc(), filemap.get_uc(), prv, RSA_NO_PADDING);
+    if( RSA_private_decrypt(key_size, filemap.get_uc(), filemap.get_uc(), prv, RSA_PKCS1_OAEP_PADDING)==-1 ) {
+        unsigned long rsaerr=ERR_get_error();
+        throw rscerror(ERR_error_string(rsaerr, NULL));
+    }
 
     std::auto_ptr<key> ret(key::read_key( filemap.get_uc() ));
 

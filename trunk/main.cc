@@ -30,6 +30,8 @@
 #include <memory>
 #include <iostream>
 
+#include <openssl/err.h>
+
 #include "rsyncrypto.h"
 #include "crypto.h"
 
@@ -138,6 +140,8 @@ int main( int argc, char *argv[] )
 {
     int ret=0;
     
+    ERR_load_crypto_strings();
+
     try {
         switch( argv[1][0] )
         {
