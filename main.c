@@ -69,17 +69,27 @@ int parse_cmdline( int argc, char *argv[] )
 
 int main( int argc, char * argv[] )
 {
-    struct key_header *head;
-    int in, out;
+    struct key_header *head=NULL;
+    int infd, outfd, headfd;
     struct stat64 status;
     
-    head=gen_header(128, CYPHER_AES);
+    headfd=open( argv[3], O_RDONLY );
+    if( headfd!=-1 ) {
+        head=read_header( headfd );
+        close(headfd);
+    }
+    if( head==NULL ) {
+        head=gen_header(128, CYPHER_AES);
+        headfd=-1;
+    }
+    /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
+
     RSA *rsa=extract_public_key(argv[4]);
     /* encrypt_header(head, rsa, buffer ); */
-    in=open(argv[1], O_LARGEFILE|O_RDONLY); /* Add O_NOATIME after proper configure tests */
-    fstat64(in, &status);
-    out=open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode);
-    encrypt_file( head, rsa, in, out );
+    infd=open(argv[1], O_LARGEFILE|O_RDONLY); /* XXX Add O_NOATIME after proper configure tests */
+    fstat64(infd, &status);
+    outfd=open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode);
+    encrypt_file( head, rsa, infd, outfd );
     free(head);
 
     return 0;
