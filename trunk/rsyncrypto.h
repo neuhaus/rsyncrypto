@@ -34,16 +34,25 @@
 
 class rscerror {
     std::string msg;
+    std::string sysmsg;
+    std::string param;
 public:
     explicit rscerror( const char *msg_p ) : msg(msg_p)
     {
     }
-    explicit rscerror( int error ) : msg(strerror(error))
+    explicit rscerror( const char *msg_p, int error, const char *param_p=NULL ) : msg(msg_p),
+                                                                                sysmsg(strerror(error)),
+                                                                                param(param_p)
     {
     }
 
-    const char *error() const {
-        return msg.c_str();
+    std::string error() const {
+        std::string ret(msg);
+        if( param.length()!=0 )
+            ret+="("+param+")";
+        ret+=": "+sysmsg;
+
+        return ret;
     }
 };
 

@@ -43,7 +43,7 @@ public:
         if( ptr==reinterpret_cast<void *>(-1) ) {
             size=0;
 #if defined(EXCEPT_CLASS)
-            throw EXCEPT_CLASS(errno);
+            throw EXCEPT_CLASS("mmap failed", errno);
 #endif
         }
     }
@@ -57,7 +57,7 @@ public:
         }
 #if defined(EXCEPT_CLASS)
         else
-            throw EXCEPT_CLASS(errno);
+            throw EXCEPT_CLASS("file mmap failed", errno);
 #endif
     }
     ~autommap()
