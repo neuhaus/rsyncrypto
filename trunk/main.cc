@@ -168,19 +168,16 @@ void copy_metadata( const char *destfilename, const struct stat *data )
 	throw rscerror(errno);
 }
 
-int main_enc( int argc, char * args[] )
+int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const char *key_file,
+        RSA *rsa_key )
 {
     std::auto_ptr<key> head;
     autofd headfd;
     struct stat status;
 
-    if( argc!=4 ) {
-        usage();
-    }
-
     // Read in the header, or generate a new one if can't
     {
-        headfd=autofd(open( args[2], O_RDONLY ));
+        headfd=autofd(open( key_file, O_RDONLY ));
         if( headfd!=-1 ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
@@ -198,58 +195,51 @@ int main_enc( int argc, char * args[] )
         }
     }
 
-    RSA *rsa=extract_public_key(args[3]);
-    autofd infd(open(args[0], O_RDONLY
+    autofd infd(open(plaintext_file, O_RDONLY
 #ifdef HAVE_NOATIME
                 |O_NOATIME
 #endif
                 ));
     fstat(infd, &status);
-    autofd outfd(open(args[1], O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
-    encrypt_file( head.get(), rsa, infd, outfd );
+    autofd outfd(open(cyphertext_file, O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
+    encrypt_file( head.get(), rsa_key, infd, outfd );
     if( headfd==-1 ) {
-        write_header( args[2], head.get() );
+        write_header( key_file, head.get() );
     }
 
     // Set the times on the encrypted file to match the plaintext file
     infd.release();
     outfd.release();
-    copy_metadata( args[1], &status );
-    RSA_free(rsa);
+    copy_metadata( cyphertext_file, &status );
 
     return 0;
 }
 
-int main_dec( int argc, char * args[] )
+int file_decrypt( const char *plaintext_file, const char *cyphertext_file, const char *key_file,
+        RSA *rsa_key)
 {
     std::auto_ptr<key> head;
     // int infd, outfd, headfd;
     struct stat status;
 
     /* Decryption */
-    autofd headfd(open( args[2], O_RDONLY ));
+    autofd headfd(open( key_file, O_RDONLY ));
     if( headfd!=-1 ) {
         head=std::auto_ptr<key>(read_header( headfd ));
         close(headfd);
     }
     /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
 
-    RSA *rsa=extract_private_key(args[3]);
-    if( rsa==NULL ) /* No private key - get public key instead */
-    {
-        rsa=extract_public_key(args[3]);
-    }
-    autofd infd(open(args[1], O_RDONLY), true);
+    autofd infd(open(cyphertext_file, O_RDONLY), true);
     fstat(infd, &status);
-    autofd outfd(open(args[0], O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
-    head=std::auto_ptr<key>(decrypt_file( head.get(), rsa, infd, outfd ));
+    autofd outfd(open(plaintext_file, O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
+    head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
     if( headfd==-1 ) {
-        write_header( args[2], head.get());
+        write_header( key_file, head.get());
     }
     infd.release();
     outfd.release();
-    copy_metadata( args[0], &status );
-    RSA_free(rsa);
+    copy_metadata( plaintext_file, &status );
 
     return 0;
 }
@@ -264,11 +254,20 @@ int main( int argc, char *argv[] )
         int argskip=parse_cmdline( argc, argv );
         argv+=argskip;
         argc-=argskip;
+
+        if( argc!=4 )
+            usage();
+
+        RSA *rsa_key=extract_private_key(argv[3]);
+        if( rsa_key==NULL ) {
+            rsa_key=extract_public_key(argv[3]);
+        }
+
         if( !options.decrypt )
         {
-            ret=main_enc(argc, argv);
+            ret=file_encrypt(argv[0], argv[1], argv[2], rsa_key);
         } else {
-            ret=main_dec(argc, argv);
+            ret=file_decrypt(argv[0], argv[1], argv[2], rsa_key);
         }
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
