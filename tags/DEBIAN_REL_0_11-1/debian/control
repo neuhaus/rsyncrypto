@@ -1,0 +1,20 @@
+Source: rsyncrypto
+Section: utils
+Priority: optional
+Maintainer: Shachar Shemesh <debianpkg@shemesh.biz>
+Build-Depends: debhelper (>= 4.0.0), libssl-dev (>= 0.9.7-1)
+Standards-Version: 3.6.1
+
+Package: rsyncrypto
+Architecture: any
+Depends: ${shlibs:Depends}, gzip (>= 1.3.5-4)
+Recommends: rsync
+Description: rsync friendly encryption
+ Rsyncrypto allows you to encrypt a file or a directory structure, such that
+ they can later be synchronized to another machine using rsync. This means
+ that local changes to the plain text file result in local changes to the
+ cipher text file.
+ .
+ rsyncrypto compresses the plain text file prior to encrypting it.
+ .
+  Homepage: http://sourceforge.net/projects/rsyncrypto
