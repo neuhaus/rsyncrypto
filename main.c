@@ -41,7 +41,8 @@ void usage()
             "--fr                 Force new rollover parameters, even if previous encryption used a\n"
             "                     different setting.\n"
             "--fk                 Force new key size, even if previous encryption used a different\n"
-            "                     setting\n\n"
+            "                     setting\n"
+            "--gzip               path to gzip program to use\n\n"
             "Currently only AES encryption is supported\n");
 
     exit(1);
@@ -69,7 +70,7 @@ int parse_cmdline( int argc, char *argv[] )
     return 0;
 }
 
-int main2( int argc, char * argv[] )
+int main_enc( int argc, char * argv[] )
 {
     struct key_header *head=NULL;
     int infd, outfd, headfd;
@@ -98,11 +99,12 @@ int main2( int argc, char * argv[] )
         close(headfd);
     }
     free(head);
+    RSA_free(rsa);
 
     return 0;
 }
 
-int main( int argc, char * argv[] )
+int main_dec( int argc, char * argv[] )
 {
     struct key_header *head=NULL;
     int infd, outfd, headfd;
@@ -127,6 +129,22 @@ int main( int argc, char * argv[] )
         close(headfd);
     }
     free(head);
+    RSA_free(rsa);
 
     return 0;
+}
+
+int main( int argc, char *argv[] )
+{
+    switch( argv[1][0] )
+    {
+    case 'e':
+        return main_enc(argc, argv);
+    case 'd':
+        return main_dec(argc, argv);
+    default:
+        fprintf(stderr, "Prefix either \"d\" or \"e\" to the arguments to decrypt/encrypt\n");
+    }
+
+    return 1;
 }
