@@ -203,20 +203,20 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
 }
 
 /* Decrypt the file's header */
-const struct key_header *decrypt_header( int fromfd, RSA *private )
+const struct key_header *decrypt_header( int fromfd, RSA *prv )
 {
-    size_t key_size=RSA_size(private);
+    size_t key_size=RSA_size(prv);
     struct key_header *decrypted_buff=malloc(key_size);
     unsigned char *verify_buff=NULL;
     unsigned char *filemap=mmap(NULL, key_size, PROT_READ, MAP_SHARED, fromfd, 0);
     int ok=0;
 
-    RSA_private_decrypt(key_size, filemap, (unsigned char *)decrypted_buff, private,
+    RSA_private_decrypt(key_size, filemap, (unsigned char *)decrypted_buff, prv,
             RSA_NO_PADDING);
 
     if( decrypted_buff->version==VERSION_MAGIC_1 ) {
         verify_buff=malloc(key_size);
-        encrypt_header( decrypted_buff, private, verify_buff );
+        encrypt_header( decrypted_buff, prv, verify_buff );
 
         int i;
         ok=1;
@@ -357,12 +357,12 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     return 0;
 }
 
-struct key_header *decrypt_file( const struct key_header *header, RSA *private, int fromfd,
+struct key_header *decrypt_file( const struct key_header *header, RSA *prv, int fromfd,
         int tofd )
 {
     if( header==NULL ) {
         /* Need to reconstruct the header from the encrypted file */
-        header=decrypt_header( fromfd, private );
+        header=decrypt_header( fromfd, prv );
     }
 
     /* If file does not contain a valid header - abort */
@@ -375,7 +375,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
         fstat64( fromfd, &filestat );
 
         /* Skip the header */
-        currpos=lseek64(fromfd, RSA_size(private), SEEK_SET);
+        currpos=lseek64(fromfd, RSA_size(prv), SEEK_SET);
 
         /* pipe, fork and run gzip */
         int iopipe[2];
@@ -481,6 +481,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
             /* Error in encrypted stream */
             free(header);
             header=NULL;
+            fprintf(stderr, "Error in encrypted stream\n");
         }
     }
 
