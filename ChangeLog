@@ -1,3 +1,4 @@
+Version 0.06
 2005-02-17 Shachar Shemesh
 	* Add an option for only encrypting modified files
 	* Fix error in deleted file reporting
