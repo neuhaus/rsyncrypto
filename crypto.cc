@@ -242,6 +242,7 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
 
     // Report how many bytes of last block are relevant.
     bzero( buffer.get(), block_size );
+    buffer[0]=i;
     header->init_encrypt();
     header->encrypt_block( buffer.get(), 1 );
     autofd::write( tofd, buffer.get(), block_size );
@@ -260,94 +261,6 @@ void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
         throw rscerror("Error in running gzip");
     }
 }
-#if 0
-    unsigned int start_position=0, end_position=0; /* Position along cyclic buffer */
-    unsigned int numencrypted=0; /* Number of bytes encrypted without restarting from IV */
-    unsigned long sum=0;
-    int rollover=1; /* Whether we need to restart the encryption */
-    size_t buffer_size=header->restart_buffer*2;
-    /* make sure buffer_size is a multiple of BLOCK_SIZE */
-    buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
-    unsigned char *buffer=malloc(buffer_size);
-    unsigned char iv[AES_BLOCK_SIZE];
-    unsigned char encrypted[AES_BLOCK_SIZE];
-    unsigned char numbytes=0;
-    AES_KEY aeskey;
-    AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
-
-    /* Read the pipe one byte at a time, block encrypt and write to the file */
-    while((numread=read(iopipe[0], buffer+end_position, 1 ))>0) {
-        if( rollover ) {
-            /* Need to restart the encryption */
-            memcpy( iv, aes_header->iv, AES_BLOCK_SIZE);
-            rollover=0;
-        }
-
-        /* Update the rolling sum */
-        sum=sum+buffer[end_position];
-        if( numencrypted>=header->restart_buffer )
-            sum-=buffer[MOD_SUB(end_position,header->restart_buffer,buffer_size)];
-
-        end_position=MOD_ADD(end_position,1,buffer_size);
-
-        if( numencrypted>=header->min_norestart && sum%header->sum_mod==0 ) {
-            /* The sum zeroed out - need to restart another block */
-            rollover=1;
-            numencrypted=0;
-        }
-
-        numbytes=MOD_SUB(end_position, start_position, buffer_size);
-        if( numbytes>=AES_BLOCK_SIZE || rollover ) {
-            /* Time to encrypt another block */
-            AES_cbc_encrypt(buffer+start_position, encrypted, numbytes, &aeskey, iv, AES_ENCRYPT );
-            write( tofd, encrypted, AES_BLOCK_SIZE );
-            if( !rollover ) {
-                start_position=MOD_ADD(start_position, AES_BLOCK_SIZE, buffer_size);
-                numencrypted+=AES_BLOCK_SIZE;
-            } else {
-                numencrypted=0;
-                start_position=0;
-                end_position=0;
-                sum=0;
-            }
-        }
-    }
-
-    if( numbytes!=0 ) {
-        /* There are still leftover bytes to encrypt */
-        AES_cbc_encrypt(buffer+start_position, buffer+start_position, numbytes, &aeskey,
-                iv, AES_ENCRYPT );
-        write( tofd, buffer+start_position, AES_BLOCK_SIZE );
-    }
-
-    /* Write out how many bytes of the last block were actual data */
-    buffer[0]=numbytes%AES_BLOCK_SIZE;
-    memcpy(iv, aes_header->iv, sizeof(iv) );
-    AES_cbc_encrypt(buffer, buffer, 1, &aeskey, iv, AES_ENCRYPT );
-    write( tofd, buffer, AES_BLOCK_SIZE );
-
-    close(iopipe[0]);
-    free(buffer);
-
-    int childstatus;
-    do {
-        wait(&childstatus);
-    } while( !WIFEXITED(childstatus) );
-
-    if( WEXITSTATUS(childstatus)==0 ) {
-        /* gzip was successful - write out the header, encrypted */
-        buffer=mmap( NULL, key_size, PROT_READ|PROT_WRITE, MAP_SHARED, tofd, 0 );
-        if( buffer!=NULL ) {
-            encrypt_header( header, rsa, buffer );
-            munmap( buffer, key_size );
-        }
-    } else {
-        return WEXITSTATUS(childstatus);
-    }
-
-    return 0;
-}
-#endif
 
 key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
 {
