@@ -27,7 +27,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "config.h"
+#include <memory>
+
+#include "rsyncrypto.h"
 #include "crypto.h"
 
 void usage()
@@ -72,33 +74,33 @@ int parse_cmdline( int argc, char *argv[] )
 
 int main_enc( int argc, char * argv[] )
 {
-    struct key_header *head=NULL;
-    int infd, outfd, headfd;
+    std::auto_ptr<key> head;
+    autofd headfd;
     struct stat64 status;
 
-    headfd=open( argv[3], O_RDONLY );
-    if( headfd!=-1 ) {
-        head=read_header( headfd );
-        close(headfd);
+    // Read in the header, or generate a new one if can't
+    {
+        autofd headfd(open( argv[3], O_RDONLY ));
+        if( headfd!=-1 ) {
+            autommap headmap( headfd, PROT_READ );
+            head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
+        } else {
+            head=std::auto_ptr<key>(key::new_key());
+        }
     }
-    if( head==NULL ) {
-        head=gen_header(128, CYPHER_AES);
-        headfd=-1;
-    }
-    /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
 
     RSA *rsa=extract_public_key(argv[4]);
-    /* encrypt_header(head, rsa, buffer ); */
-    infd=open(argv[1], O_LARGEFILE|O_RDONLY); /* XXX Add O_NOATIME after proper configure tests */
+    autofd infd(open(argv[1], O_LARGEFILE|O_RDONLY)); /* XXX Add O_NOATIME after proper configure tests */
     fstat64(infd, &status);
-    outfd=open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode);
-    encrypt_file( head, rsa, infd, outfd );
+    autofd outfd(open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
+    encrypt_file( head.get(), rsa, infd, outfd );
     if( headfd==-1 ) {
-        headfd=open(argv[3], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
-        write_header(headfd, head);
-        close(headfd);
+        autofd newhead(open(argv[3], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR));
+        lseek( newhead, head->exported_length()-1, SEEK_SET );
+        write( newhead, &newhead, 1 );
+        autommap headfilemap( NULL, head->exported_length(), PROT_WRITE, MAP_SHARED, newhead, 0 );
+        head->export_key( headfilemap.get() );
     }
-    free(head);
     RSA_free(rsa);
 
     return 0;

@@ -3,6 +3,12 @@
 
 #include <string>
 
+#include "config.h"
+
+#include "autoarray.h"
+#include "autommap.h"
+#include "autofd.h"
+
 class rscerror {
     std::string msg;
 public:

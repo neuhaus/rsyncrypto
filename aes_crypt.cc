@@ -23,3 +23,16 @@ aes_key::aes_key( size_t keybits, uint32_t sum_span, uint32_t sum_mod, uint32_t 
                 !RAND_bytes(secret_key.get(), header.key_size) )
             throw rscerror("No random entropy for key and IV");
 }
+size_t aes_key::export_key( void *buffer ) const
+{
+    unsigned char *buff=static_cast<unsigned char *>(buffer);
+    size_t length=key::exporte_key( buffer );
+    
+    memcpy( buff+length, aes_header.iv, sizeof( aes_header.iv ) );
+    length+=sizeof( aes_header.iv );
+
+    memcpy( buff+length, secret_key.get(), header.key_size );
+    length+=header.key_size;
+
+    return length;
+}

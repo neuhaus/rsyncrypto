@@ -1,6 +1,10 @@
 #ifndef CRYPT_KEY_H
 #define CRYPT_KEY_H
 
+#ifndef _STDINT_H
+#include <stdint.h>
+#endif
+
 class key {
 private:
     static const uint32_t VERSION_MAGIC_1=0xD657EA1Cul;
@@ -35,11 +39,13 @@ private:
 public:
     virtual size_t exported_length() const
     {
-        return sizeof(ext_key_header)+header.key_size+block_size();
+        return sizeof(ext_key_header);
     }
+    // export_key returns the number of bytes the exported key took
+    virtual size_t export_key( void *buffer ) const;
     virtual size_t block_size() const=0;
     static key *read_key( const unsigned char *buffer );
-    static key *newkey( CYPHER_TYPES cypher=CYPHER_AES, size_t keybits=0, uint32_t sum_span=256,
+    static key *new_key( CYPHER_TYPES cypher=CYPHER_AES, size_t keybits=0, uint32_t sum_span=256,
             uint32_t sum_mod=8192, uint32_t sum_min_dist=8192 );
 };
 
