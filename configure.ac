@@ -37,6 +37,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]],[[struct stat st; s
         AC_MSG_WARN([file times will have a 1 second resolution])])
 
 # Checks for library functions.
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_FILES(Makefile)
+AC_CONFIG_HEADER(config.h)
 AC_OUTPUT
