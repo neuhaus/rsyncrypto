@@ -31,7 +31,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]],[[struct stat st; s
         AC_DEFINE([st_mtime_nsec],[st_mtim.tv_nsec],[mtime nsec access replacement])
         AC_DEFINE([st_atime_nsec],[st_atim.tv_nsec],[atime nsec access replacement])
         AC_DEFINE([st_ctime_nsec],[st_ctim.tv_nsec],[ctime nsec access replacement])
-        AC_MSG_RESULT([st_mtim is a struct timeval])],
+        AC_MSG_RESULT([st_mtim is a struct timespec])],
         [AC_MSG_RESULT([no])
         AC_MSG_WARN([file times will have a 1 second resolution])])
 

@@ -22,9 +22,10 @@
 #define _LARGEFILE64_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <stdio.h>
+#include <utime.h>
 #include <stdlib.h>
 
 #include <memory>
@@ -103,6 +104,26 @@ int main_enc( int argc, char * argv[] )
     encrypt_file( head.get(), rsa, infd, outfd );
     if( headfd==-1 ) {
         write_header( argv[3], head.get() );
+    }
+
+    // Set the times on the encrypted file to match the plaintext file
+    infd.release();
+    outfd.release();
+    {
+        struct timeval tv[2];
+
+        tv[0].tv_sec=status.st_atime;
+        tv[1].tv_sec=status.st_mtime;
+#if HAVE_STAT_NSEC
+        tv[0].tv_usec=status.st_atime_nsec/1000;
+        tv[1].tv_usec=status.st_mtime_nsec/1000;
+#else
+        tv[0].tv_usec=0;
+        tv[1].tv_usec=0;
+#endif
+
+        if( utimes( argv[2], tv )==-1 )
+            throw rscerror(errno);
     }
     RSA_free(rsa);
 
