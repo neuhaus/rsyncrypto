@@ -194,6 +194,7 @@ a non-rsync optimized encryption, such as the one provided by
 Soon.
 .SH BUGS
 Not providing a correct key file may result in segmentation fault.
+.P
 It is not yet possible to decrypt using password protected private key.
 .P
 Decrypting from stdin is not yet supported.
