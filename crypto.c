@@ -199,7 +199,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     unsigned int numencrypted=0; /* Number of bytes encrypted without restarting from IV */
     unsigned long sum=0;
     int rollover=1; /* Whether we need to restart the encryption */
-    size_t buffer_size=CRYPT_RESTART_BUFFER*2;
+    size_t buffer_size=header->restart_buffer*2;
     /* make sure buffer_size is a multiple of BLOCK_SIZE */
     buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
     unsigned char *buffer=malloc(buffer_size);
@@ -217,12 +217,12 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
 
         /* Update the rolling sum */
         sum=sum+buffer[end_position];
-        if( numencrypted>=CRYPT_MIN_NORESTART )
-            sum-=buffer[MOD_SUB(end_position,CRYPT_RESTART_BUFFER,buffer_size)];
+        if( numencrypted>=header->min_norestart )
+            sum-=buffer[MOD_SUB(end_position,header->restart_buffer,buffer_size)];
 
         end_position=MOD_ADD(end_position,1,buffer_size);
 
-        if( numencrypted>=CRYPT_MIN_NORESTART && sum%CRYPT_SUM_MOD==0 ) {
+        if( numencrypted>=header->min_norestart && sum%header->sum_mod==0 ) {
             /* The sum zeroed out - need to restart another block */
             rollover=1;
             numencrypted=0;
@@ -241,6 +241,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
                 numencrypted=0;
                 start_position=0;
                 end_position=0;
+                sum=0;
             }
         }
     }
