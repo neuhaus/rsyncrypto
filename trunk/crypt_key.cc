@@ -57,3 +57,11 @@ size_t key::export_key( void *buffer ) const
 
     return key::exported_length();
 }
+
+void key::pad_area( unsigned char *buffer, size_t size ) const
+{
+    std::auto_ptr<key> *pad_key(gen_pad_key());
+
+    bzero( buffer, size );
+    pad_key->encrypt_block( buffer, size );
+}

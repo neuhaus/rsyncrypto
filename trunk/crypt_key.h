@@ -30,6 +30,8 @@ protected:
         header.sum_mod=sum_mod;
         header.sum_min_dist=sum_min_dist;
     }
+
+    virtual key *gen_pad_key() const=0;
 public:
     virtual ~key()
     {
@@ -47,6 +49,18 @@ public:
     static key *read_key( const unsigned char *buffer );
     static key *new_key( CYPHER_TYPES cypher=CYPHER_AES, size_t keybits=0, uint32_t sum_span=256,
             uint32_t sum_mod=8192, uint32_t sum_min_dist=8192 );
+
+    // Encryption/decryption functions
+    virtual void init_encrypt(); // Reset the IV values
+    //
+    virtual void encrypt_block( unsigned char *data, size_t size );
+    virtual void decrypt_block( unsigned char *data, size_t size );
+    // Calculate whether we are on block boundry. If we are, we need to flush the plaintext and reset IV AFTER
+    // the current byte.
+    virtual bool calc_boundry( unsigned char data );
+
+    // Fill a memory area in a random-predictable way, based on the IV
+    virtual void pad_area( unsigned char *buffer, size_t size ) const;
 };
 
 #endif // CRYPT_KEY_H

@@ -95,11 +95,7 @@ int main_enc( int argc, char * argv[] )
     autofd outfd(open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode));
     encrypt_file( head.get(), rsa, infd, outfd );
     if( headfd==-1 ) {
-        autofd newhead(open(argv[3], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR));
-        lseek( newhead, head->exported_length()-1, SEEK_SET );
-        write( newhead, &newhead, 1 );
-        autommap headfilemap( NULL, head->exported_length(), PROT_WRITE, MAP_SHARED, newhead, 0 );
-        head->export_key( headfilemap.get() );
+        write_header( argv[3], head.get() );
     }
     RSA_free(rsa);
 
@@ -108,14 +104,14 @@ int main_enc( int argc, char * argv[] )
 
 int main_dec( int argc, char * argv[] )
 {
-    struct key_header *head=NULL;
-    int infd, outfd, headfd;
+    std::auto_ptr<key> head;
+    // int infd, outfd, headfd;
     struct stat64 status;
 
     /* Decryption */
-    headfd=open( argv[3], O_RDONLY );
+    autofd headfd(open( argv[3], O_RDONLY ));
     if( headfd!=-1 ) {
-        head=read_header( headfd );
+        head=std::auto_ptr<key>(read_header( headfd ));
         close(headfd);
     }
     /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
@@ -125,16 +121,13 @@ int main_dec( int argc, char * argv[] )
     {
         rsa=extract_public_key(argv[4]);
     }
-    infd=open(argv[2], O_LARGEFILE|O_RDONLY);
+    autofd infd(open(argv[2], O_LARGEFILE|O_RDONLY), true);
     fstat64(infd, &status);
-    outfd=open(argv[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode);
-    head=decrypt_file( head, rsa, infd, outfd );
+    autofd outfd(open(argv[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
+    head=std::auto_ptr<key>(decrypt_file( head.get(), rsa, infd, outfd ));
     if( headfd==-1 ) {
-        headfd=open(argv[3], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
-        write_header(headfd, head);
-        close(headfd);
+        write_header( argv[3], head.get());
     }
-    free(head);
     RSA_free(rsa);
 
     return 0;

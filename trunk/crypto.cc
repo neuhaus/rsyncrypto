@@ -25,6 +25,7 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdint.h>
 
 #include <assert.h>
@@ -36,7 +37,8 @@
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 
-#include "key_header.h"
+#include "rsyncrypto.h"
+
 #include "crypto.h"
 
 #define CRYPT_RESTART_BUFFER 8192
@@ -49,6 +51,7 @@
 
 #define VERSION_MAGIC_1 0xD657EA1Cul
 
+#if 0
 struct key_header {
     unsigned long version;
     enum CYPHER_TYPE cypher;
@@ -62,6 +65,7 @@ struct key_header_aes {
     unsigned char iv[AES_BLOCK_SIZE];
     unsigned char key[0];
 };
+#endif
 
 /* Public/Private key handling */
 RSA *extract_public_key( const char *pem_filename )
@@ -106,39 +110,13 @@ RSA *extract_private_key( const char *key_filename )
     return rsa;
 }
 
+#if 0
 static size_t header_length( const struct key_header *header ) {
     return sizeof(struct key_header_aes)+header->key_size;
 }
-
-/* Generate a new AES file header. Make up an IV and key for the file */
-struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher);
-#if 0
-{
-    struct key_header_aes *header;
-    int key_length_bytes=(key_length+7)/8;
-    
-    header=malloc(sizeof(struct key_header_aes)+key_length_bytes);
-    if( header!=NULL ) {
-        bzero(header, sizeof(header)+key_length_bytes);
-        header->header.version=VERSION_MAGIC_1;
-        header->header.cypher=cypher;
-        header->header.key_size=key_length_bytes;
-        header->header.restart_buffer=CRYPT_RESTART_BUFFER;
-        header->header.min_norestart=CRYPT_MIN_NORESTART;
-        header->header.sum_mod=CRYPT_SUM_MOD;
-
-        if( !RAND_bytes(header->key, header->header.key_size) ||
-                !RAND_bytes(header->iv, AES_BLOCK_SIZE) )
-        {
-            free(header);
-            header=NULL;
-        }
-    }
-
-    return (struct key_header *)header;
-}
 #endif
 
+#if 0
 struct key_header *read_header( int headfd )
 {
     const struct key_header *buffer;
@@ -169,36 +147,33 @@ struct key_header *read_header( int headfd )
     
     return newheader;
 }
+#endif
 
-int write_header( int headfd, struct key_header *head )
+void write_header( const char *filename, const key *head )
 {
-    struct key_header_aes *aes_header=(void *)head;
+    autofd newhead(open(filename, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR), true);
+    off64_t headsize=head->exported_length();
+    if( lseek( newhead, headsize-1, SEEK_SET )!=headsize-1 ||
+            write( newhead, &newhead, 1 )!=1 )
+        throw rscerror(errno);
 
-    return write(headfd, aes_header, header_length(head))==header_length(head);
+    autommap headfilemap( NULL, head->exported_length(), PROT_WRITE, MAP_SHARED, newhead, 0 );
+    head->export_key( headfilemap.get() );
 }
 
 /* Encrypt the file's header */
-int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to )
+int encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 {
-    int keysize=RSA_size(rsa);
-    unsigned char iv[AES_BLOCK_SIZE];
-    AES_KEY aeskey;
-    const struct key_header_aes *aes_header=(const void *)header;
-    int i;
+    const size_t keysize=RSA_size(rsa);
+    //unsigned char iv[AES_BLOCK_SIZE];
+    //AES_KEY aeskey;
     
-    assert(header_length(header)<=keysize);
+    assert(header->exported_length()<=keysize);
 
-    /* Create the padding data */
-    /* Use the 1's complement of the file's IV for the padding data */
-    for( i=0; i<AES_BLOCK_SIZE; ++i )
-        iv[i]=~aes_header->iv[i];
-    
-    AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
-    bzero(to, keysize);
-    AES_cbc_encrypt(to, to, keysize, &aeskey, iv, AES_ENCRYPT );
+    header->pad_area( to, keysize );
 
     /* Now place the header over it */
-    memcpy(to, aes_header, header_length(header));
+    header->export_key( to );
 
     /* Encrypt the whole thing in place */
     RSA_public_encrypt(keysize, to, to, rsa, RSA_NO_PADDING);
@@ -207,9 +182,9 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
 }
 
 /* Decrypt the file's header */
-const struct key_header *decrypt_header( int fromfd, RSA *prv )
+key *decrypt_header( int fromfd, RSA *prv )
 {
-    size_t key_size=RSA_size(prv);
+    const size_t key_size=RSA_size(prv);
     struct key_header *decrypted_buff=malloc(key_size);
     unsigned char *verify_buff=NULL;
     unsigned char *filemap=mmap(NULL, key_size, PROT_READ, MAP_SHARED, fromfd, 0);
