@@ -143,14 +143,14 @@ static int file_delete( const char *source_file, const char *dst_file, const cha
                 switch( status.st_mode & S_IFMT ) {
                 case S_IFDIR:
                     // Need to erase directory
-                    if( options.verbosity>=2 )
+                    if( options.verbosity>=1 )
                         std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
                     rmdir( source_file );
                     rmdir( key_file );
                     break;
                 case S_IFREG:
                 case S_IFLNK:
-                    if( options.verbosity>=2 )
+                    if( options.verbosity>=1 )
                         std::cout<<"Delete files "<<source_file<<", "<<key_file<<std::endl;
                     if( unlink( source_file )!=0 )
                         throw rscerror("Erasing file", errno, source_file );
