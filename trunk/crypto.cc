@@ -111,7 +111,8 @@ static size_t header_length( const struct key_header *header ) {
 }
 
 /* Generate a new AES file header. Make up an IV and key for the file */
-struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
+struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher);
+#if 0
 {
     struct key_header_aes *header;
     int key_length_bytes=(key_length+7)/8;
@@ -136,6 +137,7 @@ struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher)
 
     return (struct key_header *)header;
 }
+#endif
 
 struct key_header *read_header( int headfd )
 {

@@ -26,3 +26,19 @@ key *key::read_key( const unsigned char *buffer )
 
     return ret.release();
 }
+
+key *key::newkey( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint32_t sum_mod,
+        uint32_t sum_min_dist )
+{
+    std::auto_ptr<key> ret;
+
+    switch( static_cast<CYPHER_TYPES>(cypher) ) {
+    case CYPHER_AES:
+        ret=std::auto_ptr<key>(new aes_key( keybits, sum_span, sum_mod, sum_min_dist ));
+        break;
+    default:
+        throw rscerror("Invalid block cypher");
+    }
+
+    return ret.release();
+}

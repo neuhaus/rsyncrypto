@@ -26,15 +26,21 @@ protected:
         header.sum_mod=sum_mod;
         header.sum_min_dist=sum_min_dist;
     }
+public:
+    virtual ~key()
+    {
+    }
 
 private:
 public:
-    virtual size_t length() const
+    virtual size_t exported_length() const
     {
-        return sizeof(ext_key_header)+header.key_size;
+        return sizeof(ext_key_header)+header.key_size+block_size();
     }
+    virtual size_t block_size() const=0;
     static key *read_key( const unsigned char *buffer );
-    static key *newkey( CYPHER_TYPES cypher=CYPHER_AES );
+    static key *newkey( CYPHER_TYPES cypher=CYPHER_AES, size_t keybits=0, uint32_t sum_span=256,
+            uint32_t sum_mod=8192, uint32_t sum_min_dist=8192 );
 };
 
 #endif // CRYPT_KEY_H
