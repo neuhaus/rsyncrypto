@@ -110,44 +110,11 @@ RSA *extract_private_key( const char *key_filename )
     return rsa;
 }
 
-#if 0
-static size_t header_length( const struct key_header *header ) {
-    return sizeof(struct key_header_aes)+header->key_size;
-}
-#endif
-
-#if 0
-struct key_header *read_header( int headfd )
+key *read_header( int headfd )
 {
-    const struct key_header *buffer;
-    struct key_header *newheader;
-    struct stat64 stat;
-    
-    if( fstat64(headfd, &stat)!=0 ) {
-        perror("Couldn't stat encryption header file");
-        return NULL;
-    }
-
-    if( stat.st_size<sizeof(*buffer) ) {
-        fprintf(stderr, "encryption header file corrupt\n");
-        return NULL;
-    }
-    
-    buffer=mmap64(NULL, stat.st_size, PROT_READ, MAP_SHARED, headfd, 0 );
-    if( buffer->version==VERSION_MAGIC_1 ) {
-        newheader=malloc(stat.st_size);
-        if( newheader!=NULL ) {
-            memcpy( newheader, buffer, stat.st_size );
-        }
-        munmap((void *)buffer, stat.st_size);
-    } else {
-        fprintf(stderr, "Wrong magic in encryption header file\n");
-        return NULL;
-    }
-    
-    return newheader;
+    autommap headmap( headfd, PROT_READ );
+    return key::read_key( headmap.get_uc() );
 }
-#endif
 
 void write_header( const char *filename, const key *head )
 {

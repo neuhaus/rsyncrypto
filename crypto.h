@@ -34,7 +34,7 @@ void write_header( const char *filename, const key *head );
 int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );
 RSA *extract_public_key( const char *pem_filename );
 RSA *extract_private_key( const char *key_filename );
-int encrypt_file( const key *header, RSA *rsa, int fromfd, int tofd );
+void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd );
 key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd );
 
 #endif /* CRYPTO_H */

@@ -27,7 +27,7 @@ key *key::read_key( const unsigned char *buffer )
     return ret.release();
 }
 
-key *key::newkey( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint32_t sum_mod,
+key *key::new_key( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint32_t sum_mod,
         uint32_t sum_min_dist )
 {
     std::auto_ptr<key> ret;
@@ -48,20 +48,48 @@ size_t key::export_key( void *buffer ) const
     struct ext_key_header *export_buff=static_cast<ext_key_header *>(buffer);
 
     bzero(export_buff, sizeof(*export_buff));
-    export_buff.version=htonl(header.version);
-    export_buff.cypher=htons(header.cypher);
-    export_buff.key_size=htons(header.key_size);
-    export_buff.sum_span=htonl(header.sum_span);
-    export_buff.sum_mod=htonl(header.sum_mod);
-    export_buff.sum_min_dist=htonl(header.sum_min_dist);
+    export_buff->version=htonl(header.version);
+    export_buff->cypher=htons(header.cypher);
+    export_buff->key_size=htons(header.key_size);
+    export_buff->sum_span=htonl(header.sum_span);
+    export_buff->sum_mod=htonl(header.sum_mod);
+    export_buff->sum_min_dist=htonl(header.sum_min_dist);
 
     return key::exported_length();
 }
 
 void key::pad_area( unsigned char *buffer, size_t size ) const
 {
-    std::auto_ptr<key> *pad_key(gen_pad_key());
+    std::auto_ptr<key> pad_key(gen_pad_key());
 
     bzero( buffer, size );
     pad_key->encrypt_block( buffer, size );
+}
+
+void key::init_encrypt()
+{
+    ptbuf_loc=0;
+    ptbuf_sum=0;
+    ptbuf_count=0;
+    ptbuf_sub=false;
+    ptbuf_may_rotate=false;
+}
+
+bool key::calc_boundry( unsigned char data )
+{
+    ptbuf_sum+=data;
+    if( ptbuf_sub )
+        ptbuf_sum-=plaintext_buffer[ptbuf_loc];
+
+    plaintext_buffer[ptbuf_loc]=data;
+    if( (++ptbuf_loc)==header.sum_span ) {
+        ptbuf_loc=0;
+        ptbuf_sub=true;
+    }
+    
+    if( (ptbuf_count++)==header.sum_min_dist ) {
+        ptbuf_may_rotate=true;
+    }
+
+    return ptbuf_may_rotate && (ptbuf_sum%header.sum_mod)==0;
 }

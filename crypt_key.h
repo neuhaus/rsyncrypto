@@ -9,6 +9,7 @@ class key {
 private:
     static const uint32_t VERSION_MAGIC_1=0xD657EA1Cul;
     static const uint32_t VERSION_MAGIC_CUR=VERSION_MAGIC_1;
+
 protected:
     // Define the key header in it's export form
     struct ext_key_header {
@@ -19,8 +20,15 @@ protected:
     } header;
 
     enum CYPHER_TYPES { CYPHER_AES };
+private:
+    auto_array<unsigned char> plaintext_buffer;
+    size_t ptbuf_loc, ptbuf_count;
+    unsigned long ptbuf_sum;
+    bool ptbuf_sub;
+    bool ptbuf_may_rotate;
+protected:
     key(uint16_t key_size, CYPHER_TYPES cypher, uint32_t sum_span=256, uint32_t sum_mod=8192,
-            uint32_t sum_min_dist=8192 )
+            uint32_t sum_min_dist=8192 ) : plaintext_buffer( new unsigned char [sum_span] )
     {
         header.version=VERSION_MAGIC_CUR;
 
@@ -52,9 +60,9 @@ public:
 
     // Encryption/decryption functions
     virtual void init_encrypt(); // Reset the IV values
-    //
-    virtual void encrypt_block( unsigned char *data, size_t size );
-    virtual void decrypt_block( unsigned char *data, size_t size );
+    // Encrypt/decrypt in place. "size" is not guarenteed to work if bigger than block_size
+    virtual void encrypt_block( unsigned char *data, size_t size )=0;
+    virtual void decrypt_block( unsigned char *data, size_t size )=0;
     // Calculate whether we are on block boundry. If we are, we need to flush the plaintext and reset IV AFTER
     // the current byte.
     virtual bool calc_boundry( unsigned char data );
