@@ -195,6 +195,9 @@ int dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, 
             dst_src_name+="/";
         int dst_src_offset=dst_src_name.length();
         dst_src_name+=src_dir+src_offset;
+        if( dst_src_name[dst_src_name.length()-1]=='/' ) {
+            dst_src_name.erase(dst_src_name.length()-1);
+        }
         ret=recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
                 dst_src_offset, true, NULL );
     }
