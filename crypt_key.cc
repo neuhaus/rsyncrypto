@@ -92,5 +92,13 @@ bool key::calc_boundry( unsigned char data )
         ptbuf_may_rotate=true;
     }
 
-    return ptbuf_may_rotate && (ptbuf_sum%header.sum_mod)==0;
+    if( ptbuf_may_rotate && (ptbuf_sum%header.sum_mod)==0 ) {
+        if( options.verbosity>=3 ) {
+            std::cerr<<"Rotated "<<ptbuf_count<<std::endl;
+        }
+
+        return true;
+    }
+
+    return false;
 }
