@@ -25,13 +25,15 @@
 
 void usage()
 {
-    fprintf(stderr, "Usage: " PACKAGE_NAME " <sourcedir> <destdir> <keysdir> <publickey file>\n"
+    fprintf(stderr, "Usage: " PACKAGE_NAME " <plain> <cypher> <keys> <publickey file>\n"
             "Options:\n"
             "-h                   Help - this page\n"
             "-d                   Decrypt.\n"
+            "-r                   <plain> <cypher> and <keys> are all directory names. The encryption\n"
+            "                     will apply to all files in them recursively\n"
             "-b keysize           Must be one of 128, 192 or 256 bits. Not valid for decryption.\n"
             "--roll-win           Rollover window size. Default is 8192 byte\n"
-            "--roll-min           Minimal number of guarenteed non-rolled bytes. Default 8192.\n"
+            "--roll-min           Minimal number of guaranteed non-rolled bytes. Default 8192.\n"
             "--roll-sensitivity   How sensitive are we to cutting a block. Default is \"roll-win\"\n"
             "--fr                 Force new rollover parameters, even if previous encryption used a\n"
             "                     different setting.\n"
