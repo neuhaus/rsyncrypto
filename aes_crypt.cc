@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#include <openssl/rand.h>
-
 #include "rsyncrypto.h"
 #include "aes_crypt.h"
 
