@@ -187,6 +187,8 @@ int parse_cmdline( int argc, char *argv[] )
         options.rollsens=options.rollmin;
     if( options.trim==-1 )
         options.trim=1;
+    if( options.gzip==NULL )
+        options.gzip="gzip";
 
     return optind;
 }

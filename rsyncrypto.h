@@ -69,7 +69,7 @@ struct startup_options {
     bool del;
 
     startup_options() : keysize(0), rollwin(0), rollmin(0), rollsens(0), fr(false), fk(false),
-			gzip("gzip"), verbosity(0), decrypt(false), archive(true), recurse(false), trim(-1),
+			gzip(NULL), verbosity(0), decrypt(false), archive(true), recurse(false), trim(-1),
                         del(false)
     {
     }
