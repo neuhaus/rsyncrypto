@@ -26,6 +26,13 @@
 class autofd {
     int fd;
 
+    // Proxy class for assignment of temporaries
+    struct autofd_ref {
+        int fd;
+
+        autofd_ref( int fd_p ) : fd(fd_p) {}
+    };
+
     // Disable default copy constructor
     autofd( const autofd & );
 public:
@@ -44,7 +51,7 @@ public:
 #endif
     ~autofd()
     {
-        close(fd);
+        clear();
     }
     int get() const
     {
@@ -56,18 +63,66 @@ public:
     }
     autofd &operator=( autofd &that )
     {
-        release();
-        fd=that.fd;
-        that.fd=-1;
+        if( fd!=that.fd ) {
+            clear();
+            fd=that.release();
+        }
 
         return *this;
     }
-    void release()
+    int release()
+    {
+        int ret=fd;
+        fd=-1;
+
+        return ret;
+    }
+
+    // autofd_ref tricks
+    autofd( autofd_ref ref ) : fd(ref.fd) {}
+    autofd &operator= ( const autofd_ref &ref )
+    {
+        if( ref.fd!=fd ) {
+            clear();
+            fd=ref.fd;
+        }
+
+        return *this;
+    }
+    operator autofd_ref()
+    {
+        return release();
+    }
+
+    
+    void clear()
     {
         if( fd!=-1 ) {
             close( fd );
+            fd=-1;
         }
-        fd=-1;
+    }
+
+    // Standard io operations
+    ssize_t read( void *buf, size_t count ) const
+    {
+        ssize_t res=::read( fd, buf, count );
+
+        if( res==-1 )
+            throw rscerror(errno);
+
+        return res;
+    }
+    static void write( int fd, void *buf, size_t count )
+    {
+        ssize_t res=::write( fd, buf, count );
+
+        if( res!=static_cast<ssize_t>(count) )
+            throw rscerror(errno);
+    }
+    void write( void *buf, size_t count )
+    {
+        write( fd, buf, count );
     }
 };
 

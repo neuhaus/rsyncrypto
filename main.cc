@@ -24,10 +24,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>
 
 #include <memory>
+#include <iostream>
 
 #include "rsyncrypto.h"
 #include "crypto.h"
@@ -80,7 +81,7 @@ int main_enc( int argc, char * argv[] )
 
     // Read in the header, or generate a new one if can't
     {
-        autofd headfd(open( argv[3], O_RDONLY ));
+        headfd=autofd(open( argv[3], O_RDONLY ));
         if( headfd!=-1 ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
@@ -135,15 +136,22 @@ int main_dec( int argc, char * argv[] )
 
 int main( int argc, char *argv[] )
 {
-    switch( argv[1][0] )
-    {
-    case 'e':
-        return main_enc(argc-1, argv+1);
-    case 'd':
-        return main_dec(argc-1, argv+1);
-    default:
-        fprintf(stderr, "Prefix either \"d\" or \"e\" to the arguments to decrypt/encrypt\n");
+    int ret=0;
+    
+    try {
+        switch( argv[1][0] )
+        {
+            case 'e':
+                return main_enc(argc-1, argv+1);
+            case 'd':
+                return main_dec(argc-1, argv+1);
+            default:
+                fprintf(stderr, "Prefix either \"d\" or \"e\" to the arguments to decrypt/encrypt\n");
+        }
+    } catch( const rscerror &err ) {
+        std::cerr<<err.error()<<std::endl;
+        ret=1;
     }
 
-    return 1;
+    return ret;
 }
