@@ -1,3 +1,9 @@
+rsyncrypto (0.10-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Mon, 28 Feb 2005 15:16:00 +0200
+
 rsyncrypto (0.09-2) unstable; urgency=low
 
   * Switch to using automake 1.7, as 1.4 doesn't understand the man page

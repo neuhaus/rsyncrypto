@@ -183,8 +183,9 @@ public:
         for( i=ret.length()-1; i>0 && ret[i]=='/'; --i )
             ;
 
-        ret.resize(i+1);
-        ret+="/";
+        ret.resize(++i);
+        if( i>0 )
+            ret+="/";
 
         // Trim leading slashes
         for( i=0; right[i]=='/'; ++i )

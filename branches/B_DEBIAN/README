@@ -1,3 +1,7 @@
+As of version 0.10, rsyncrypto is officially in a "beta" state. This means
+mainly that functionality and interface is not expected to significantly
+change until the program can be declared "stable".
+
 !!!!!!!!!!!!!!!!!!!!!!! Important Note !!!!!!!!!!!!!!!!!!!!!!!
 In version 0.05 the meaning of the parameters have changed incompatibly!
 The first variable now means "source file" and second one means "destination
