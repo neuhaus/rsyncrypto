@@ -279,6 +279,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
     unsigned char *buffer=malloc(buffer_size);
     unsigned char iv[AES_BLOCK_SIZE];
+    int numbytes=0;
     AES_KEY aeskey;
     AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
 
@@ -303,7 +304,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
             numencrypted=0;
         }
 
-        int numbytes=MOD_SUB(end_position, start_position, buffer_size);
+        numbytes=MOD_SUB(end_position, start_position, buffer_size);
         if( numbytes>=AES_BLOCK_SIZE || rollover ) {
             /* Time to encrypt another block */
             AES_cbc_encrypt(buffer+start_position, buffer+start_position, numbytes,
@@ -319,6 +320,13 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
                 sum=0;
             }
         }
+    }
+
+    if( numbytes!=0 ) {
+        /* There are still leftover bytes to encrypt */
+        AES_cbc_encrypt(buffer+start_position, buffer+start_position, numbytes, &aeskey,
+                iv, AES_ENCRYPT );
+        write( tofd, buffer+start_position, AES_BLOCK_SIZE );
     }
 
     close(iopipe[0]);
