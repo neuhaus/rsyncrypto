@@ -65,6 +65,10 @@ public:
     {
         return ptr;
     }
+    unsigned char *get_uc() const
+    {
+        return static_cast<unsigned char *>(ptr);
+    }
     autommap &operator=( autommap &that )
     {
         release();

@@ -185,33 +185,20 @@ int encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 key *decrypt_header( int fromfd, RSA *prv )
 {
     const size_t key_size=RSA_size(prv);
-    struct key_header *decrypted_buff=malloc(key_size);
-    unsigned char *verify_buff=NULL;
-    unsigned char *filemap=mmap(NULL, key_size, PROT_READ, MAP_SHARED, fromfd, 0);
-    int ok=0;
+    //auto_array<unsigned char> decrypted_buff(new unsigned char [key_size]);
+    // unsigned char *verify_buff=NULL;
+    autommap filemap(NULL, key_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fromfd, 0);
+    //int ok=0;
 
-    RSA_private_decrypt(key_size, filemap, (unsigned char *)decrypted_buff, prv,
-            RSA_NO_PADDING);
+    RSA_private_decrypt(key_size, filemap.get_uc(), filemap.get_uc(), prv, RSA_NO_PADDING);
 
-    if( decrypted_buff->version==VERSION_MAGIC_1 ) {
-        verify_buff=malloc(key_size);
-        encrypt_header( decrypted_buff, prv, verify_buff );
+    std::auto_ptr<key> ret(key::read_key( filemap.get_uc() ));
 
-        int i;
-        ok=1;
-        for( i=0; ok && i<key_size; ++i )
-            if( verify_buff[i]!=filemap[i] )
-                ok=0;
-    }
-    
-    munmap(filemap, key_size);
-    free(verify_buff);
-    if( !ok ) {
-        free(decrypted_buff);
-        decrypted_buff=NULL;
-    }
+    // Let's verify that we have read the correct data from the file, by reencoding the key we got and comparing
+    // the cyphertexts.
+    // On second thought - let's not. You never know if we don't change encoding at some future point.
 
-    return decrypted_buff;
+    return ret.release();
 }
 
 int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tofd )
