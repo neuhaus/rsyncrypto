@@ -208,6 +208,7 @@ int main( int argc, char *argv[] )
 
     try {
         int argskip=parse_cmdline( argc, argv );
+
         argv+=argskip;
         argc-=argskip;
 
@@ -219,15 +220,19 @@ int main( int argc, char *argv[] )
             rsa_key=extract_public_key(argv[3]);
         }
 
+        const char *opname=NULL;
         encryptfunc op;
 
-        if( options.decrypt )
+        if( options.decrypt ) {
             op=file_decrypt;
-        else
+            opname="Decrypting";
+        } else {
             op=file_encrypt;
+            opname="Encrypting";
+        }
 
         if( options.recurse ) {
-            ret=dir_encrypt(argv[0], argv[1], argv[2], rsa_key, op);
+            ret=dir_encrypt(argv[0], argv[1], argv[2], rsa_key, op, opname);
         } else {
             ret=op(argv[0], argv[1], argv[2], rsa_key);
         }
