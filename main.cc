@@ -232,9 +232,9 @@ int main( int argc, char *argv[] )
         }
 
         if( options.recurse ) {
-            ret=dir_encrypt(argv[0], argv[1], argv[2], rsa_key, op, opname);
+            dir_encrypt(argv[0], argv[1], argv[2], rsa_key, op, opname);
         } else {
-            ret=op(argv[0], argv[1], argv[2], rsa_key);
+            op(argv[0], argv[1], argv[2], rsa_key);
         }
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
