@@ -10,7 +10,7 @@ Sometimes, for debugging purposes, it is more convinent to not compress the file
 prior to it's encryption. This is especially useful when it is desired to compare
 the image right before encryption with the image right after decryption.
 
-To disable compression, add "tests" to the start of your path. This will make the
+To disable compression, use the "gzip" option to specify "tests/gzip". This will make the
 gzip in "tests" override the system wide gzip. This gzip is a simple pass through.
 
 reg? - plain text files that have caused problems in the past.
