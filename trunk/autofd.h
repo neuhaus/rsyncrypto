@@ -25,30 +25,37 @@
 // automap will auto-release mmaped areas
 class autofd {
     int fd;
+    mutable bool owner;
 
-    // Proxy class for assignment of temporaries
-    struct autofd_ref {
-        int fd;
+    int release() const
+    {
+#if defined(EXCEPT_CLASS)
+        if( !owner )
+            throw EXCEPT_CLASS("Releasing non-owner fd");
+#endif
 
-        autofd_ref( int fd_p ) : fd(fd_p) {}
-    };
+        owner=false;
 
-    // Disable default copy constructor
-    autofd( const autofd & );
+        return fd;
+    }
+
 public:
-    autofd() : fd(-1)
+    autofd() : fd(-1), owner(false)
     {
     }
-    explicit autofd( int fd_p ) : fd(fd_p)
+    explicit autofd( int fd_p ) : fd(fd_p), owner(fd_p!=-1?true:false)
     {
     }
 #if defined(EXCEPT_CLASS)
-    autofd( int fd_p, bool except ) : fd(fd_p)
+    autofd( int fd_p, bool except ) : fd(fd_p), owner(true)
     {
         if( fd==-1 )
             throw EXCEPT_CLASS("file open failed", errno);
     }
 #endif
+    autofd( const autofd &that ) : fd(that.release()), owner(true)
+    {
+    }
     ~autofd()
     {
         clear();
@@ -61,45 +68,22 @@ public:
     {
         return get();
     }
-    autofd &operator=( autofd &that )
+    autofd &operator=( const autofd &that )
     {
         if( fd!=that.fd ) {
             clear();
             fd=that.release();
+            owner=true;
         }
 
         return *this;
     }
-    int release()
-    {
-        int ret=fd;
-        fd=-1;
-
-        return ret;
-    }
-
-    // autofd_ref tricks
-    autofd( autofd_ref ref ) : fd(ref.fd) {}
-    autofd &operator= ( const autofd_ref &ref )
-    {
-        if( ref.fd!=fd ) {
-            clear();
-            fd=ref.fd;
-        }
-
-        return *this;
-    }
-    operator autofd_ref()
-    {
-        return release();
-    }
-
-    
     void clear()
     {
-        if( fd!=-1 ) {
+        if( owner ) {
             close( fd );
             fd=-1;
+            owner=false;
         }
     }
 

@@ -253,8 +253,8 @@ int file_encrypt( const char *source_file, const char *dst_file, const char *key
     }
 
     // Set the times on the encrypted file to match the plaintext file
-    infd.release();
-    outfd.release();
+    infd.clear();
+    outfd.clear();
     if( options.archive )
         copy_metadata( dst_file, &status );
 
@@ -282,8 +282,8 @@ int file_decrypt( const char *src_file, const char *dst_file, const char *key_fi
     if( headfd==-1 ) {
         write_header( key_file, head.get());
     }
-    infd.release();
-    outfd.release();
+    infd.clear();
+    outfd.clear();
     copy_metadata( dst_file, &status );
 
     return 0;
