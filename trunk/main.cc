@@ -30,22 +30,26 @@ void usage()
             "Options:\n"
             "-h                   Help - this page\n"
             "-d                   Decrypt.\n"
-            "-r                   <plain> <cypher> and <keys> are all directory names. The encryption\n"
-            "                     will apply to all files in them recursively\n"
+            "-r                   <src> <dst> and <keys> are all directory names. The\n"
+            "                     encryption will apply to all files in them recursively\n"
             "-c                   Only encrypt changed files - works only in recursive mode\n"
-            "--trim               Number of directory entries to trim from the begining of the path.\n"
-            "                     Default 1\n"
+            "--trim               Number of directory entries to trim from the begining of\n"
+            "                     the path. Default is 1\n"
             "--delete             In recursive mode, delete files in <dst> not in <src>\n"
-            "-b keysize           Must be one of 128, 192 or 256 bits. Not valid for decryption.\n"
-            "--roll-win           Rollover window size. Default is 8192 byte\n"
-            "--roll-min           Minimal number of guaranteed non-rolled bytes. Default 8192.\n"
-            "--roll-sensitivity   How sensitive are we to cutting a block. Default is \"roll-win\"\n"
-            "--fr                 Force new rollover parameters, even if previous encryption used a\n"
-            "                     different setting.\n"
-            "--fk                 Force new key size, even if previous encryption used a different\n"
-            "                     setting\n"
+            "--filelist           <src> is a file (or \"-\" for stdin) with file and directory\n"
+            "                     names to process.\n"
+            "-b keysize           Must be one of 128, 192 or 256 bits. Encryption only.\n"
+            "--fr                 Force new rollover parameters, even if previous encryption\n"
+            "                     used a different setting.\n"
+            "--fk                 Force new key size, even if previous encryption used a\n"
+            "                     different setting\n"
             "--no-archive-mode    Do not try to preserve timestamps, permissions etc.\n"
-            "--gzip               path to gzip program to use\n\n"
+            "--gzip               path to gzip program to use\n"
+            "\nAdvance options:\n"
+            "--roll-win           Rollover window size. Default is 8192 byte\n"
+            "--roll-min           Minimal number of guaranteed non-rolled bytes. Default 8192\n"
+            "--roll-sensitivity   How sensitive are we to cutting a block. Default is\n"
+            "                     \"roll-win\"\n\n"
             "Currently only AES encryption is supported\n");
 
     exit(0);
@@ -55,7 +59,7 @@ startup_options options;
 
 int parse_cmdline( int argc, char *argv[] )
 {
-    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM, DELETE };
+    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM, DELETE, FILELIST };
     int c;
     const struct option long_options[]={
 	{ "roll-win", 1, NULL, ROLL_WIN },
@@ -69,6 +73,7 @@ int parse_cmdline( int argc, char *argv[] )
         { "no-archive-mode", 0, NULL, NO_ARCHIVE },
         { "trim", 1, NULL, TRIM },
         { "delete", 0, NULL, DELETE },
+        { "filelist", 0, NULL, FILELIST },
 	{ NULL, 0, NULL, 0 }};
     
     while( (c=getopt_long(argc, argv, "b:cdhrv", long_options, NULL ))!=-1 )
@@ -161,6 +166,9 @@ int parse_cmdline( int argc, char *argv[] )
             if( options.del )
                 throw rscerror("--delete option given twice");
             options.del=true;
+            break;
+        case FILELIST:
+            options.filelist=true;
             break;
         case '?':
             throw rscerror("Unrecognized option given");
