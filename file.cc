@@ -81,23 +81,35 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
         std::string srcname=srcfd.readline();
 
         if( srcname!="" ) try {
-            if( options.verbosity>=1 )
-                std::cerr<<"Processing "<<srcname<<std::endl;
 
             struct stat filestat=autofd::stat( srcname.c_str() );
+            int src_offset=calc_trim( srcname.c_str(), options.trim );
 
             switch( filestat.st_mode&S_IFMT ) {
             case S_IFREG:
                 {
-                    std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str() );
-                    std::string keyfile=autofd::combine_paths( key_dir, srcname.c_str() );
+                    if( options.verbosity>=1 )
+                        std::cerr<<opname<<" file: "<<srcname<<std::endl;
 
-                    op( src, dstfile.c_str(), keyfile.c_str(), rsa_key );
+                    std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str()+src_offset );
+                    std::string keyfile=autofd::combine_paths( key_dir, srcname.c_str()+src_offset );
+
+                    op( srcname.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key );
                 }
                 break;
             case S_IFDIR:
+                {
+                    if( options.verbosity>=1 )
+                        std::cerr<<opname<<" directory: "<<srcname<<std::endl;
+
+                    std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str()+src_offset );
+                    std::string keyfile=autofd::combine_paths( key_dir, srcname.c_str()+src_offset );
+
+                    dir_encrypt( srcname.c_str(), dst_dir, key_dir, rsa_key, op, opname );
+                }
                 break;
             default:
+                throw rscerror("Unsupported file type");
                 break;
             }
         } catch( const rscerror &err ) {
@@ -144,10 +156,8 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
             // Directory
             if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
                 if( !op_handle_dir ) {
-                    if( mkdir( dst_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST )
-                        throw rscerror("mkdir failed", errno, dst_filename.c_str());
-                    if( mkdir( key_filename.c_str(), status.st_mode )!=0 && errno!=EEXIST )
-                        throw rscerror("mkdir failed", errno, key_filename.c_str());
+                    autofd::mkpath( dst_filename.c_str(), status.st_mode );
+                    autofd::mkpath( key_filename.c_str(), status.st_mode );
 
                     recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
                             op_handle_dir, opname );
@@ -213,12 +223,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     int src_offset=calc_trim( src_dir, options.trim ); 
 
     // Implement standard recursive descent on src_dir
-    if( mkdir( (std::string(dst_dir)+"/"+(src_dir+src_offset)).c_str(), S_IRWXU|S_IRGRP|S_IXGRP )!=0 &&
-            errno!=EEXIST )
-        throw rscerror("mkdir failed", errno, dst_dir);
-    if( mkdir( (std::string(key_dir)+"/"+(src_dir+src_offset)).c_str(), S_IRWXU|S_IRGRP|S_IXGRP )!=0 &&
-            errno!=EEXIST )
-        throw rscerror("mkdir failed", errno, key_dir);
+    autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0750 );
+    autofd::mkpath( autofd::combine_paths(key_dir, src_dir+src_offset).c_str(), 0700 );
 
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
 
