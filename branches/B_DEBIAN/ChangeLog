@@ -1,3 +1,12 @@
+2005-02-27 Shachar Shemesh
+	* Make sure that directories for key and encrypted files are created
+	  when needed.
+	* Implement the "filelist" option
+
+2005-02-24 Shachar Shemesh
+	* Document no password protected private key decryption bug in the man
+	  page
+
 Version 0.08
 2005-02-22 Shachar Shemesh
 	* Fix case of sometimes returning non-zero value on success from main.

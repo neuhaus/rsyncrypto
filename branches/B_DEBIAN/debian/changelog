@@ -1,3 +1,9 @@
+rsyncrypto (0.09-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Sun, 27 Feb 2005 23:37:21 +0200
+
 rsyncrypto (0.08-1) unstable; urgency=low
 
   * New upstream version.

@@ -93,6 +93,13 @@ Recursively encrypt/decrypt an entire directory structure. All files under
 \fI\-\-trim\fP) under \fIdstdir\fP. If not already there, a key file will be
 created for each file under \fIkeydir\fP.
 .TP
+.B \-\-filelist
+The first argument is a pointer to a file (or "\-" for stdin) that has a list
+of files to process. Any name ending with a "/" is taken to be a directory in
+recursive mode, and any other name is a file name. The second argument is a
+directory where the files are encrypted to. \-\-filelist and \-r are mutually
+exclusive.
+.TP
 .B \-c
 Check the src and destination modified time (in one second resolution) prior
 to performing the operation. If the modified time is the same, assume that the
@@ -194,6 +201,8 @@ a non-rsync optimized encryption, such as the one provided by
 Soon.
 .SH BUGS
 Not providing a correct key file may result in segmentation fault.
+.P
+It is not yet possible to decrypt using password protected private key.
 .P
 Decrypting from stdin is not yet supported.
 .SH SEE ALSO
