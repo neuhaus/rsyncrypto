@@ -25,7 +25,7 @@
 // automap will auto-release mmaped areas
 class autofd {
     int fd;
-    mutable bool owner;
+    mutable bool owner, f_eof;
 
     int release() const
     {
@@ -40,20 +40,20 @@ class autofd {
     }
 
 public:
-    autofd() : fd(-1), owner(false)
+    autofd() : fd(-1), owner(false), f_eof(false)
     {
     }
-    explicit autofd( int fd_p ) : fd(fd_p), owner(fd_p!=-1?true:false)
+    explicit autofd( int fd_p ) : fd(fd_p), owner(fd_p!=-1?true:false), f_eof(false)
     {
     }
 #if defined(EXCEPT_CLASS)
-    autofd( int fd_p, bool except ) : fd(fd_p), owner(true)
+    autofd( int fd_p, bool except ) : fd(fd_p), owner(true), f_eof(false)
     {
         if( fd==-1 )
             throw EXCEPT_CLASS("file open failed", errno);
     }
 #endif
-    autofd( const autofd &that ) : fd(that.release()), owner(true)
+    autofd( const autofd &that ) : fd(that.release()), owner(true), f_eof(false)
     {
     }
     ~autofd()
@@ -74,6 +74,7 @@ public:
             clear();
             fd=that.release();
             owner=true;
+            f_eof=that.f_eof;
         }
 
         return *this;
@@ -99,7 +100,12 @@ public:
     }
     ssize_t read( void *buf, size_t count ) const
     {
-        return read( fd, buf, count );
+        ssize_t num=read( fd, buf, count );
+
+        if( num==0 )
+            f_eof=true;
+
+        return num;
     }
     static void write( int fd, void *buf, size_t count )
     {
@@ -111,6 +117,86 @@ public:
     void write( void *buf, size_t count )
     {
         write( fd, buf, count );
+    }
+
+    static struct stat stat( const char *file_name )
+    {
+        struct stat ret;
+
+        if( ::stat( file_name, &ret )!=0 )
+            throw rscerror("stat failed", errno, file_name );
+
+        return ret;
+    }
+    // Nonstandard file io
+ 
+    // Read from the stream up to, including, the newline
+    std::string readline() const
+    {
+        std::string ret;
+        char ch;
+
+        while( read( &ch, 1 )==1 && ch!='\n' ) {
+            ret+=ch;
+        }
+
+        return ret;
+    }
+    // Recursively create directories
+    // mode is the permissions of the end directory
+    // int_mode is the permissions of all intermediately created dirs
+    static void mkpath(const char *path, mode_t mode)
+    {
+        if( path[0]!='\0' ) {
+            for( int sublen=0; path[sublen]!='\0'; sublen++ ) {
+                if( path[sublen]=='/' && path[sublen+1]!='/' ) {
+                    std::string subpath(path, sublen);
+                    if( mkdir( subpath.c_str(), mode )!=0 && errno!=EEXIST )
+                        throw rscerror("mkdir failed", errno, subpath.c_str() );
+                }
+            }
+
+            if( mkdir( path, mode )!=0 && errno!=EEXIST )
+                throw rscerror("mkdir failed", errno, path );
+        }
+    }
+
+    // Return the dir part of the name
+    static int dirpart( const char *path )
+    {
+        int i, last=0;
+
+        for( i=0; path[i]!='\0'; ++i ) {
+            if( path[i]=='/' )
+                last=i;
+        }
+
+        return last;
+    }
+
+    static std::string combine_paths( const char *left, const char *right )
+    {
+        std::string ret(left);
+
+        int i;
+        // Trim trailing slashes
+        for( i=ret.length()-1; i>0 && ret[i]=='/'; --i )
+            ;
+
+        ret.resize(i+1);
+        ret+="/";
+
+        // Trim leading slashes
+        for( i=0; right[i]=='/'; ++i )
+            ;
+        ret+=right+i;
+
+        return ret;
+    }
+    // Status queries
+    bool eof() const
+    {
+        return f_eof;
     }
 };
 

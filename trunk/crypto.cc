@@ -80,6 +80,7 @@ key *read_header( int headfd )
 
 void write_header( const char *filename, const key *head )
 {
+    autofd::mkpath( std::string(filename, autofd::dirpart(filename)).c_str(), 0700 );
     autofd newhead(open(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR), true);
     off_t headsize=head->exported_length();
     if( lseek( newhead, headsize-1, SEEK_SET )!=headsize-1 ||

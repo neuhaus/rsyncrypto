@@ -1,3 +1,7 @@
+2005-02-27 Shachar Shemesh
+	* Make sure that directories for key and encrypted files are created
+	  when needed.
+
 2005-02-24 Shachar Shemesh
 	* Document no password protected private key decryption bug in the man
 	  page

@@ -241,6 +241,8 @@ int main( int argc, char *argv[] )
 
         if( options.recurse ) {
             dir_encrypt(argv[0], argv[1], argv[2], rsa_key, op, opname);
+        } else if( options.filelist ) {
+            filelist_encrypt( argv[0], argv[1], argv[2], rsa_key, op, opname);
         } else {
             op(argv[0], argv[1], argv[2], rsa_key);
         }
