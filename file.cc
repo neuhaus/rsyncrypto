@@ -161,8 +161,8 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
             // Directory
             if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
                 if( !op_handle_dir ) {
-                    autofd::mkpath( dst_filename.c_str(), status.st_mode );
-                    autofd::mkpath( key_filename.c_str(), status.st_mode );
+                    autofd::mkpath( dst_filename.c_str(), 0777 );
+                    autofd::mkpath( key_filename.c_str(), 0700 );
 
                     recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
                             op_handle_dir, opname );
@@ -228,7 +228,7 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     int src_offset=calc_trim( src_dir, options.trim ); 
 
     // Implement standard recursive descent on src_dir
-    autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0750 );
+    autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0777 );
     autofd::mkpath( autofd::combine_paths(key_dir, src_dir+src_offset).c_str(), 0700 );
 
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
@@ -248,7 +248,6 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 {
     std::auto_ptr<key> head;
     autofd headfd;
-    struct stat status;
 
     // Read in the header, or generate a new one if can't
     {
@@ -272,23 +271,22 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     }
 
     int open_flags=O_RDONLY;
-    if( options.archive ) {
 #ifdef HAVE_NOATIME
-        open_flags|=O_NOATIME;
+    open_flags|=O_NOATIME;
 #endif
-        stat(source_file, &status);
-    } else {
-        status.st_mode=S_IRUSR|S_IWUSR|S_IRGRP;
-    }
+    bool archive=options.archive;
 
     autofd infd;
     if( strcmp(source_file, "-")!=0 )
         infd=autofd(open(source_file, open_flags), true);
-    else
+    else {
         infd=autofd(dup(STDIN_FILENO), true);
+        // If source is stdin, there is nothing to archive
+        archive=false;
+    }
 
-    autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0755 );
-    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_RDWR, status.st_mode), true);
+    autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777 );
+    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666), true);
     encrypt_file( head.get(), rsa_key, infd, outfd );
     if( headfd==-1 ) {
         write_header( key_file, head.get() );
@@ -297,8 +295,12 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     // Set the times on the encrypted file to match the plaintext file
     infd.clear();
     outfd.clear();
-    if( options.archive )
+    if( archive ) {
+        struct stat status;
+
+        stat(source_file, &status);
         copy_metadata( dst_file, &status );
+    }
 }
 
 void file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key)
@@ -318,8 +320,8 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     autofd infd(open(src_file, O_RDONLY), true);
     fstat(infd, &status);
 
-    autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0750 );
-    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_WRONLY, status.st_mode), true);
+    autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777);
+    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666), true);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
     if( headfd==-1 ) {
         write_header( key_file, head.get());

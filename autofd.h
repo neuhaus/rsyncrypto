@@ -149,7 +149,7 @@ public:
     {
         if( path[0]!='\0' ) {
             for( int sublen=0; path[sublen]!='\0'; sublen++ ) {
-                if( path[sublen]=='/' && path[sublen+1]!='/' ) {
+                if( sublen>0 && path[sublen]=='/' && path[sublen+1]!='/' ) {
                     std::string subpath(path, sublen);
                     if( mkdir( subpath.c_str(), mode )!=0 && errno!=EEXIST )
                         throw rscerror("mkdir failed", errno, subpath.c_str() );
