@@ -3,6 +3,7 @@
 
 AC_PREREQ(2.59)
 AC_INIT([rsyncrypt],[0.01])
+AM_INIT_AUTOMAKE
 AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
 # Checks for programs.
