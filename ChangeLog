@@ -2,7 +2,8 @@
 	* Add an option for only encrypting modified files
 	* Fix error in deleted file reporting
 	* Fix a (mostly visual) error in file delete directory - extra / at
-	end
+	  end
+	* Change the verbosity level for deletion from 2 to 1
 
 2005-02-13 Shachar Shemesh
 	* Fix bug in procssing of the "gzip" option
