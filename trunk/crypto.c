@@ -258,7 +258,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
 	dup2(fromfd, 0);
 	close(fromfd);
 	close(tofd);
-	execlp("./gzip", "gzip", "--rsyncable", (char *)NULL);
+	execlp("gzip", "gzip", "--rsyncable", (char *)NULL);
 	exit(1);
 	break;
     case -1:
@@ -373,7 +373,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
             dup2(tofd, 1);
             close(tofd);
             close(fromfd);
-            execlp("./gzip", "gzip", "-d", (char *)NULL);
+            execlp("gzip", "gzip", "-d", (char *)NULL);
             exit(1);
             break;
         case -1:
