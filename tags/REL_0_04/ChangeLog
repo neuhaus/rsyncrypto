@@ -1,0 +1,12 @@
+Version 0.04
+2005-02-08 Shachar Shemesh
+	* Add a "no-archive-mode" switch, which means file permissions and
+	  timestamp are not copied.
+	* Add a verbosity 3 printout for block sizes used
+	* Change default roll-win to 8192, for higher standard deviation on
+	  window sizes
+
+Version 0.03
+2005-02-06 Shachar Shemesh
+	* Fix compilation problem on *BSD
+	* Add an autoconf test for large files access
