@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
-AC_INIT([rsyncrypt],[0.10])
+AC_PREREQ(2.57)
+AC_INIT([rsyncrypt],[0.11])
 AM_INIT_AUTOMAKE
 AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
