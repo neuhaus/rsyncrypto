@@ -125,17 +125,9 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
 
     struct dirent *ent;
     while( (ent=dir.read())!=NULL ) {
-        std::string src_filename(src_dir);
-        src_filename+="/";
-        src_filename+=ent->d_name;
-
-        std::string dst_filename(dst_dir);
-        dst_filename+="/";
-        dst_filename+=src_filename.c_str()+src_offset;
-        
-        std::string key_filename(key_dir);
-        key_filename+="/";
-        key_filename+=src_filename.c_str()+src_offset;
+        std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
+        std::string dst_filename(autofd::combine_paths(dst_dir, src_filename.c_str()+src_offset));
+        std::string key_filename(autofd::combine_paths(key_dir, src_filename.c_str()+src_offset));
         
         struct stat status, dststat;
         lstat( src_filename.c_str(), &status );
@@ -231,13 +223,9 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     if( options.del ) {
         std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
         std::string dst_src_name(dst_dir);
-        if( dst_src_name[dst_src_name.length()-1]!='/' )
-            dst_src_name+="/";
         int dst_src_offset=dst_src_name.length();
-        dst_src_name+=src_dir+src_offset;
-        if( dst_src_name[dst_src_name.length()-1]=='/' ) {
-            dst_src_name.erase(dst_src_name.length()-1);
-        }
+        dst_src_name=autofd::combine_paths(dst_src_name.c_str(), src_dir+src_offset);
+        
         recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
                 dst_src_offset, true, NULL );
     }
