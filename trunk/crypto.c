@@ -249,7 +249,18 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
         wait(&childstatus);
     } while( !WIFEXITED(childstatus) );
 
-    return WEXITSTATUS(childstatus);
+    if( WEXITSTATUS(childstatus)==0 ) {
+        /* gzip was successful - write out the header, encrypted */
+        buffer=mmap( NULL, key_size, PROT_READ|PROT_WRITE, MAP_SHARED, tofd, 0 );
+        if( buffer!=NULL ) {
+            encrypt_header( header, rsa, buffer );
+            munmap( buffer, key_size );
+        }
+    } else {
+        return WEXITSTATUS(childstatus);
+    }
+
+    return 0;
 }
 
 #if 0
