@@ -19,6 +19,7 @@ protected:
         uint32_t sum_span, sum_mod, sum_min_dist;
     } header;
 
+public:
     enum CYPHER_TYPES { CYPHER_AES };
 private:
     auto_array<unsigned char> plaintext_buffer;

@@ -29,8 +29,8 @@ void usage()
             "Options:\n"
             "-h                   Help - this page\n"
             "-d                   Decrypt.\n"
-            "-b keysize           Must be one of 128, 256 or 512 bits. Not valid for decryption.\n"
-            "--roll-win           Rollover window size. Default is 256 byte\n"
+            "-b keysize           Must be one of 128, 192 or 256 bits. Not valid for decryption.\n"
+            "--roll-win           Rollover window size. Default is 8192 byte\n"
             "--roll-min           Minimal number of guarenteed non-rolled bytes. Default 8192.\n"
             "--roll-sensitivity   How sensitive are we to cutting a block. Default is \"roll-win\"\n"
             "--fr                 Force new rollover parameters, even if previous encryption used a\n"
@@ -148,7 +148,7 @@ int parse_cmdline( int argc, char *argv[] )
 
     // Apply default values
     if( options.rollwin==0 )
-        options.rollwin=256;
+        options.rollwin=8192;
     if( options.rollmin==0 )
         options.rollmin=8192;
     if( options.rollsens==0 )
@@ -198,7 +198,8 @@ int file_encrypt( const char *plaintext_file, const char *cyphertext_file, const
                 
         }
         if( headfd==-1 ) {
-            head=std::auto_ptr<key>(key::new_key());
+            head=std::auto_ptr<key>(key::new_key(key::CYPHER_AES, options.keysize, options.rollwin,
+                        options.rollsens, options.rollmin));
         }
     }
 
