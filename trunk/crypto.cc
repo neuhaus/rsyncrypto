@@ -201,41 +201,97 @@ key *decrypt_header( int fromfd, RSA *prv )
     return ret.release();
 }
 
-int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tofd )
+void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
 {
-    size_t key_size=RSA_size(rsa);
-    const struct key_header_aes *aes_header=(const void *)header;
+    const size_t key_size=RSA_size(rsa);
     int child_pid;
 
     /* Skip the header. We'll only write it out once the file itself is written */
     lseek64(tofd, key_size, SEEK_SET);
 
     /* pipe, fork and run gzip */
-    int iopipe[2];
-    pipe(iopipe);
-    switch(child_pid=fork())
+    autofd ipipe;
     {
-    case 0:
-	/* child */
-	/* Redirect stdout to the pipe, and gzip the fromfd */
-	close(iopipe[0]);
-	dup2(iopipe[1],1);
-	close(iopipe[1]);
-	dup2(fromfd, 0);
-	close(fromfd);
-	close(tofd);
-	execlp("gzip", "gzip", "--rsyncable", (char *)NULL);
-	exit(1);
-	break;
-    case -1:
-        /* Running gzip failed */
-        return -1;
-    default:
-        /* Parent */
-        close(iopipe[1]);
+        int iopipe[2];
+        if( pipe(iopipe)!=0 )
+            throw rscerror(errno);
+
+        switch(child_pid=fork())
+        {
+        case 0:
+            /* child */
+            /* Redirect stdout to the pipe, and gzip the fromfd */
+            close(iopipe[0]);
+            dup2(iopipe[1],1);
+            close(iopipe[1]);
+            dup2(fromfd, 0);
+            close(fromfd);
+            close(tofd);
+            execlp("gzip", "gzip", "--rsyncable", (char *)NULL);
+            exit(1);
+            break;
+        case -1:
+            /* Running gzip failed */
+            throw rscerror(errno);
+            break;
+        default:
+            /* Parent */
+            close(iopipe[1]);
+            ipipe=autofd(iopipe[0]);
+            break;
+        }
     }
 
-    int numread;
+    // Run through gzip's output, and encrypt it
+    const size_t block_size=header->block_size(); // Let's cache the block size
+    auto_array<unsigned char> buffer(new unsigned char [block_size]);
+    unsigned int i=0;
+    int numread=1;
+    bool new_block=true;
+
+    while( (numread=ipipe.read(buffer.get()+i, 1))!=0 ) {
+        if( new_block ) {
+            header->init_encrypt();
+            new_block=false;
+        }
+
+        new_block=header->calc_boundry( buffer[i] );
+        i+=numread;
+        if( i>=block_size || new_block ) {
+            header->encrypt_block( buffer.get(), i );
+            autofd::write( tofd, buffer.get(), block_size );
+
+            i=0;
+        }
+    }
+    
+    if( i>0 ) {
+        // Still some leftover bytes to encrypt
+        header->encrypt_block( buffer.get(), i );
+        autofd::write( tofd, buffer.get(), block_size );
+    }
+
+    // Report how many bytes of last block are relevant.
+    bzero( buffer.get(), block_size );
+    header->init_encrypt();
+    header->encrypt_block( buffer.get(), 1 );
+    autofd::write( tofd, buffer.get(), block_size );
+
+    // Wait for gzip to return, and check whether it succeeded
+    int childstatus;
+    do {
+        waitpid(child_pid, &childstatus, 0);
+    } while( !WIFEXITED(childstatus) );
+
+    if( WEXITSTATUS(childstatus)==0 ) {
+        /* gzip was successful - write out the header, encrypted */
+        autommap buffer( NULL, key_size, PROT_READ|PROT_WRITE, MAP_SHARED, tofd, 0 );
+        encrypt_header( header, rsa, buffer.get_uc() );
+    } else {
+        throw rscerror("Error in running gzip");
+    }
+}
+#if 0
     unsigned int start_position=0, end_position=0; /* Position along cyclic buffer */
     unsigned int numencrypted=0; /* Number of bytes encrypted without restarting from IV */
     unsigned long sum=0;
@@ -322,14 +378,17 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
 
     return 0;
 }
+#endif
 
-struct key_header *decrypt_file( const struct key_header *header, RSA *prv, int fromfd,
-        int tofd )
+key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
 {
     if( header==NULL ) {
         /* Need to reconstruct the header from the encrypted file */
         header=decrypt_header( fromfd, prv );
     }
+
+    if( header==NULL )
+        throw rscerror("Couldn't extract encryption header");
 
     /* If file does not contain a valid header - abort */
     if( header!=NULL ) {

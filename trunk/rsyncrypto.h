@@ -14,6 +14,10 @@ public:
     explicit rscerror( int error ) : msg(strerror(error))
     {
     }
+
+    const char *error() const {
+        return msg.c_str();
+    }
 };
 
 #define EXCEPT_CLASS rscerror
