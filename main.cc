@@ -184,7 +184,14 @@ int main_enc( int argc, char * args[] )
         if( headfd!=-1 ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
-        } else {
+
+            if( options.fr && ( head->get_sum_span()!=options.rollwin ||
+                        head->get_sum_mod()!=options.rollsens ||
+                        head->get_sum_min_dist()!=options.rollmin) ) {
+                headfd.clear();
+            }
+        }
+        if( headfd==-1 ) {
             head=std::auto_ptr<key>(key::new_key());
         }
     }
