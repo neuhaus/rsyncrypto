@@ -37,6 +37,8 @@
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 
+#include <iostream>
+
 #include "rsyncrypto.h"
 
 #include "crypto.h"
@@ -118,13 +120,13 @@ key *read_header( int headfd )
 
 void write_header( const char *filename, const key *head )
 {
-    autofd newhead(open(filename, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR), true);
+    autofd newhead(open(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR), true);
     off64_t headsize=head->exported_length();
     if( lseek( newhead, headsize-1, SEEK_SET )!=headsize-1 ||
             write( newhead, &newhead, 1 )!=1 )
         throw rscerror(errno);
 
-    autommap headfilemap( NULL, head->exported_length(), PROT_WRITE, MAP_SHARED, newhead, 0 );
+    autommap headfilemap( NULL, headsize, PROT_WRITE, MAP_SHARED, newhead, 0 );
     head->export_key( headfilemap.get() );
 }
 
@@ -405,21 +407,9 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
     auto_array<unsigned char> buffer(new unsigned char [block_size]);
     bool done=false;
     bool new_block=true;
-    //unsigned int numdecrypted=0;
-    //unsigned int sum=0;
-    //unsigned int position=0;
-    //int error=0, rollover=1;
-    //size_t buffer_size=header->restart_buffer*2;
-    //buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
-    //unsigned char *buffer=malloc(buffer_size);
-    //unsigned char iv[AES_BLOCK_SIZE];
-    //AES_KEY aeskey;
-    //int done=0;
-
-    //AES_set_decrypt_key(aes_header->key, header->key_size*8, &aeskey);
 
     /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
-    while( (numread=autofd::read(fromfd, buffer.get(), block_size))!=0 && !done ) {
+    while( !done && (numread=autofd::read(fromfd, buffer.get(), block_size))!=0 ) {
         currpos+=numread;
         if( numread>0 && numread<block_size )
             throw rscerror("Unexpected file end");
@@ -480,71 +470,3 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
     
     return header;
 }
-#if 0
-    while((numread=read(fromfd, buffer+position, AES_BLOCK_SIZE))==AES_BLOCK_SIZE && !error && !done ) {
-        currpos+=numread;
-        if( rollover ) {
-            memcpy( iv, aes_header->iv, sizeof(iv) );
-                rollover=0;
-            }
-            
-            AES_cbc_encrypt(buffer+position, buffer+position, AES_BLOCK_SIZE, &aeskey, iv, AES_DECRYPT );
-
-            int i;
-            for(i=0; i<AES_BLOCK_SIZE && !rollover; ++i) {
-                sum+=buffer[position+i];
-                if( numdecrypted>=header->restart_buffer ) {
-                    sum-=buffer[MOD_SUB(position, header->restart_buffer, buffer_size)];
-                }
-                
-                if( numdecrypted>=header->min_norestart && sum%header->sum_mod==0 ) {
-                    rollover=1;
-                }
-            }
-
-                /* Write the decrypted set to the pipe */
-                write( iopipe[1], buffer+position, i );
-                numdecrypted+=i;
-            }
-
-            if( !rollover || done ) {
-                position=MOD_ADD(position,AES_BLOCK_SIZE,buffer_size);
-            } else {
-                while( i<AES_BLOCK_SIZE && !error ) {
-                    /* If a block was interrupted, the remaining bytes should be zero */
-                    error=(buffer[position+i]!=0);
-                    ++i;
-                }
-                position=0;
-                numdecrypted=0;
-            }
-        }
-
-        if( !error && done ) {
-            memcpy( iv, aes_header->iv, sizeof(iv) );
-            AES_cbc_encrypt(buffer+position, buffer+position, 1, &aeskey, iv, AES_DECRYPT );
-            if( buffer[position] )
-                write( iopipe[1], buffer+MOD_SUB(position, AES_BLOCK_SIZE, buffer_size), buffer[position] );
-        }
-        
-        close( iopipe[1] );
-
-        int child_status;
-        do {
-            wait(&child_status);
-        } while( !WIFEXITED(child_status) );
-        
-        if( !error && WEXITSTATUS(child_status)!=0 )
-            error=1;
-
-        if( error ) {
-            /* Error in encrypted stream */
-            free(header);
-            header=NULL;
-            fprintf(stderr, "Error in encrypted stream\n");
-        }
-    }
-
-    return (struct key_header *)header;
-}
-#endif
