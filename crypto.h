@@ -32,6 +32,9 @@ struct key_header *read_header( int headfd );
 int write_header( int headfd, struct key_header *head );
 int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );
 RSA *extract_public_key( const char *pem_filename );
+RSA *extract_private_key( const char *key_filename );
 int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tofd );
+const struct key_header *decrypt_file( const struct key_header *header, RSA *private,
+        int fromfd, int tofd );
 
 #endif /* CRYPTO_H */
