@@ -2,6 +2,7 @@
 
 times=$1
 fail=0
+ulimit -c unlimited
 
 while [ $times -ne 0 -a $fail -eq 0 ]
 do
