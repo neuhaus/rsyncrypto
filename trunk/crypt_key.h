@@ -63,12 +63,30 @@ public:
     // Encrypt/decrypt in place. "size" is not guarenteed to work if bigger than block_size
     virtual void encrypt_block( unsigned char *data, size_t size )=0;
     virtual void decrypt_block( unsigned char *data, size_t size )=0;
-    // Calculate whether we are on block boundry. If we are, we need to flush the plaintext and reset IV AFTER
-    // the current byte.
+    // Calculate whether we are on block boundry. If we are, we need to flush the plaintext and
+    // reset IV AFTER the current byte.
     virtual bool calc_boundry( unsigned char data );
 
     // Fill a memory area in a random-predictable way, based on the IV
     virtual void pad_area( unsigned char *buffer, size_t size ) const;
+
+    // Simple retriever methods
+    uint16_t get_key_size() const
+    {
+        return header.key_size;
+    }
+    uint32_t get_sum_span() const
+    {
+        return header.sum_span;
+    }
+    uint32_t get_sum_mod() const
+    {
+        return header.sum_mod;
+    }
+    uint32_t get_sum_min_dist() const
+    {
+        return header.sum_min_dist;
+    }
 };
 
 #endif // CRYPT_KEY_H
