@@ -279,6 +279,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
     unsigned char *buffer=malloc(buffer_size);
     unsigned char iv[AES_BLOCK_SIZE];
+    unsigned char encrypted[AES_BLOCK_SIZE];
     unsigned char numbytes=0;
     AES_KEY aeskey;
     AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
@@ -307,9 +308,8 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
         numbytes=MOD_SUB(end_position, start_position, buffer_size);
         if( numbytes>=AES_BLOCK_SIZE || rollover ) {
             /* Time to encrypt another block */
-            AES_cbc_encrypt(buffer+start_position, buffer+start_position, numbytes,
-                    &aeskey, iv, AES_ENCRYPT );
-            write( tofd, buffer+start_position, AES_BLOCK_SIZE );
+            AES_cbc_encrypt(buffer+start_position, encrypted, numbytes, &aeskey, iv, AES_ENCRYPT );
+            write( tofd, encrypted, AES_BLOCK_SIZE );
             if( !rollover ) {
                 start_position=MOD_ADD(start_position, AES_BLOCK_SIZE, buffer_size);
                 numencrypted+=AES_BLOCK_SIZE;
@@ -330,7 +330,8 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     }
 
     /* Write out how many bytes of the last block were actual data */
-    buffer[0]=numbytes;
+    buffer[0]=numbytes%AES_BLOCK_SIZE;
+    memcpy(iv, aes_header->iv, sizeof(iv) );
     AES_cbc_encrypt(buffer, buffer, 1, &aeskey, iv, AES_ENCRYPT );
     write( tofd, buffer, AES_BLOCK_SIZE );
 
@@ -460,16 +461,27 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
         }
 
         if( !error && done ) {
+            memcpy( iv, aes_header->iv, sizeof(iv) );
             AES_cbc_encrypt(buffer+position, buffer+position, 1, &aeskey, iv, AES_DECRYPT );
-            write( iopipe[1], buffer+MOD_SUB(position, AES_BLOCK_SIZE, buffer_size), buffer[position] );
-        } else {
+            if( buffer[position] )
+                write( iopipe[1], buffer+MOD_SUB(position, AES_BLOCK_SIZE, buffer_size), buffer[position] );
+        }
+        
+        close( iopipe[1] );
+
+        int child_status;
+        do {
+            wait(&child_status);
+        } while( !WIFEXITED(child_status) );
+        
+        if( !error && WEXITSTATUS(child_status)!=0 )
+            error=1;
+
+        if( error ) {
             /* Error in encrypted stream */
             free(header);
             header=NULL;
         }
-
-        close( iopipe[1] );
-
     }
 
     return (struct key_header *)header;
