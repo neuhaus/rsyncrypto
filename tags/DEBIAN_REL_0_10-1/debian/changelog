@@ -1,0 +1,54 @@
+rsyncrypto (0.10-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Mon, 28 Feb 2005 15:16:00 +0200
+
+rsyncrypto (0.09-2) unstable; urgency=low
+
+  * Switch to using automake 1.7, as 1.4 doesn't understand the man page
+    section syntax correctly.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Mon, 28 Feb 2005 00:27:18 +0200
+
+rsyncrypto (0.09-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Sun, 27 Feb 2005 23:37:21 +0200
+
+rsyncrypto (0.08-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Tue, 22 Feb 2005 09:27:04 +0200
+
+rsyncrypto (0.07-2) unstable; urgency=low
+
+  * Initial release. (Closes: #296284: ITP: rsyncrypto -- rsync friendly
+    encryption)
+  * Add "debian/watch" file pointing to one of the sf.net mirrors
+  * Move the "tests" folder from the doc to examples
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Tue, 22 Feb 2005 08:24:59 +0200
+
+rsyncrypto (0.07-1) unstable; urgency=low
+
+  * New upstream version.
+  * Trim down some dh_make cruft from debian/rules
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Sun, 20 Feb 2005 21:09:09 +0200
+
+rsyncrypto (0.06-2) unstable; urgency=low
+
+  * Trim the package's description
+  * Remove unnecessary dir "/usr/sbin" from the package
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Sat, 19 Feb 2005 18:15:07 +0200
+
+rsyncrypto (0.06-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Thu, 17 Feb 2005 15:45:29 +0200
+
