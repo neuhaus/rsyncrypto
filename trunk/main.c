@@ -69,7 +69,7 @@ int parse_cmdline( int argc, char *argv[] )
     return 0;
 }
 
-int main( int argc, char * argv[] )
+int main2( int argc, char * argv[] )
 {
     struct key_header *head=NULL;
     int infd, outfd, headfd;
@@ -92,6 +92,35 @@ int main( int argc, char * argv[] )
     fstat64(infd, &status);
     outfd=open(argv[2], O_LARGEFILE|O_CREAT|O_TRUNC|O_RDWR, status.st_mode);
     encrypt_file( head, rsa, infd, outfd );
+    if( headfd==-1 ) {
+        headfd=open(argv[3], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
+        write_header(headfd, head);
+        close(headfd);
+    }
+    free(head);
+
+    return 0;
+}
+
+int main( int argc, char * argv[] )
+{
+    struct key_header *head=NULL;
+    int infd, outfd, headfd;
+    struct stat64 status;
+
+    /* Decryption */
+    headfd=open( argv[3], O_RDONLY );
+    if( headfd!=-1 ) {
+        head=read_header( headfd );
+        close(headfd);
+    }
+    /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
+
+    RSA *rsa=extract_private_key(argv[4]);
+    infd=open(argv[2], O_LARGEFILE|O_RDONLY);
+    fstat64(infd, &status);
+    outfd=open(argv[1], O_LARGEFILE|O_CREAT|O_TRUNC|O_WRONLY, status.st_mode);
+    head=decrypt_file( head, rsa, infd, outfd );
     if( headfd==-1 ) {
         headfd=open(argv[3], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
         write_header(headfd, head);

@@ -198,7 +198,7 @@ int encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to
 }
 
 /* Decrypt the file's header */
-struct key_header *decrypt_header( int fromfd, RSA *private )
+const struct key_header *decrypt_header( int fromfd, RSA *private )
 {
     size_t key_size=RSA_size(private);
     struct key_header *decrypted_buff=malloc(key_size);
@@ -338,4 +338,19 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     }
 
     return 0;
+}
+
+const struct key_header *decrypt_file( const struct key_header *header, RSA *private, int fromfd,
+        int tofd )
+{
+    if( header==NULL ) {
+        /* Need to reconstruct the header from the encrypted file */
+        header=decrypt_header( fromfd, private );
+    }
+
+    /* If file does not contain a valid header - abort */
+    if( header!=NULL ) {
+    }
+
+    return header;
 }
