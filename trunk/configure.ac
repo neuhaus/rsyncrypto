@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([rsyncrypt],[0.08])
+AC_INIT([rsyncrypt],[0.09])
 AM_INIT_AUTOMAKE
 AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
@@ -59,5 +59,5 @@ else
 fi
 # Checks for library functions.
 AC_CONFIG_FILES(Makefile)
-AC_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER(config.h)
 AC_OUTPUT
