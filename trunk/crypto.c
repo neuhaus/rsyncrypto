@@ -241,6 +241,9 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
         }
     }
 
+    close(iopipe[0]);
+    free(buffer);
+
     int childstatus;
     do {
         wait(&childstatus);
