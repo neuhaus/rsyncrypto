@@ -9,7 +9,10 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* struct stat has nanosecond resolution */
+/* Define to 1 if "open" supports O_NOATIME */
+#undef HAVE_NOATIME
+
+/* Define to 1 if struct stat support nanosecond resolution */
 #undef HAVE_STAT_NSEC
 
 /* Define to 1 if you have the <stdint.h> header file. */
