@@ -203,11 +203,15 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
                 case S_IFREG:
                 case S_IFLNK:
                     if( options.verbosity>=1 )
-                        std::cout<<"Delete files "<<source_file<<", "<<key_file<<std::endl;
+                        std::cout<<"Delete "<<source_file<<std::endl;
                     if( unlink( source_file )!=0 )
                         throw rscerror("Erasing file", errno, source_file );
-                    if( unlink( key_file )!=0 && errno!=ENOENT )
-                        throw rscerror("Erasing file", errno, key_file );
+                    if( options.delkey ) {
+                        if( options.verbosity>=1 )
+                            std::cout<<"Delete "<<key_file<<std::endl;
+                        if( unlink( key_file )!=0 && errno!=ENOENT )
+                            throw rscerror("Erasing file", errno, key_file );
+                    }
                     break;
                 default:
                     throw rscerror("Unhandled file type", 0, source_file );

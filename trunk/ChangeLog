@@ -3,6 +3,8 @@
 	* Make new file permissions adhere to umask rather than source
 	  file.
 	* Fix bug in mkpath when trying to create rooted path
+	* --delete no longer deletes the key, unless --delete-keys was
+	  specified
 
 Version 0.11
 2005-03-11 Shachar Shemesh
