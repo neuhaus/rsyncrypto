@@ -1,11 +1,11 @@
 CPPFLAGS=@CPPFLAGS@
-CFLAGS=@CFLAGS@
+CXXFLAGS=@CXXFLAGS@
 LDFLAGS=@LDFLAGS@
 LDLIBS=@LIBS@
 
 all: rsyncrypto
 
-rsyncrypto: main.o crypto.o
+rsyncrypto: main.o crypto.o crypt_key.o
 	$(CC) $(LDFLAGS) $+ $(LOADLIBES) $(LDLIBS) -o $@
 
 main.o: crypto.h

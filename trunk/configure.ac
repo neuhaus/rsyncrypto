@@ -6,11 +6,10 @@ AC_INIT([rsyncrypt],[0.01])
 AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
 # Checks for programs.
-AC_PROG_CC
+AC_PROG_CXX
 
 # Checks for libraries.
 AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl not found])])
-AC_CHECK_LIB(opts, getopt,,[AC_MSG_FAILURE([getopt not found])])
         
 # Checks for header files.
 AC_CHECK_HEADERS([unistd.h])

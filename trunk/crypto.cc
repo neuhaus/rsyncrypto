@@ -25,6 +25,7 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include <assert.h>
 #include <string.h>
@@ -35,6 +36,7 @@
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 
+#include "key_header.h"
 #include "crypto.h"
 
 #define CRYPT_RESTART_BUFFER 8192
