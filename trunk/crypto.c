@@ -447,7 +447,7 @@ struct key_header *decrypt_file( const struct key_header *header, RSA *private, 
                 numdecrypted+=i;
             }
 
-            if( !rollover ) {
+            if( !rollover || done ) {
                 position=MOD_ADD(position,AES_BLOCK_SIZE,buffer_size);
             } else {
                 while( i<AES_BLOCK_SIZE && !error ) {
