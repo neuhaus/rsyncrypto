@@ -262,8 +262,6 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     default:
         /* Parent */
         close(iopipe[1]);
-        close(fromfd);
-        fromfd=-1;
     }
 
     int numread;
@@ -289,7 +287,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
 
         /* Update the rolling sum */
         sum=sum+buffer[end_position];
-        if( numencrypted>=header->min_norestart )
+        if( numencrypted>=header->restart_buffer )
             sum-=buffer[MOD_SUB(end_position,header->restart_buffer,buffer_size)];
 
         end_position=MOD_ADD(end_position,1,buffer_size);
@@ -340,7 +338,7 @@ int encrypt_file( const struct key_header *header, RSA *rsa, int fromfd, int tof
     return 0;
 }
 
-const struct key_header *decrypt_file( const struct key_header *header, RSA *private, int fromfd,
+struct key_header *decrypt_file( const struct key_header *header, RSA *private, int fromfd,
         int tofd )
 {
     if( header==NULL ) {
@@ -350,7 +348,98 @@ const struct key_header *decrypt_file( const struct key_header *header, RSA *pri
 
     /* If file does not contain a valid header - abort */
     if( header!=NULL ) {
+        const struct key_header_aes *aes_header=(const void *)header;
+        int child_pid;
+
+        /* Skip the header */
+        lseek64(fromfd, header->key_size, SEEK_SET);
+
+        /* pipe, fork and run gzip */
+        int iopipe[2];
+        pipe(iopipe);
+        switch(child_pid=fork())
+        {
+        case 0:
+            /* child:
+             * Redirect stdout to the file, and gunzip from the pipe */
+            close(iopipe[1]);
+            dup2(iopipe[0],0);
+            close(iopipe[0]);
+            dup2(tofd, 1);
+            close(tofd);
+            close(fromfd);
+            execlp("gzip", "gzip", "-d", (char *)NULL);
+            exit(1);
+            break;
+        case -1:
+            /* Running gzip failed */
+            free(header);
+            return NULL;
+        default:
+            /* Parent */
+            close(iopipe[0]);
+        }
+
+        int numread;
+        unsigned int numdecrypted=0;
+        unsigned int sum=0;
+        unsigned int position=0;
+        int error=0, rollover=1;
+        size_t buffer_size=header->restart_buffer*2;
+        buffer_size+=(AES_BLOCK_SIZE-(buffer_size%AES_BLOCK_SIZE))%AES_BLOCK_SIZE;
+        unsigned char *buffer=malloc(buffer_size);
+        unsigned char iv[AES_BLOCK_SIZE];
+        AES_KEY aeskey;
+        
+        AES_set_encrypt_key(aes_header->key, header->key_size*8, &aeskey);
+
+        /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
+        while((numread=read(fromfd, buffer+position, AES_BLOCK_SIZE))==AES_BLOCK_SIZE && !error ) {
+            if( rollover ) {
+                memcpy( iv, aes_header->iv, sizeof(iv) );
+                rollover=0;
+            }
+            
+            AES_cbc_encrypt(buffer+position, buffer+position, AES_BLOCK_SIZE, &aeskey, iv, AES_DECRYPT );
+
+            int i;
+            for(i=0; i<AES_BLOCK_SIZE && !rollover; ++i) {
+                sum+=buffer[position+i];
+                if( numdecrypted>=header->restart_buffer ) {
+                    sum-=buffer[MOD_SUB(position, header->restart_buffer, buffer_size)];
+                }
+                
+                if( numdecrypted>=header->min_norestart && sum%header->sum_mod==0 ) {
+                    rollover=1;
+                }
+            }
+
+            /* Write the decrypted set to the pipe */
+            write( iopipe[1], buffer+position, i );
+            numdecrypted+=i;
+
+            if( !rollover ) {
+                position=MOD_ADD(position,AES_BLOCK_SIZE,buffer_size);
+            } else {
+                while( i<AES_BLOCK_SIZE && !error ) {
+                    /* If a block was interrupted, the remaining bytes should be zero */
+                    error=(buffer[position+i]==0);
+                    ++i;
+                }
+                position=0;
+                numdecrypted=0;
+            }
+        }
+
+        if( error || numread!=0 ) {
+            /* Error in encrypted stream */
+            free(header);
+            header=NULL;
+        }
+
+        close( iopipe[1] );
+
     }
 
-    return header;
+    return (struct key_header *)header;
 }
