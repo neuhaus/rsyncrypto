@@ -50,9 +50,18 @@ struct options {
 
 int parse_cmdline( int argc, char *argv[] )
 {
+    enum options { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP };
     int c;
+    const struct option long_options[]={
+	{ "roll-win", 1, NULL, ROLL_WIN },
+	{ "roll-min", 1, NULL, ROLL_MIN },
+	{ "roll-sensitivity", 1, NULL, ROLL_SENS },
+	{ "fr", 0, NULL, FR },
+	{ "fk", 0, NULL, FK },
+	{ "gzip", 1, NULL, GZIP },
+	{ NULL, 0, NULL, 0 }};
     
-    while( (c=getopt(argc, argv, "b:"))!=-1 )
+    while( (c=getopt_long(argc, argv, "b:", long_options, NULL ))!=-1 )
     {
         switch(c) {
         case 'b':
