@@ -1,3 +1,10 @@
+Version 0.11
+2005-03-11 Shachar Shemesh
+	* Make sure encryption continues even if a file open fails with
+	  permissions denied.
+	* Fix incorrect rscerror parameter initialization
+	* Fix "Aborted" on entire program in case of error
+
 Version 0.10
 2005-02-28 Shachar Shemesh
 	* Fix accidental use of automake 1.4 to build the makefiles.

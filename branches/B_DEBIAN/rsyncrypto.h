@@ -14,14 +14,12 @@
 #include <utime.h>
 #include <dirent.h>
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <getopt.h>
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #include <openssl/rand.h>
 #include <openssl/bio.h>
@@ -40,7 +38,7 @@ public:
     explicit rscerror( const char *msg_p ) : msg(msg_p)
     {
     }
-    explicit rscerror( const char *msg_p, int error, const char *param_p=NULL ) : msg(msg_p),
+    explicit rscerror( const char *msg_p, int error, const char *param_p="" ) : msg(msg_p),
                                                                                 sysmsg(strerror(error)),
                                                                                 param(param_p)
     {
