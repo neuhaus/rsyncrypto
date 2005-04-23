@@ -1,3 +1,7 @@
+Rsyncrypto requires gzip that supports the "rsyncable" flag. The gzip rsyncable
+flag is a patch written by Rusty Russell. This patch is available in the
+"contrib" directory, and nees to be applied against the *gzip* sources.
+
 As of version 0.10, rsyncrypto is officially in a "beta" state. This means
 mainly that functionality and interface is not expected to significantly
 change until the program can be declared "stable".
