@@ -1,6 +1,36 @@
    Note:
    rsyncrypto is distributed under the terms and conditions of the GNU General
-   Public license, with the clarification that it is allowed to link it with
+   Public license. It is linked with OpenSSL, which is distributed under a duel
+   license, but none of the licenses under which it is distributed are GPL
+   compatibile due to the infamous advertising clause.
+
+   OpenSSL cannot be said to be derived from rsyncrypto, and if either OpenSSL
+   authors or the FSF really thought that linking to a library through
+   documented interfaces made rsyncrypto a derived work of OpenSSL, clearly
+   they should have said that making rsyncrypto GPL would be impossible, no
+   "buts" or "ifs". Neither parties said so. In fact, both parties say quite
+   the opposite.
+
+   It is the opinion of the authors of rsyncrypto that this distribution is
+   not violating any of the licenses. We find points clearly strengthening this
+   view in http://www.fsf.org/licensing/licenses/gpl-faq.html#GPLIncompatibleLibs.
+   While, on the face of it, that point seems to make the case that an explicit
+   exception is required, nothing on earth can make a library that existed
+   prior to rsyncrypto's existance become a derived work of rsyncrypto, and thus
+   according to GPL's own section 5, it cannot be a GPL violation to link with
+   it.
+
+   We do acknowledge, however, that some ambiguity exists. In particular,
+   OpenSSL took the caution to bring up the page at
+   http://www.openssl.org/support/faq.html#LEGAL2. You will notice that OpenSSL
+   do not claim to assert their license on linking programs. They are only
+   worried about licensing conflicts that result from the linking program's
+   incompatibility with it. Despite the fact that we believe this exception to
+   be utterly and totally unnecessary, for clarity's sake, we include it here and
+   in the sources.
+   
+   Rsyncrypto is distributed under the terms and conditions of the GNU General
+   Public License, with the clarification that it is allowed to link it with
    the OpenSSL library, or any derivative of it that is distributed under
    either or both of its current licenses (as of version 0.9.7 of openssl).
 

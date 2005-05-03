@@ -92,11 +92,12 @@ void write_header( const char *filename, const key *head )
     autofd::mkpath( std::string(filename, autofd::dirpart(filename)).c_str(), 0700 );
     autofd newhead(open(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR), true);
     off_t headsize=head->exported_length();
+
     if( lseek( newhead, headsize-1, SEEK_SET )!=headsize-1 ||
             write( newhead, &newhead, 1 )!=1 )
         throw rscerror("write failed", errno, filename );
 
-    autommap headfilemap( NULL, headsize, PROT_WRITE, MAP_SHARED, newhead, 0 );
+    autommap headfilemap( NULL, headsize, PROT_WRITE|PROT_READ, MAP_SHARED, newhead, 0 );
     head->export_key( headfilemap.get() );
 }
 

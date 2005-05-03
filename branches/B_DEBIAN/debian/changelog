@@ -1,3 +1,12 @@
+rsyncrypto (0.13-1) unstable; urgency=low
+
+  * New upstream version
+  * Further clarification of author's stance on the need for the OpenSSL
+    exception.
+  * Upstream now support OpenBSD, which is likely to affect GNU Debian/FreeBSD.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Tue,  3 May 2005 12:20:56 +0300
+
 rsyncrypto (0.12-1) unstable; urgency=low
 
   * New upstream version
