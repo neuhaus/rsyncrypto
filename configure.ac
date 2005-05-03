@@ -12,9 +12,30 @@ AC_LANG(C++)
 
 # Checks for libraries.
 AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl not found])])
-        
+dnl Checks for libargtable2
+AC_ARG_WITH([argtable2],AC_HELP_STRING([--with-argtable2=DIR],[use argtable2 build directory]),
+[AC_MSG_CHECKING(for argtable2 path override)
+case "$withval" in
+  yes|no)
+    AC_MSG_RESULT(no)
+    ;;
+  *)
+    AC_MSG_RESULT($withval)
+    if test -f $withval/argtable2.h -a -f $withval/libargtable2.so; then
+       owd=`pwd`
+       if cd $withval; then withval=`pwd`; cd $owd; fi
+       CPPFLAGS="$CPPFLAGS -I$withval"
+       LDFLAGS="$LIBS -L$withval"
+    else
+       AC_ERROR(argtable2.h or libargtable2.so not found in $withval)
+    fi
+    ;;
+  esac])
+AC_CHECK_LIB(argtable2, arg_parse,,[AC_MSG_FAILURE([argtable2 not found])])
+
 # Checks for header files.
 AC_SYS_LARGEFILE
+AC_CHECK_HEADER([argtable2.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_MSG_CHECKING([for O_NOATIME support in open])

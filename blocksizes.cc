@@ -41,18 +41,18 @@ int main( int argc, char *argv[] )
 
     size_t times=0;
 
-    options.rollwin=strtoul(argv[1], NULL, 10);
-    options.rollmin=strtoul(argv[2], NULL, 10);
-    options.rollsens=strtoul(argv[3], NULL, 10);
+    VAL(rollwin)=strtoul(argv[1], NULL, 10);
+    VAL(rollmin)=strtoul(argv[2], NULL, 10);
+    VAL(rollsens)=strtoul(argv[3], NULL, 10);
 
     if( argc>4 )
         times=strtoul(argv[4], NULL, 10);
 
-    options.verbosity=3;
+    ARG(verbosity).count=3;
 
     autofd random(open("/dev/urandom", O_RDONLY));
-    std::auto_ptr<key> testkey(key::new_key( key::CYPHER_AES, 0, options.rollwin, options.rollmin,
-                options.rollsens ));
+    std::auto_ptr<key> testkey(key::new_key( key::CYPHER_AES, 0, VAL(rollwin), VAL(rollmin),
+                VAL(rollsens) ));
 
     bool border=true;
     do {

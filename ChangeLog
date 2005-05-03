@@ -1,3 +1,7 @@
+2005-05-03 Shachar Shemesh
+	* Move from using "getopt_long" for processing command options to
+	  using argtable.
+
 Version 0.13
 2005-04-23 Shachar Shemesh
 	* Update the license to explain author's position that the OpenSSL

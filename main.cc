@@ -32,6 +32,8 @@
 #include "rsyncrypto.h"
 #include "file.h"
 #include "crypto.h"
+#include "argtable2.h"
+
 
 void usage()
 {
@@ -69,158 +71,30 @@ startup_options options;
 
 int parse_cmdline( int argc, char *argv[] )
 {
-    enum option_type { ROLL_WIN=1, ROLL_MIN, ROLL_SENS, FR, FK, GZIP, NO_ARCHIVE, TRIM, DELETE_KEY, DELETE,
-        FILELIST };
-    int c;
-    const struct option long_options[]={
-	{ "roll-win", 1, NULL, ROLL_WIN },
-	{ "roll-min", 1, NULL, ROLL_MIN },
-	{ "roll-sensitivity", 1, NULL, ROLL_SENS },
-	{ "fr", 0, NULL, FR },
-	{ "fk", 0, NULL, FK },
-	{ "gzip", 1, NULL, GZIP },
-        { "help", 0, NULL, 'h' },
-        { "verbose", 0, NULL, 'v' },
-        { "no-archive-mode", 0, NULL, NO_ARCHIVE },
-        { "trim", 1, NULL, TRIM },
-        { "delete", 0, NULL, DELETE },
-        { "delete-keys", 0, NULL, DELETE_KEY },
-        { "filelist", 0, NULL, FILELIST },
-	{ NULL, 0, NULL, 0 }};
-    
-    while( (c=getopt_long(argc, argv, "b:cdhrv", long_options, NULL ))!=-1 )
-    {
-        switch(c) {
-        case 'h':
-            usage();
-            break;
-        case 'b':
-            if( options.keysize!=0 ) {
-                // Can't say "-b" twice
-                throw rscerror("-b option specified twice");
-            }
-            options.keysize=atol(optarg);
-            if( options.keysize==0 ) {
-                // Invalid option
-                throw rscerror("Invalid -b parameter given");
-            }
-            break;
-        case 'c':
-            if( options.changed ) {
-                throw rscerror("-c option specified twice");
-            }
-            options.changed=true;
-            break;
-        case 'd':
-            if( options.decrypt ) {
-                throw rscerror("-d option given twice");
-            }
-            options.decrypt=true;
-            break;
-        case 'v':
-            options.verbosity++;
-            break;
-        case 'r':
-            if( options.recurse ) {
-                throw rscerror("-r option given twice");
-            }
-            options.recurse=true;
-            break;
-        case ROLL_WIN:
-            if( options.rollwin!=0 )
-                throw rscerror("--roll-win option given twice");
-            options.rollwin=strtoul(optarg, NULL, 10);
-            if( options.rollwin==0 )
-                throw rscerror("Invalid --roll-win parameter given");
-            break;
-        case ROLL_MIN:
-            if( options.rollmin!=0 )
-                throw rscerror("--roll-min option given twice");
-            options.rollmin=strtoul(optarg, NULL, 10);
-            if( options.rollmin==0 )
-                throw rscerror("Invalid --roll-min parameter given");
-            break;
-        case ROLL_SENS:
-            if( options.rollsens!=0 )
-                throw rscerror("--roll-sensitivity option given twice");
-            options.rollsens=strtoul(optarg, NULL, 10);
-            if( options.rollsens==0 )
-                throw rscerror("Invalid --roll-sensitivity parameter given");
-            break;
-        case FR:
-            if( options.fr )
-                throw rscerror("--fr option given twice");
-            options.fr=true;
-            break;
-        case FK:
-            if( options.fk )
-                throw rscerror("--fr option given twice");
-            options.fr=true;
-            break;
-        case GZIP:
-            if( options.gzip!=NULL )
-                throw rscerror("--gzip option given twice");
-            options.gzip=optarg;
-            break;
-        case NO_ARCHIVE:
-            if( !options.archive )
-                throw rscerror("--no-archive option given twice");
-            options.archive=false;
-            break;
-        case TRIM:
-            if( options.trim!=-1 )
-                throw rscerror("--trim option given twice");
-            if( !options.recurse && !options.filelist )
-                throw rscerror("Cannot trim names when not doing directory recursion");
-            options.trim=atoi(optarg);
-            break;
-        case DELETE_KEY:
-            options.delkey=true;
-            // No break - fallthrough to DELETE
-        case DELETE:
-            if( options.del )
-                throw rscerror("--delete option given twice");
-            options.del=true;
-            break;
-        case FILELIST:
-            options.filelist=true;
-            break;
-        case '?':
-            throw rscerror("Unrecognized option given");
-            break;
-        default:
-            throw rscerror("Internal parameter processing error");
-            break;
-        }
-    }
+    int nerrors=arg_parse( argc, argv, options.argtable );
+
+    if( EXISTS(trim) && !EXISTS(recurse) && !EXISTS(filelist) )
+        throw rscerror("Cannot trim names when not doing directory recursion");
+    if( EXISTS(delkey) )
+        ARG(del).count=1;
 
     // Some sanity check of the options
-    if( options.decrypt ) {
-        if( options.keysize!=0 )
+    if( EXISTS(decrypt) ) {
+        if( EXISTS(keysize) )
             throw rscerror("Cannot specify key size for decryption");
-        if( options.fr || options.fk )
+        if( EXISTS(fr) || EXISTS(fk) )
             throw rscerror("\"force\" options incompatible with -d option");
-        if( strcmp(argv[optind], "-")==0 ) {
+        if( strcmp(FILENAME(src), "-")==0 ) {
             // Plaintext file is standard input/output
-            if( options.archive ) {
+            if( !EXISTS(noarch) ) {
                 throw rscerror("Must use \"--no-archive-mode\" if plaintext file is stdin");
             }
         }
     }
 
     // Apply default values
-    if( options.rollwin==0 )
-        options.rollwin=8192;
-    if( options.rollmin==0 )
-        options.rollmin=8192;
-    if( options.rollsens==0 )
-        options.rollsens=options.rollmin;
-    if( options.trim==-1 )
-        options.trim=1;
-    if( options.gzip==NULL )
-        options.gzip="gzip";
-
-    return optind;
+    if( !EXISTS(rollsens) )
+        VAL(rollsens)=VAL(rollmin);
 }
 
 int main( int argc, char *argv[] )
@@ -232,21 +106,18 @@ int main( int argc, char *argv[] )
     try {
         int argskip=parse_cmdline( argc, argv );
 
-        argv+=argskip;
-        argc-=argskip;
-
-        if( argc!=4 )
+        if( EXISTS(help) )
             usage();
 
-        RSA *rsa_key=extract_private_key(argv[3]);
+        RSA *rsa_key=extract_private_key(FILENAME(master));
         if( rsa_key==NULL ) {
-            rsa_key=extract_public_key(argv[3]);
+            rsa_key=extract_public_key(FILENAME(master));
         }
 
         const char *opname=NULL;
         encryptfunc op;
 
-        if( options.decrypt ) {
+        if( EXISTS(decrypt) ) {
             op=file_decrypt;
             opname="Decrypting";
         } else {
@@ -254,12 +125,12 @@ int main( int argc, char *argv[] )
             opname="Encrypting";
         }
 
-        if( options.recurse ) {
-            dir_encrypt(argv[0], argv[1], argv[2], rsa_key, op, opname);
-        } else if( options.filelist ) {
-            filelist_encrypt( argv[0], argv[1], argv[2], rsa_key, op, opname);
+        if( EXISTS(recurse) ) {
+            dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname);
+        } else if( EXISTS(filelist) ) {
+            filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname);
         } else {
-            op(argv[0], argv[1], argv[2], rsa_key);
+            op(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key);
         }
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
