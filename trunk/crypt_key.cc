@@ -93,7 +93,7 @@ bool key::calc_boundry( unsigned char data )
     }
 
     if( ptbuf_may_rotate && (ptbuf_sum%header.sum_mod)==0 ) {
-        if( options.verbosity>=3 ) {
+        if( ARG(verbosity).count>=3 ) {
             std::cerr<<"Rotated "<<ptbuf_count<<std::endl;
         }
 

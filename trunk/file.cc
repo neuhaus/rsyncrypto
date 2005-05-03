@@ -92,12 +92,12 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
         if( srcname!="" ) try {
 
             struct stat filestat=autofd::stat( srcname.c_str() );
-            int src_offset=calc_trim( srcname.c_str(), options.trim );
+            int src_offset=calc_trim( srcname.c_str(), VAL(trim) );
 
             switch( filestat.st_mode&S_IFMT ) {
             case S_IFREG:
                 {
-                    if( options.verbosity>=1 )
+                    if( VERBOSE(1) )
                         std::cerr<<opname<<" file: "<<srcname<<std::endl;
 
                     std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str()+src_offset );
@@ -108,7 +108,7 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                 break;
             case S_IFDIR:
                 {
-                    if( options.verbosity>=1 )
+                    if( VERBOSE(1) )
                         std::cerr<<opname<<" directory: "<<srcname<<std::endl;
 
                     std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str()+src_offset );
@@ -143,9 +143,9 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
         switch( status.st_mode & S_IFMT ) {
         case S_IFREG:
             // Regular file
-            if( !options.changed || lstat( dst_filename.c_str(), &dststat )!=0 ||
+            if( !EXISTS(changed) || lstat( dst_filename.c_str(), &dststat )!=0 ||
                     dststat.st_mtime!=status.st_mtime ) {
-                if( options.verbosity>=1 && opname!=NULL )
+                if( VERBOSE(1) && opname!=NULL )
                     std::cerr<<opname<<" "<<src_filename<<std::endl;
                 try {
                     op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
@@ -153,7 +153,7 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                     std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
                 }
             } else {
-                if( options.verbosity>=2 && opname!=NULL )
+                if( VERBOSE(2) && opname!=NULL )
                     std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
             }
             break;
@@ -195,19 +195,19 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
                 switch( status.st_mode & S_IFMT ) {
                 case S_IFDIR:
                     // Need to erase directory
-                    if( options.verbosity>=1 )
+                    if( VERBOSE(1) )
                         std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
                     rmdir( source_file );
                     rmdir( key_file );
                     break;
                 case S_IFREG:
                 case S_IFLNK:
-                    if( options.verbosity>=1 )
+                    if( VERBOSE(1) )
                         std::cout<<"Delete "<<source_file<<std::endl;
                     if( unlink( source_file )!=0 )
                         throw rscerror("Erasing file", errno, source_file );
-                    if( options.delkey ) {
-                        if( options.verbosity>=1 )
+                    if( EXISTS(delkey) ) {
+                        if( VERBOSE(1) )
                             std::cout<<"Delete "<<key_file<<std::endl;
                         if( unlink( key_file )!=0 && errno!=ENOENT )
                             throw rscerror("Erasing file", errno, key_file );
@@ -229,7 +229,7 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
         encryptfunc op, const char *opname )
 {
     // How many bytes of src_dir to skip when creating dirs under dst_dir
-    int src_offset=calc_trim( src_dir, options.trim ); 
+    int src_offset=calc_trim( src_dir, VAL(trim) ); 
 
     // Implement standard recursive descent on src_dir
     autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0777 );
@@ -237,7 +237,7 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
 
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
 
-    if( options.del ) {
+    if( EXISTS(del) ) {
         std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
         std::string dst_src_name(dst_dir);
         int dst_src_offset=dst_src_name.length();
@@ -260,17 +260,17 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
 
-            if( options.fr && ( head->get_sum_span()!=options.rollwin ||
-                        head->get_sum_mod()!=options.rollsens ||
-                        head->get_sum_min_dist()!=options.rollmin) ||
-                    options.fk && head->get_key_size()!=options.keysize ) {
+            if( EXISTS(fr) && ( head->get_sum_span()!=VAL(rollwin) ||
+                        head->get_sum_mod()!=VAL(rollsens) ||
+                        head->get_sum_min_dist()!=VAL(rollmin)) ||
+                    EXISTS(fk) && head->get_key_size()!=VAL(keysize) ) {
                 headfd.clear();
             }
                 
         }
         if( headfd==-1 ) {
-            head=std::auto_ptr<key>(key::new_key(key::CYPHER_AES, options.keysize, options.rollwin,
-                        options.rollsens, options.rollmin));
+            head=std::auto_ptr<key>(key::new_key(key::CYPHER_AES, VAL(keysize), VAL(rollwin),
+                        VAL(rollsens), VAL(rollmin)));
         }
     }
 
@@ -278,7 +278,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 #ifdef HAVE_NOATIME
     open_flags|=O_NOATIME;
 #endif
-    bool archive=options.archive;
+    bool archive=!EXISTS(noarch);
 
     autofd infd;
     if( strcmp(source_file, "-")!=0 )
