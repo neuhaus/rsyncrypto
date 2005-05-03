@@ -1,3 +1,11 @@
+Version 0.13
+2005-04-23 Shachar Shemesh
+	* Update the license to explain author's position that the OpenSSL
+	  exception is unnecessary.
+	* Add the "rsyncable" patch for gzip to the repository, and point to
+	  it from the README.
+	* Fix a mmap incorrect permission bug that affects OpenBSD.
+
 Version 0.12
 2005-03-27 Shachar Shemesh
 	* Change the license to explicitly allow linking with OpenSSL
