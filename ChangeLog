@@ -1,6 +1,10 @@
 2005-05-03 Shachar Shemesh
 	* Move from using "getopt_long" for processing command options to
 	  using argtable.
+	* Fix bugs in the configure script, where if --with-argtable2= was
+	  used, then you couldn't override LDFLAGS.
+	* Add missing include for "strings.h".
+	* rsyncrypto now compiles on Solaris.
 
 Version 0.13
 2005-04-23 Shachar Shemesh
