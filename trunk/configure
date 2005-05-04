@@ -855,6 +855,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-openssl=DIR      use openssl install directory
   --with-argtable2=DIR    use argtable2 build directory
 
 Some influential environment variables:
@@ -2448,6 +2449,33 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 # Checks for libraries.
 
+# Check whether --with-openssl or --without-openssl was given.
+if test "${with_openssl+set}" = set; then
+  withval="$with_openssl"
+  echo "$as_me:$LINENO: checking for openssl path override" >&5
+echo $ECHO_N "checking for openssl path override... $ECHO_C" >&6
+case "$withval" in
+  yes|no)
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    ;;
+  *)
+    echo "$as_me:$LINENO: result: $withval" >&5
+echo "${ECHO_T}$withval" >&6
+    if test -f $withval/include/openssl/aes.h -a -f $withval/lib/libcrypto.so; then
+       owd=`pwd`
+       if cd $withval; then withval=`pwd`; cd $owd; fi
+       CPPFLAGS="$CPPFLAGS -I$withval/include"
+       LDFLAGS="$LDFLAGS -L$withval/lib"
+    else
+       { { echo "$as_me:$LINENO: error: aes.h or libcrypto.so not found under $withval" >&5
+echo "$as_me: error: aes.h or libcrypto.so not found under $withval" >&2;}
+   { (exit 1); exit 1; }; }
+    fi
+    ;;
+  esac
+fi;
+
 
 echo "$as_me:$LINENO: checking for AES_encrypt in -lcrypto" >&5
 echo $ECHO_N "checking for AES_encrypt in -lcrypto... $ECHO_C" >&6
@@ -2528,6 +2556,7 @@ See \`config.log' for more details." >&2;}
 fi
 
 
+
 # Check whether --with-argtable2 or --without-argtable2 was given.
 if test "${with_argtable2+set}" = set; then
   withval="$with_argtable2"
@@ -2545,7 +2574,7 @@ echo "${ECHO_T}$withval" >&6
        owd=`pwd`
        if cd $withval; then withval=`pwd`; cd $owd; fi
        CPPFLAGS="$CPPFLAGS -I$withval"
-       LDFLAGS="$LIBS -L$withval"
+       LDFLAGS="$LDFLAGS -L$withval"
     else
        { { echo "$as_me:$LINENO: error: argtable2.h or libargtable2.so not found in $withval" >&5
 echo "$as_me: error: argtable2.h or libargtable2.so not found in $withval" >&2;}
