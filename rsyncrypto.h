@@ -15,10 +15,10 @@
 #include <dirent.h>
 
 #include <stdlib.h>
-#include <getopt.h>
 
 #include <assert.h>
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 
 #include <openssl/rand.h>
