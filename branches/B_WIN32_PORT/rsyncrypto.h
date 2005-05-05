@@ -1,24 +1,36 @@
 #ifndef RSYNCRYPTO_H
 #define RSYNCRYPTO_H
 
+#ifndef _WIN32
 #include "config.h"
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+
+#if defined(__unix__)
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <utime.h>
 #include <dirent.h>
+#elif defined(_WIN32)
+#define STRICT
+#include <windows.h>
+#else
+#error Unsupported platform
+#endif
 
 #include <stdlib.h>
 
 #include <assert.h>
 #include <string.h>
+#if HAVE_STRINGS_H
 #include <strings.h>
+#endif
 #include <stdlib.h>
 
 #include <openssl/rand.h>
@@ -130,7 +142,15 @@ extern std::ostream *report0, *report1, *report2, *report3;
 #define EXCEPT_CLASS rscerror
 
 #include "autoarray.h"
-#include "autommap.h"
+#if defined(__unix__)
 #include "autofd.h"
+#include "autommap.h"
+#elif defined(_WIN32)
+#include "win32/types.h"
+#include "win32/autofd.h"
+#include "win32/autommap.h"
+#else
+#error Unsupported platform
+#endif
 
 #endif // RSYNCRYPTO_H

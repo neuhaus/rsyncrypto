@@ -22,39 +22,65 @@
 
 #include <errno.h>
 
+#define PROT_READ 0x1
+#define PROT_WRITE 0x2
+
 // automap will auto-release mmaped areas
 class autommap {
+    HANDLE mapping;
     void *ptr;
-    size_t size;
 
     // Disable default copy constructor
     autommap( const autommap & );
-public:
-    autommap() : ptr(reinterpret_cast<void *>(-1)), size(0)
+
+    void mapfile(void *start, size_t length, int prot, int flags, file_t fd, off_t offset)
     {
-    }
-    autommap(void *start, size_t length, int prot, int flags, int fd, off_t offset ) : 
-                ptr(mmap(start, length, prot, flags, fd, offset)), size(length)
-    {
-        if( ptr==reinterpret_cast<void *>(-1) ) {
-            size=0;
+        DWORD flProtect;
+        DWORD dwDesiredAccess;
+
+        switch( prot ) {
+        case PROT_WRITE|PROT_READ:
+            flProtect=PAGE_READWRITE;
+            dwDesiredAccess=FILE_MAP_WRITE;
+            break;
+        case PROT_READ:
+            flProtect=PAGE_READONLY;
+            dwDesiredAccess=FILE_MAP_READ;
+            break;
+        default:
+#if defined(EXCEPT_CLASS)
+            throw EXCEPT_CLASS("Unsupported mmap protection mode");
+#else
+            return;
+#endif
+        }
+
+        mapping=CreateFileMapping( fd, NULL, flProtect, 0, 0, NULL );
+        if( mapping==NULL )
+            throw EXCEPT_CLASS("CreateFileMapping failed", GetLastError() );
+
+        ptr=MapViewOfFileEx( mapping, dwDesiredAccess, 0, offset, length, start );
+        if( ptr==NULL ) {
+            CloseHandle( mapping );
+            mapping=NULL;
 #if defined(EXCEPT_CLASS)
             throw EXCEPT_CLASS("mmap failed", errno);
 #endif
         }
     }
-    // Map an entire file into memory
-    autommap(int fd, int prot) : ptr(reinterpret_cast<void *>(-1)), size(0)
+public:
+    autommap() : ptr(NULL), mapping(NULL)
     {
-        struct stat filestat;
-        if( fstat(fd, &filestat)==0 ) {
-            autommap that(NULL, filestat.st_size, prot, MAP_SHARED, fd, 0);
-            *this=that;
-        }
-#if defined(EXCEPT_CLASS)
-        else
-            throw EXCEPT_CLASS("file mmap failed", errno);
-#endif
+    }
+    autommap(void *start, size_t length, int prot, int flags, file_t fd, off_t offset ) : 
+                mapping(NULL), ptr(NULL)
+    {
+        mapfile(start, length, prot, flags, fd, offset);
+    }
+    // Map an entire file into memory
+    autommap(file_t fd, int prot) : mapping(NULL), ptr(NULL)
+    {
+        mapfile(NULL, 0, prot, 0, fd, 0);
     }
     ~autommap()
     {
@@ -72,19 +98,21 @@ public:
     {
         clear();
         ptr=that.ptr;
-        size=that.size;
-        that.ptr=reinterpret_cast<void *>(-1);
-        that.size=0;
+        mapping=that.mapping;
+        that.ptr=NULL;
+        that.mapping=NULL;
 
         return *this;
     }
     void clear()
     {
-        if( ptr!=reinterpret_cast<void *>(-1) ) {
-            munmap( ptr, size );
+        if( ptr!=NULL ) {
+            UnmapViewOfFile(ptr);
+            ptr=NULL;
+            CloseHandle(mapping);
         }
-        ptr=reinterpret_cast<void *>(-1);
-        size=0;
+        ptr=NULL;
+        mapping=NULL;
     }
 };
 
