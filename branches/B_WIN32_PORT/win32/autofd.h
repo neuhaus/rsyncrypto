@@ -94,7 +94,7 @@ public:
     {
         return *static_cast<const autohandle *>(this);
     }
-    operator file_t()
+    operator file_t() const
     {
         return get();
     }
@@ -139,6 +139,16 @@ public:
 
         return ret;
     }
+    struct stat fstat() const
+    {
+        struct stat ret;
+
+        if( ::fstat( reinterpret_cast<int>(static_cast<file_t>(*static_cast<const autohandle *>
+            (this))), &ret )!=0 )
+            throw rscerror("stat failed", errno);
+
+        return ret;
+    }
 
     static off_t lseek( file_t file, off_t offset, int whence )
     {
@@ -160,7 +170,7 @@ public:
 
         return SetFilePointer( file, offset, NULL, dwMoveMethod );
     }
-    off_t lseek( off_t offset, int whence )
+    off_t lseek( off_t offset, int whence ) const
     {
         return lseek( *static_cast<const autohandle *>(this), offset, whence );
     }

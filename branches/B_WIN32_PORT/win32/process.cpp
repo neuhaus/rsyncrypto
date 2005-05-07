@@ -30,7 +30,7 @@
 #include "../rsyncrypto.h"
 #include "process.h"
 
-process_ctl::process_ctl( const char *cmdline, file_t input, file_t output, ...)
+process_ctl::process_ctl( const char *cmd, const autofd &input, const autofd &output, ...)
 {
     STARTUPINFO siStartInfo; 
     // Set up members of the STARTUPINFO structure. 
@@ -45,40 +45,45 @@ process_ctl::process_ctl( const char *cmdline, file_t input, file_t output, ...)
 
     autohandle input_stream;
 
-    if( input!=INVALID_HANDLE_VALUE ) {
-        HANDLE dup_input;
-        if( DuplicateHandle(hProcess, input, hProcess, &dup_input, 0, TRUE,
-            DUPLICATE_SAME_ACCESS ) )
-        {
-            input_stream=autohandle(dup_input);
-            siStartInfo.hStdInput=input_stream;
-        } else {
-            // Couldn't create duplicate inheritable pipe handle
-            throw rscerror( "Couldn't duplicate input handle");
-        }
+    if( input.get()!=INVALID_HANDLE_VALUE ) {
+        input_stream=input.Duplicate( true );
+        siStartInfo.hStdInput=input_stream;
     }
 
     autohandle output_stream;
 
-    if( output!=INVALID_HANDLE_VALUE ) {
-        HANDLE dup_output;
-        if( DuplicateHandle(hProcess, input, hProcess, &dup_output, 0, TRUE,
-            DUPLICATE_SAME_ACCESS ) )
-        {
-            output_stream=autohandle(dup_output);
-            siStartInfo.hStdOutput=output_stream;
-        } else {
-            // Couldn't create duplicate inheritable pipe handle
-            throw rscerror( "Couldn't duplicate output handle");
-        }
+    if( output.get()!=INVALID_HANDLE_VALUE ) {
+        output_stream=output.Duplicate( true );
+        siStartInfo.hStdOutput=output_stream;
     }
 
     // Set up members of the PROCESS_INFORMATION structure. 
     ZeroMemory( &pInfo, sizeof(pInfo) );    
     
+    std::string cmdline;
+    cmdline="\"";
+    cmdline+=cmd;
+    cmdline+="\" ";
+
+    va_list args;
+    va_start(args, output);
+    const char *param;
+    while( (param=va_arg(args, const char *))!=NULL ) {
+        if( *param=='\0' || strchr( param, ' ' )==NULL ) {
+            cmdline+="\"";
+            cmdline+=param;
+            cmdline+="\" ";
+        } else {
+            cmdline+=param;
+            cmdline+=" ";
+        }
+    }
+
+    va_end(args);
+
     // Create the child process.
     if( CreateProcess(NULL, 
-        "child",       // command line 
+        const_cast<char *>(cmdline.c_str()),       // command line 
         NULL,          // process security attributes 
         NULL,          // primary thread security attributes 
         TRUE,          // handles are inherited 
@@ -95,4 +100,13 @@ process_ctl::process_ctl( const char *cmdline, file_t input, file_t output, ...)
         // CreateProcess failed
         throw rscerror("Child process not created", GetLastError() );
     }
+}
+
+int process_ctl::wait() const
+{
+    WaitForSingleObject(hProcess, INFINITE);
+    DWORD exitcode=-1;
+    GetExitCodeProcess( hProcess, &exitcode );
+
+    return exitcode;
 }

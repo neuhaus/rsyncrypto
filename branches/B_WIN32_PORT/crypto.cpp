@@ -32,6 +32,7 @@
 #include "rsyncrypto.h"
 #include "crypto.h"
 #include "process.h"
+#include "autopipe.h"
 
 /* Cyclic add and subtract */
 #define MOD_ADD(a,b,mod) (((a)+(b))%(mod))
@@ -152,15 +153,16 @@ key *decrypt_header( file_t fromfd, RSA *prv )
     return ret.release();
 }
 
-void encrypt_file( key *header, RSA *rsa, file_t fromfd, file_t tofd )
+void encrypt_file( key *header, RSA *rsa, const autofd &fromfd, const autofd &tofd )
 {
     const size_t key_size=RSA_size(rsa);
-    int child_pid;
 
     /* Skip the header. We'll only write it out once the file itself is written */
     autofd::lseek(tofd, header_size(rsa), SEEK_SET);
 
-// XXX Removed redirection + child code
+    autopipe ipipe;
+    process_ctl gzip_process( FILENAME(gzip), fromfd, ipipe.get_write(), "--rsyncable", NULL );
+
     // Run through gzip's output, and encrypt it
     const size_t block_size=header->block_size(); // Let's cache the block size
     auto_array<unsigned char> buffer(new unsigned char [block_size]);
@@ -168,7 +170,7 @@ void encrypt_file( key *header, RSA *rsa, file_t fromfd, file_t tofd )
     int numread=1;
     bool new_block=true;
 
-    while( (numread=ipipe.read(buffer.get()+i, 1))!=0 ) {
+    while( (numread=ipipe.get_read().read(buffer.get()+i, 1))!=0 ) {
         if( new_block ) {
             header->init_encrypt();
             new_block=false;
@@ -198,12 +200,9 @@ void encrypt_file( key *header, RSA *rsa, file_t fromfd, file_t tofd )
     autofd::write( tofd, buffer.get(), block_size );
 
     // Wait for gzip to return, and check whether it succeeded
-    int childstatus;
-    do {
-        waitpid(child_pid, &childstatus, 0);
-    } while( !WIFEXITED(childstatus) );
+    int childstatus=gzip_process.wait();
 
-    if( WEXITSTATUS(childstatus)==0 ) {
+    if( childstatus==0 ) {
         /* gzip was successful - write out the header, encrypted */
         autommap buffer( NULL, key_size, PROT_READ|PROT_WRITE, MAP_SHARED, tofd, 0 );
         encrypt_header( header, rsa, buffer.get_uc() );
@@ -212,7 +211,7 @@ void encrypt_file( key *header, RSA *rsa, file_t fromfd, file_t tofd )
     }
 }
 
-key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
+key *decrypt_file( key *header, RSA *prv, const autofd &fromfd, const autofd &tofd )
 {
     std::auto_ptr<key> new_header;
     if( header==NULL ) {
@@ -225,45 +224,16 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
     if( header==NULL )
         throw rscerror("Couldn't extract encryption header");
 
-    int child_pid;
     struct stat filestat;
     off_t currpos;
 
-    fstat( fromfd, &filestat );
+    filestat=fromfd.fstat();
 
     /* Skip the header */
-    currpos=lseek(fromfd, header_size(prv), SEEK_SET);
+    currpos=fromfd.lseek(header_size(prv), SEEK_SET);
 
-    autofd opipe;
-
-    {
-        /* pipe, fork and run gzip */
-        int iopipe[2];
-        pipe(iopipe);
-        switch(child_pid=fork())
-        {
-        case 0:
-            /* child:
-             * Redirect stdout to the file, and gunzip from the pipe */
-            close(iopipe[1]);
-            dup2(iopipe[0],STDIN_FILENO);
-            close(iopipe[0]);
-            dup2(tofd, STDOUT_FILENO);
-            close(tofd);
-            close(fromfd);
-            execlp(FILENAME(gzip), FILENAME(gzip), "-d", (char *)NULL);
-            exit(1);
-            break;
-        case -1:
-            /* Running gzip failed */
-            throw rscerror("Couldn't create gzip process");
-            break;
-        default:
-            /* Parent */
-            close(iopipe[0]);
-            opipe=autofd(iopipe[1]);
-        }
-    }
+    autopipe opipe;
+    process_ctl gzip_process( FILENAME(gzip), opipe.get_read(), tofd, "-d", NULL );
 
     size_t numread;
     const size_t block_size=header->block_size();
@@ -296,7 +266,7 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
             if( currpos>filestat.st_size-block_size )
                 throw rscerror("Uneven file end");
         } else {
-            opipe.write( buffer.get(), i );
+            opipe.get_write().write( buffer.get(), i );
         }
 
         // If this was not a full block, the remaining bytes should be zero
@@ -321,15 +291,12 @@ key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd )
     if( buffer2[0]==0 )
         buffer2[0]=block_size;
     
-    opipe.write( buffer.get(), buffer2[0] );
+    opipe.get_write().write( buffer.get(), buffer2[0] );
     opipe.clear();
 
-    int child_status;
-    do {
-        waitpid( child_pid, &child_status, 0 );
-    } while( !WIFEXITED(child_status) );
+    int child_status=gzip_process.wait();
 
-    if( WEXITSTATUS(child_status)!=0 )
+    if( child_status!=0 )
         throw rscerror("gunzip failed to run");
 
     new_header.release();

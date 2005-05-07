@@ -67,7 +67,7 @@ public:
     }
 
     // WIN32 extensions
-    autohandle Duplicate(bool inheritable)
+    autohandle Duplicate(bool inheritable) const
     {
         HANDLE hProcess=GetCurrentProcess();
         HANDLE hNewHandle=NULL;

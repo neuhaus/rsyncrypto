@@ -16,7 +16,9 @@ class process_ctl {
     process_ctl &operator= ( const process_ctl & );
 public:
     // The ... is substituted for further command line arguments, in execlp syntax
-    process_ctl( const char *cmdline, file_t input, file_t output, ...);
+    process_ctl( const char *cmdline, const autofd &input, const autofd &output, ...);
+
+    int wait() const;
 };
 
 #endif // PROCESS_H
