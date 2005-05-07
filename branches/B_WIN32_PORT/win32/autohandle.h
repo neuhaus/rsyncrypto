@@ -65,6 +65,21 @@ public:
 
         return handle;
     }
+
+    // WIN32 extensions
+    autohandle Duplicate(bool inheritable)
+    {
+        HANDLE hProcess=GetCurrentProcess();
+        HANDLE hNewHandle=NULL;
+        if( !DuplicateHandle(hProcess, handle, hProcess, &hNewHandle, 0, inheritable,
+            DUPLICATE_SAME_ACCESS ) ) {
+#if defined(EXCEPT_CLASS)
+            throw EXCEPT_CLASS("Error duplicating handle", GetLastError());
+#endif
+        }
+
+        return hNewHandle;
+    }
 };
 
 #endif // AUTOHANDLE_H
