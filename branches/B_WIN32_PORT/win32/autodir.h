@@ -1,37 +1,38 @@
-#if defined(_WIN32)
-#include "win32/autodir.h"
-#elif !defined(AUTODIR_H)
+// Win32 implementation
+
+#if !defined(_WIN32)
+#error Win32 only header included from non-Win32 build environment
+#endif
+
+#if !defined(AUTODIR_H)
 #define AUTODIR_H
 
-// automap will auto-release mmaped areas
 class autodir {
-    DIR *dir;
+    HANDLE h_dirscan;
+    WIN32_FIND_DATA finddata;
 
     // Disable default copy constructor
     autodir( const autodir & );
     autodir &operator=( const autodir & );
 public:
-    explicit autodir( const char *dirname ) : dir(opendir(dirname))
+    explicit autodir( const char *dirname )
     {
+        h_dirscan=FindFirstFile((std::string(dirname)+"\\*").c_str(), &finddata );
 #if defined(EXCEPT_CLASS)
-        if( dir==NULL )
-            throw rscerror("opendir failed", errno, dirname);
+        if( h_dirscan==INVALID_HANDLE_VALUE )
+            throw rscerror("opendir failed", GetLastError(), dirname);
 #endif
     }
     ~autodir()
     {
         clear();
     }
-    DIR *get() const
-    {
-        return dir;
-    }
 
     void clear()
     {
-        if( dir!=NULL ) {
-            closedir( dir );
-            dir=NULL;
+        if( h_dirscan!=INVALID_HANDLE_VALUE ) {
+            FindClose( h_dirscan );
+            h_dirscan=INVALID_HANDLE_VALUE;
         }
     }
 
