@@ -50,27 +50,21 @@ typedef HANDLE file_t;
 #define S_IXOTH 00001
 
 // automap will auto-release mmaped areas
-class autofd {
-    autohandle file;
+class autofd : public autohandle {
     mutable bool f_eof;
 
-    file_t release() const
-    {
-        return file.release();
-    }
-
 public:
-    autofd() : file(INVALID_HANDLE_VALUE), f_eof(false)
+    autofd() : autohandle(INVALID_HANDLE_VALUE), f_eof(false)
     {
     }
-    explicit autofd( file_t file_p ) : file(file_p), f_eof(false)
+    explicit autofd( file_t file_p ) : autohandle(file_p), f_eof(false)
     {
     }
 #if defined(EXCEPT_CLASS)
-    autofd( file_t file_p, bool except ) : file(file_p), f_eof(false)
+    autofd( file_t file_p, bool except ) : autohandle(file_p), f_eof(false)
     {
-        if( file==INVALID_HANDLE_VALUE )
-            throw EXCEPT_CLASS("file open failed", errno);
+        if( *this==INVALID_HANDLE_VALUE )
+            throw EXCEPT_CLASS("file open failed", GetLastError());
     }
 
     autofd( const char *pathname, int flags, mode_t mode=0 ) : f_eof(false)
@@ -100,41 +94,28 @@ public:
             break;
         }
 
-        file=autohandle(CreateFile(pathname, access, FILE_SHARE_READ|FILE_SHARE_WRITE, // We are a unix program at heart
+        static_cast<autohandle &>(*this)=autohandle(CreateFile(pathname, access,
+            FILE_SHARE_READ|FILE_SHARE_WRITE, // We are a unix program at heart
             NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL ));
 
-        if( file==INVALID_HANDLE_VALUE )
+        if( *this==INVALID_HANDLE_VALUE )
             throw EXCEPT_CLASS("file open failed", GetLastError() );
     }
 #endif
-    autofd( const autofd &that ) : file(that.file.release()), f_eof(that.eof())
-    {
-    }
+    // Default copy constructor and operator= do exactly what we want.
+    //autofd( const autofd &that )
+    //autofd &operator=( const autofd &that )
     ~autofd()
     {
         clear();
     }
     file_t get() const
     {
-        return file;
+        return *static_cast<const autohandle *>(this);
     }
     operator file_t()
     {
         return get();
-    }
-    autofd &operator=( const autofd &that )
-    {
-        if( file!=that.file ) {
-            clear();
-            file=that.file;
-            f_eof=that.eof();
-        }
-
-        return *this;
-    }
-    void clear()
-    {
-        file.clear();
     }
 
     // Standard io operations
@@ -148,7 +129,7 @@ public:
     }
     ssize_t read( void *buf, size_t count ) const
     {
-        ssize_t num=read( file, buf, count );
+        ssize_t num=read( *static_cast<const autohandle *>(this), buf, count );
 
         if( num==0 )
             f_eof=true;
@@ -165,7 +146,7 @@ public:
     }
     ssize_t write( const void *buf, size_t count )
     {
-        return write( file, buf, count );
+        return write( *static_cast<const autohandle *>(this), buf, count );
     }
 
     static struct stat stat( const char *file_name )
@@ -200,7 +181,7 @@ public:
     }
     off_t lseek( off_t offset, int whence )
     {
-        return lseek( file, offset, whence );
+        return lseek( *static_cast<const autohandle *>(this), offset, whence );
     }
     // Nonstandard file io
  
