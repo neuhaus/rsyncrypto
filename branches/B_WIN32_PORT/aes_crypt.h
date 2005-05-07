@@ -8,7 +8,7 @@
 class aes_key : public key {
     struct aes_export {
         unsigned char iv[AES_BLOCK_SIZE];
-        unsigned char key[0];
+        unsigned char key[1]; // XXX Make sure all arithmetics are done correctly
     } aes_header;
     auto_array<unsigned char> secret_key;
     aes_key( const aes_key &that );

@@ -2,8 +2,8 @@
 #include "crypt_key.h"
 #include "aes_crypt.h"
 
-static const uint32_t key::VERSION_MAGIC_1=0xD657EA1Cul;
-static const uint32_t key::VERSION_MAGIC_CUR=VERSION_MAGIC_1;
+const uint32_t key::VERSION_MAGIC_1=0xD657EA1Cul;
+const uint32_t key::VERSION_MAGIC_CUR=VERSION_MAGIC_1;
 
 
 key *key::read_key( const unsigned char *buffer )

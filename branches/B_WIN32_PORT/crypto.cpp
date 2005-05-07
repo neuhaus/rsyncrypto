@@ -31,6 +31,7 @@
 
 #include "rsyncrypto.h"
 #include "crypto.h"
+#include "process.h"
 
 /* Cyclic add and subtract */
 #define MOD_ADD(a,b,mod) (((a)+(b))%(mod))
@@ -81,7 +82,7 @@ RSA *extract_private_key( const char *key_filename )
     return rsa;
 }
 
-key *read_header( int headfd )
+key *read_header( file_t headfd )
 {
     autommap headmap( headfd, PROT_READ );
     return key::read_key( headmap.get_uc() );
@@ -90,11 +91,11 @@ key *read_header( int headfd )
 void write_header( const char *filename, const key *head )
 {
     autofd::mkpath( std::string(filename, autofd::dirpart(filename)).c_str(), 0700 );
-    autofd newhead(open(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR), true);
+    autofd newhead(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
     off_t headsize=head->exported_length();
 
-    if( lseek( newhead, headsize-1, SEEK_SET )!=headsize-1 ||
-            write( newhead, &newhead, 1 )!=1 )
+    if( newhead.lseek( headsize-1, SEEK_SET )!=headsize-1 ||
+            newhead.write( filename, 1 )!=1 )
         throw rscerror("write failed", errno, filename );
 
     autommap headfilemap( NULL, headsize, PROT_WRITE|PROT_READ, MAP_SHARED, newhead, 0 );
@@ -127,7 +128,7 @@ void encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 }
 
 /* Decrypt the file's header */
-key *decrypt_header( int fromfd, RSA *prv )
+key *decrypt_header( file_t fromfd, RSA *prv )
 {
     const size_t key_size=RSA_size(prv);
     autommap filemap(NULL, header_size(prv), PROT_READ|PROT_WRITE, MAP_PRIVATE, fromfd, 0);
@@ -151,47 +152,15 @@ key *decrypt_header( int fromfd, RSA *prv )
     return ret.release();
 }
 
-void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd )
+void encrypt_file( key *header, RSA *rsa, file_t fromfd, file_t tofd )
 {
     const size_t key_size=RSA_size(rsa);
     int child_pid;
 
     /* Skip the header. We'll only write it out once the file itself is written */
-    lseek(tofd, header_size(rsa), SEEK_SET);
+    autofd::lseek(tofd, header_size(rsa), SEEK_SET);
 
-    /* pipe, fork and run gzip */
-    autofd ipipe;
-    {
-        int iopipe[2];
-        if( pipe(iopipe)!=0 )
-            throw rscerror("Couldn't create pipe", errno);
-
-        switch(child_pid=fork())
-        {
-        case 0:
-            /* child */
-            /* Redirect stdout to the pipe, and gzip the fromfd */
-            close(iopipe[0]);
-            dup2(iopipe[1],STDOUT_FILENO);
-            close(iopipe[1]);
-            dup2(fromfd, STDIN_FILENO);
-            close(fromfd);
-            close(tofd);
-            execlp( FILENAME(gzip), FILENAME(gzip), "--rsyncable", (char *)NULL);
-            exit(1);
-            break;
-        case -1:
-            /* Running gzip failed */
-            throw rscerror("Failed to spawn child process", errno);
-            break;
-        default:
-            /* Parent */
-            close(iopipe[1]);
-            ipipe=autofd(iopipe[0]);
-            break;
-        }
-    }
-
+// XXX Removed redirection + child code
     // Run through gzip's output, and encrypt it
     const size_t block_size=header->block_size(); // Let's cache the block size
     auto_array<unsigned char> buffer(new unsigned char [block_size]);

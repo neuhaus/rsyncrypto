@@ -17,46 +17,97 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+// This is the Win32 version of this struct
+#if !defined(_WIN32)
+#error Win32 only header included from non-Win32 build environment
+#endif
+
 #ifndef _AUTOFD_H
 #define _AUTOFD_H
+
+#include "autohandle.h"
 
 typedef int ssize_t;
 typedef unsigned short mode_t;
 typedef HANDLE file_t;
 
+// Fill in missing declarations
+#define O_ACCMODE (O_RDONLY|O_WRONLY|O_RDWR)
+
+#define S_IRWXU 00700
+#define S_IRUSR 00400
+#define S_IWUSR 00200
+#define S_IXUSR 00100
+
+#define S_IRWXG 00070
+#define S_IRGRP 00040
+#define S_IWGRP 00020
+#define S_IXGRP 00010
+
+#define S_IRWXO 00007
+#define S_IROTH 00004
+#define S_IWOTH 00002
+#define S_IXOTH 00001
+
 // automap will auto-release mmaped areas
 class autofd {
-    file_t file;
-    mutable bool owner, f_eof;
+    autohandle file;
+    mutable bool f_eof;
 
     file_t release() const
     {
-#if defined(EXCEPT_CLASS)
-        if( !owner )
-            throw EXCEPT_CLASS("Releasing non-owner fd");
-#endif
-
-        owner=false;
-
-        return file;
+        return file.release();
     }
 
 public:
-    autofd() : file(INVALID_HANDLE_VALUE), owner(false), f_eof(false)
+    autofd() : file(INVALID_HANDLE_VALUE), f_eof(false)
     {
     }
-    explicit autofd( file_t file_p ) : file(file_p), owner(file_p!=INVALID_HANDLE_VALUE?true:false),
-        f_eof(false)
+    explicit autofd( file_t file_p ) : file(file_p), f_eof(false)
     {
     }
 #if defined(EXCEPT_CLASS)
-    autofd( file_t file_p, bool except ) : file(file_p), owner(true), f_eof(false)
+    autofd( file_t file_p, bool except ) : file(file_p), f_eof(false)
     {
         if( file==INVALID_HANDLE_VALUE )
             throw EXCEPT_CLASS("file open failed", errno);
     }
+
+    autofd( const char *pathname, int flags, mode_t mode=0 ) : f_eof(false)
+    {
+        DWORD access=0, disposition=0;
+
+        if( (flags&(O_CREAT|O_EXCL))!=0 )
+            disposition=CREATE_NEW;
+        else if( (flags&(O_CREAT|O_TRUNC))!=0 )
+            disposition=CREATE_ALWAYS;
+        else if( (flags&O_CREAT)!=0 )
+            disposition=OPEN_ALWAYS;
+        else if( (flags&O_TRUNC)!=0 )
+            disposition=TRUNCATE_EXISTING;
+        else
+            disposition=OPEN_EXISTING;
+
+        switch( flags&O_ACCMODE ) {
+        case O_RDONLY:
+            access=GENERIC_READ;
+            break;
+        case O_WRONLY:
+            access=GENERIC_WRITE;
+            break;
+        case O_RDWR:
+            access=GENERIC_READ|GENERIC_WRITE;
+            break;
+        }
+
+        file=autohandle(CreateFile(pathname, access, FILE_SHARE_READ|FILE_SHARE_WRITE, // We are a unix program at heart
+            NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL ));
+
+        if( file==INVALID_HANDLE_VALUE )
+            throw EXCEPT_CLASS("file open failed", GetLastError() );
+    }
 #endif
-    autofd( const autofd &that ) : file(that.release()), owner(true), f_eof(false)
+    autofd( const autofd &that ) : file(that.file.release()), f_eof(that.eof())
     {
     }
     ~autofd()
@@ -75,20 +126,15 @@ public:
     {
         if( file!=that.file ) {
             clear();
-            file=that.release();
-            owner=true;
-            f_eof=that.f_eof;
+            file=that.file;
+            f_eof=that.eof();
         }
 
         return *this;
     }
     void clear()
     {
-        if( owner ) {
-            CloseHandle( file );
-            file=INVALID_HANDLE_VALUE;
-            owner=false;
-        }
+        file.clear();
     }
 
     // Standard io operations
@@ -109,15 +155,17 @@ public:
 
         return num;
     }
-    static void write( file_t fd, void *buf, size_t count )
+    static ssize_t write( file_t fd, const void *buf, size_t count )
     {
         DWORD written;
         if( !WriteFile( fd, buf, count, &written, NULL ) )
             throw rscerror("write failed", GetLastError());
+
+        return written;
     }
-    void write( void *buf, size_t count )
+    ssize_t write( const void *buf, size_t count )
     {
-        write( file, buf, count );
+        return write( file, buf, count );
     }
 
     static struct stat stat( const char *file_name )
@@ -128,6 +176,31 @@ public:
             throw rscerror("stat failed", errno, file_name );
 
         return ret;
+    }
+
+    static off_t lseek( file_t file, off_t offset, int whence )
+    {
+        DWORD dwMoveMethod=0;
+
+        switch( whence ) {
+        case SEEK_SET:
+            dwMoveMethod=FILE_BEGIN;
+            break;
+        case SEEK_CUR:
+            dwMoveMethod=FILE_CURRENT;
+            break;
+        case SEEK_END:
+            dwMoveMethod=FILE_END;
+            break;
+        default:
+            throw rscerror("Invalid whence given");
+        }
+
+        return SetFilePointer( file, offset, NULL, dwMoveMethod );
+    }
+    off_t lseek( off_t offset, int whence )
+    {
+        return lseek( file, offset, whence );
     }
     // Nonstandard file io
  
@@ -169,7 +242,7 @@ public:
         int i, last=0;
 
         for( i=0; path[i]!='\0'; ++i ) {
-            if( path[i]=='/' )
+            if( path[i]=='/' ) // XXX make sure we change / to \ 
                 last=i;
         }
 

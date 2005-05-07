@@ -17,6 +17,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+// Win32 portable implementation
+#if !defined(_WIN32)
+#error Win32 only header included from non-Win32 build environment
+#endif
+
 #ifndef _AUTOMMAP_H
 #define _AUTOMMAP_H
 
@@ -24,6 +29,9 @@
 
 #define PROT_READ 0x1
 #define PROT_WRITE 0x2
+
+#define MAP_SHARED 0x01
+#define MAP_PRIVATE 0x02
 
 // automap will auto-release mmaped areas
 class autommap {

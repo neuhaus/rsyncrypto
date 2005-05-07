@@ -52,6 +52,14 @@ public:
         if( fd==-1 )
             throw EXCEPT_CLASS("file open failed", errno);
     }
+
+    autofd( const char *pathname, int flags, mode_t mode=0 ) : f_eof(false), owner(true)
+    {
+        fd=open( pathname, flags, mode );
+
+        if( fd==-1 )
+            throw EXCEPT_CLASS("file open failed", errno);
+    }
 #endif
     autofd( const autofd &that ) : fd(that.release()), owner(true), f_eof(false)
     {
@@ -107,16 +115,18 @@ public:
 
         return num;
     }
-    static void write( int fd, void *buf, size_t count )
+    static ssize_t write( int fd, void *buf, size_t count )
     {
         ssize_t res=::write( fd, buf, count );
 
         if( res!=static_cast<ssize_t>(count) )
             throw rscerror("write failed", errno);
+
+        return res;
     }
-    void write( void *buf, size_t count )
+    ssize_t write( void *buf, size_t count )
     {
-        write( fd, buf, count );
+        return write( fd, buf, count );
     }
 
     static struct stat stat( const char *file_name )
@@ -127,6 +137,10 @@ public:
             throw rscerror("stat failed", errno, file_name );
 
         return ret;
+    }
+    off_t lseek( off_t offset, int whence )
+    {
+        return lseek( fd, offset, whence );
     }
     // Nonstandard file io
  
