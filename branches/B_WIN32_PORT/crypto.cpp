@@ -83,7 +83,7 @@ RSA *extract_private_key( const char *key_filename )
     return rsa;
 }
 
-key *read_header( file_t headfd )
+key *read_header( const autofd &headfd )
 {
     autommap headmap( headfd, PROT_READ );
     return key::read_key( headmap.get_uc() );
