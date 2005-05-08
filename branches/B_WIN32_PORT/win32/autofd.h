@@ -192,6 +192,15 @@ public:
         orig_std.release();
         return ret;
     }
+    static void rmdir( const char *pathname )
+    {
+        if( !RemoveDirectory(pathname) ) {
+            DWORD error=GetLastError();
+
+            if( error!=ERROR_FILE_NOT_FOUND && error!=ERROR_PATH_NOT_FOUND )
+                throw rscerror("Error removing directory", error, pathname);
+        }
+    }
     // Nonstandard file io
  
     // Read from the stream up to, including, the newline

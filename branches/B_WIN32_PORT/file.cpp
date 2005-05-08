@@ -199,11 +199,13 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
                     // Need to erase directory
                     if( VERBOSE(1) )
                         std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
-                    rmdir( source_file );
-                    rmdir( key_file );
+                    autofd::rmdir( source_file );
+                    autofd::rmdir( key_file );
                     break;
                 case S_IFREG:
+#if defined S_IFLNK
                 case S_IFLNK:
+#endif
                     if( VERBOSE(1) )
                         std::cout<<"Delete "<<source_file<<std::endl;
                     if( unlink( source_file )!=0 )
@@ -257,7 +259,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     // Read in the header, or generate a new one if can't
     {
-        headfd=autofd(open( key_file, O_RDONLY ));
+        headfd=autofd( key_file, O_RDONLY );
         if( headfd!=-1 ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
