@@ -89,10 +89,6 @@ SOURCE=.\aes_crypt.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\blocksizes.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\crypt_key.cpp
 # End Source File
 # Begin Source File
@@ -109,12 +105,27 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\win32\process.cpp
+# ADD CPP /Yu"../rsyncrypto.h"
+# End Source File
+# Begin Source File
+
 SOURCE=.\win32\rsyncrypto.rc
 # End Source File
 # Begin Source File
 
 SOURCE=.\win32\stdafx.cpp
+
+!IF  "$(CFG)" == "rsyncrypto - Win32 Release"
+
 # ADD CPP /Yc"../rsyncrypto.h"
+
+!ELSEIF  "$(CFG)" == "rsyncrypto - Win32 Debug"
+
+# ADD CPP /Yc"../rsyncrypto.h"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -134,11 +145,27 @@ SOURCE=.\autodir.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\win32\autodir.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\win32\autofd.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\win32\autohandle.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\win32\autommap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\autopipe.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\autopipe.h
 # End Source File
 # Begin Source File
 
@@ -151,6 +178,18 @@ SOURCE=.\crypto.h
 # Begin Source File
 
 SOURCE=.\file.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\process.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\process.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\random.h
 # End Source File
 # Begin Source File
 
