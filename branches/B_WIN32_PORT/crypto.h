@@ -38,7 +38,7 @@ enum CYPHER_TYPE { CYPHER_AES };
 //class key_header;
 
 //struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher);
-key *read_header( int headfd );
+key *read_header( const autofd &headfd );
 void write_header( const char *filename, const key *head );
 size_t header_size( const RSA *rsa );
 void encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );

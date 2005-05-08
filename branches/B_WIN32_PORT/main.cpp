@@ -69,7 +69,7 @@ void usage()
 
 startup_options options;
 
-int parse_cmdline( int argc, char *argv[] )
+void parse_cmdline( int argc, char *argv[] )
 {
     int nerrors=arg_parse( argc, argv, options.argtable );
 
@@ -104,7 +104,7 @@ int main( int argc, char *argv[] )
     ERR_load_crypto_strings();
 
     try {
-        int argskip=parse_cmdline( argc, argv );
+        parse_cmdline( argc, argv );
 
         if( EXISTS(help) )
             usage();

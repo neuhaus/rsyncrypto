@@ -14,7 +14,7 @@ class autohandle {
 
 public:
     explicit autohandle( HANDLE handle_p=NULL ) : handle(handle_p),
-        owner((handle_p!=INVALID_HANDLE_VALUE && handle_p!=NULL)?true:false)
+        owner(valid())
     {
     }
     autohandle( const autohandle &that ) : handle(that.release()), owner(true)
@@ -64,6 +64,10 @@ public:
         owner=false;
 
         return handle;
+    }
+    bool valid() const
+    {
+        return handle!=NULL && handle!=INVALID_HANDLE_VALUE;
     }
 
     // WIN32 extensions

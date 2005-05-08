@@ -260,7 +260,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     // Read in the header, or generate a new one if can't
     {
         headfd=autofd( key_file, O_RDONLY );
-        if( headfd!=-1 ) {
+        if( headfd.valid() ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
 
@@ -272,7 +272,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
             }
                 
         }
-        if( headfd==-1 ) {
+        if( !headfd.valid() ) {
             head=std::auto_ptr<key>(key::new_key(key::CYPHER_AES, VAL(keysize), VAL(rollwin),
                         VAL(rollsens), VAL(rollmin)));
         }
@@ -286,17 +286,17 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     autofd infd;
     if( strcmp(source_file, "-")!=0 )
-        infd=autofd(open(source_file, open_flags), true);
+        infd=autofd(source_file, open_flags);
     else {
-        infd=autofd(dup(STDIN_FILENO), true);
+        infd=autofd::dup(STDIN_FILENO);
         // If source is stdin, there is nothing to archive
         archive=false;
     }
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777 );
-    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666), true);
+    autofd outfd(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666);
     encrypt_file( head.get(), rsa_key, infd, outfd );
-    if( headfd==-1 ) {
+    if( !headfd.valid() ) {
         write_header( key_file, head.get() );
     }
 
@@ -318,20 +318,20 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     struct stat status;
 
     /* Decryption */
-    autofd headfd(open( key_file, O_RDONLY ));
-    if( headfd!=-1 ) {
+    autofd headfd( key_file, O_RDONLY );
+    if( headfd.valid() ) {
         head=std::auto_ptr<key>(read_header( headfd ));
-        close(headfd);
+        headfd.clear();
     }
     /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
 
-    autofd infd(open(src_file, O_RDONLY), true);
-    fstat(infd, &status);
+    autofd infd(src_file, O_RDONLY);
+    status=infd.fstat();
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777);
-    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666), true);
+    autofd outfd(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
-    if( headfd==-1 ) {
+    if( !headfd.valid() ) {
         write_header( key_file, head.get());
     }
     infd.clear();

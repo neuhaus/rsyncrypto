@@ -62,16 +62,16 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\rsyncrypto.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\rsyncrypto.pdb" /machine:I386 /out:"$(OUTDIR)\rsyncrypto.exe" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libeay32.lib impargtable2.lib Ws2_32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\rsyncrypto.pdb" /machine:I386 /out:"$(OUTDIR)\rsyncrypto.exe" 
 LINK32_OBJS= \
 	"$(INTDIR)\aes_crypt.obj" \
 	"$(INTDIR)\crypt_key.obj" \
 	"$(INTDIR)\crypto.obj" \
 	"$(INTDIR)\file.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\rsyncrypto.res" \
+	"$(INTDIR)\process.obj" \
 	"$(INTDIR)\stdafx.obj" \
-	"$(INTDIR)\process.obj"
+	"$(INTDIR)\rsyncrypto.res"
 
 "$(OUTDIR)\rsyncrypto.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -126,8 +126,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\crypto.sbr" \
 	"$(INTDIR)\file.sbr" \
 	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\stdafx.sbr" \
-	"$(INTDIR)\process.sbr"
+	"$(INTDIR)\process.sbr" \
+	"$(INTDIR)\stdafx.sbr"
 
 "$(OUTDIR)\rsyncrypto.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -135,16 +135,16 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\rsyncrypto.pdb" /debug /machine:I386 /out:"$(OUTDIR)\rsyncrypto.exe" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libeay32.lib impargtable2.lib Ws2_32.lib /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\rsyncrypto.pdb" /debug /machine:I386 /out:"$(OUTDIR)\rsyncrypto.exe" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aes_crypt.obj" \
 	"$(INTDIR)\crypt_key.obj" \
 	"$(INTDIR)\crypto.obj" \
 	"$(INTDIR)\file.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\rsyncrypto.res" \
+	"$(INTDIR)\process.obj" \
 	"$(INTDIR)\stdafx.obj" \
-	"$(INTDIR)\process.obj"
+	"$(INTDIR)\rsyncrypto.res"
 
 "$(OUTDIR)\rsyncrypto.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<

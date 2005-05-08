@@ -3,6 +3,8 @@
 
 #ifndef _WIN32
 #include "config.h"
+#else
+#define PACKAGE_NAME "rsyncrypto"
 #endif
 
 #include <sys/types.h>
