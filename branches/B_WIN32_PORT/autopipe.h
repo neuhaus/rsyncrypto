@@ -9,17 +9,16 @@
 class autopipe {
     autofd input, output;
 public:
-    explicit autopipe(DWORD pipe_size=4096) : input(INVALID_HANDLE_VALUE),
-        output(INVALID_HANDLE_VALUE)
+    explicit autopipe(size_t pipe_size=4096) : input(-1), output(-1)
     {
-        HANDLE hReadPipe, hWritePipe;
+        int fd[2];
 
-        if( CreatePipe(&hReadPipe, &hWritePipe, NULL, pipe_size ) ) {
-            input=autofd(hReadPipe);
-            output=autofd(hWritePipe);
+        if( pipe(fd)==0 ) {
+            input=autofd(fd[0]);
+            output=autofd(fd[1]);
         } else {
 #if defined(EXCEPT_CLASS)
-            throw EXCEPT_CLASS("Couldn't create pipe", GetLastError() );
+            throw EXCEPT_CLASS("Couldn't create pipe", errno );
 #endif
         }
     }
@@ -43,6 +42,11 @@ public:
     const autofd &get_write() const
     {
         return output;
+    }
+    void clear()
+    {
+        input.clear();
+        output.clear();
     }
 };
 

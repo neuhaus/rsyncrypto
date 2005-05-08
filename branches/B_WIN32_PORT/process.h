@@ -3,6 +3,18 @@
 #include "win32/process.h"
 #else
 #define PROCESS_H
+class process_ctl {
+    int pid;
+
+    // Disable default copy ctor and operator=
+    process_ctl( const process_ctl & );
+    process_ctl &operator= ( const process_ctl & );
+public:
+    process_ctl( const char *cmdline, const autofd &input, const autofd &output, ...);
+
+    int wait() const;
+};
+#if 0
     /* pipe, fork and run gzip */
     autofd ipipe;
     {
@@ -35,5 +47,6 @@
             break;
         }
     }
+#endif
 #endif // _WIN32
 #endif // PROCESS_H

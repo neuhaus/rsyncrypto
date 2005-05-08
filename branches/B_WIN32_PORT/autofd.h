@@ -22,12 +22,14 @@
 
 #include <unistd.h>
 
+typedef int file_t;
+
 // automap will auto-release mmaped areas
 class autofd {
-    int fd;
+    file_t fd;
     mutable bool owner, f_eof;
 
-    int release() const
+    file_t release() const
     {
 #if defined(EXCEPT_CLASS)
         if( !owner )
@@ -43,11 +45,11 @@ public:
     autofd() : fd(-1), owner(false), f_eof(false)
     {
     }
-    explicit autofd( int fd_p ) : fd(fd_p), owner(fd_p!=-1?true:false), f_eof(false)
+    explicit autofd( file_t fd_p ) : fd(fd_p), owner(fd_p!=-1?true:false), f_eof(false)
     {
     }
 #if defined(EXCEPT_CLASS)
-    autofd( int fd_p, bool except ) : fd(fd_p), owner(true), f_eof(false)
+    autofd( file_t fd_p, bool except ) : fd(fd_p), owner(true), f_eof(false)
     {
         if( fd==-1 )
             throw EXCEPT_CLASS("file open failed", errno);
@@ -68,11 +70,11 @@ public:
     {
         clear();
     }
-    int get() const
+    file_t get() const
     {
         return fd;
     }
-    operator int()
+    operator file_t() const
     {
         return get();
     }
@@ -95,9 +97,13 @@ public:
             owner=false;
         }
     }
+    bool valid() const
+    {
+        return fd!=-1;
+    }
 
     // Standard io operations
-    static ssize_t read( int fd, void *buf, size_t count )
+    static ssize_t read( file_t fd, void *buf, size_t count )
     {
         ssize_t res=::read( fd, buf, count );
 
@@ -115,7 +121,7 @@ public:
 
         return num;
     }
-    static ssize_t write( int fd, void *buf, size_t count )
+    static ssize_t write( file_t fd, const void *buf, size_t count )
     {
         ssize_t res=::write( fd, buf, count );
 
@@ -124,7 +130,7 @@ public:
 
         return res;
     }
-    ssize_t write( void *buf, size_t count )
+    ssize_t write( const void *buf, size_t count )
     {
         return write( fd, buf, count );
     }
@@ -138,9 +144,37 @@ public:
 
         return ret;
     }
-    off_t lseek( off_t offset, int whence )
+    struct stat fstat() const
+    {
+        struct stat ret;
+
+        if( ::fstat( get(), &ret )!=0 )
+            throw rscerror("stat failed", errno);
+
+        return ret;
+    }
+    static off_t lseek( file_t file, off_t offset, int whence )
+    {
+        return ::lseek( file, offset, whence );
+    }
+    off_t lseek( off_t offset, int whence ) const
     {
         return lseek( fd, offset, whence );
+    }
+    static int utimes( const char *filename, const struct timeval tv[2])
+    {
+        return utimes( filename, tv );
+    }
+    static autofd dup( int filedes )
+    {
+        return autofd( dup(filedes) );
+    }
+    static void rmdir( const char *pathname )
+    {
+        if( ::rmdir( pathname )!=0 && errno!=ENOENT )
+        {
+            throw rscerror("Error removing directory", errno, pathname );
+        }
     }
     // Nonstandard file io
  

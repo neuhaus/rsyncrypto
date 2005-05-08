@@ -44,7 +44,7 @@ public:
         }
     }
     // Map an entire file into memory
-    autommap(int fd, int prot) : ptr(reinterpret_cast<void *>(-1)), size(0)
+    autommap(file_t fd, int prot) : ptr(reinterpret_cast<void *>(-1)), size(0)
     {
         struct stat filestat;
         if( fstat(fd, &filestat)==0 ) {
