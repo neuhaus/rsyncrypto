@@ -38,16 +38,20 @@ process_ctl::process_ctl( const char *cmd, const autofd &input, const autofd &ou
     
     if( pid==0 ) {
         va_list args;
+        // The following line generates two false warnings on gcc 3.3.5. gcc 3.4 does not complain.
         va_start(args, output);
         int numargs=0;
         while( va_arg(args, char *)!=NULL )
             ++numargs;
+        va_end(args);
+        // The following line generates two false warnings on gcc 3.3.5. gcc 3.4 does not complain.
         va_start(args, output);
 
         auto_array<char *> arguments(new char *[numargs+1]);
 
         for( int i=0; (arguments[i]=va_arg(args, char *))!=NULL; ++i )
             ;
+        va_end(args);
 
         if( input.valid() ) {
             dup2( input.get(), STDIN_FILENO );

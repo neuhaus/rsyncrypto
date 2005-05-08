@@ -55,7 +55,7 @@ public:
             throw EXCEPT_CLASS("file open failed", errno);
     }
 
-    autofd( const char *pathname, int flags, mode_t mode=0 ) : f_eof(false), owner(true)
+    autofd( const char *pathname, int flags, mode_t mode=0 ) : owner(true), f_eof(false)
     {
         fd=open( pathname, flags, mode );
 
