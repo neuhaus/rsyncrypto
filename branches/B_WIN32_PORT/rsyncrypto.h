@@ -45,6 +45,11 @@
 
 #include <argtable2.h>
 
+#if !HAVE_LSTAT
+// Some platforms don't support "lstat" and links
+#define lstat stat
+#endif
+
 class rscerror {
     std::string msg;
     std::string sysmsg;
