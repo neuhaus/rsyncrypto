@@ -173,9 +173,11 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                 }
             }
             break;
+#if defined S_IFLNK
         case S_IFLNK:
             // Symbolic link
             break;
+#endif
         default:
             // Unhandled type
             throw rscerror("Unhandled file type");
