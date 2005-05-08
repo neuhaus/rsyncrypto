@@ -53,6 +53,12 @@ case "$withval" in
   esac])
 AC_CHECK_LIB(argtable2, arg_parse,,[AC_MSG_FAILURE([argtable2 not found])])
 
+AC_MSG_CHECKING([whether platform supports lstat])
+AC_LINK_IFELSE([AC_LANG_FUNC_LINK_TRY([lstat])],
+        [AC_MSG_RESULT(yes)
+        AC_DEFINE([HAVE_LSTAT],1,[Define to 1 if your platform has the "lstat" function call])],
+        [AC_MSG_RESULT(no)])
+
 # Checks for header files.
 AC_SYS_LARGEFILE
 AC_CHECK_HEADER([argtable2.h])
