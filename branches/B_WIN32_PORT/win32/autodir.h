@@ -7,15 +7,21 @@
 #if !defined(AUTODIR_H)
 #define AUTODIR_H
 
+struct dirent {
+    char d_name[MAX_PATH];
+};
+
 class autodir {
     HANDLE h_dirscan;
     WIN32_FIND_DATA finddata;
+    dirent posixdir;
+    bool eof;
 
     // Disable default copy constructor
     autodir( const autodir & );
     autodir &operator=( const autodir & );
 public:
-    explicit autodir( const char *dirname )
+    explicit autodir( const char *dirname ) : eof(false)
     {
         h_dirscan=FindFirstFile((std::string(dirname)+"\\*").c_str(), &finddata );
 #if defined(EXCEPT_CLASS)
@@ -33,13 +39,27 @@ public:
         if( h_dirscan!=INVALID_HANDLE_VALUE ) {
             FindClose( h_dirscan );
             h_dirscan=INVALID_HANDLE_VALUE;
+            eof=false;
         }
     }
 
     struct dirent *read()
     {
-        return ::readdir(dir);
+        if( !eof ) {
+            strcpy(posixdir.d_name, finddata.cFileName);
+            if( !FindNextFile(h_dirscan, &finddata) ) {
+                eof=true;
+                DWORD error=GetLastError();
+                if( error!=ERROR_NO_MORE_FILES ) {
+                    throw rscerror("Error getting directory listing", error);
+                }
+            }
+            return &posixdir;
+        } else {
+            return NULL;
+        }
     }
+    /*
     void rewind()
     {
         ::rewinddir(dir);
@@ -52,6 +72,7 @@ public:
     {
         return ::telldir( dir );
     }
+    */
 };
 
 #endif // AUTODIR_H

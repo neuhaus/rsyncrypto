@@ -48,7 +48,7 @@ static void copy_metadata( const char *destfilename, const struct stat *data )
     tv[1].tv_usec=0;
 #endif
 
-    if( utimes( destfilename, tv )==-1 )
+    if( autofd::utimes( destfilename, tv )==-1 )
 	throw rscerror("Setting time failed", errno, destfilename );
 }
 
@@ -81,9 +81,9 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
 
     if( strcmp(src, "-")==0 ) {
         // Src is stdin
-        srcfd=autofd(dup(STDIN_FILENO), true);
+        srcfd=autofd::dup(STDIN_FILENO);
     } else {
-        srcfd=autofd(open(src, O_RDONLY), true);
+        srcfd=autofd(src, O_RDONLY);
     }
 
     while( !srcfd.eof() ) {

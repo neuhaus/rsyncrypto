@@ -30,6 +30,10 @@ typedef HANDLE file_t;
 #define S_IWOTH 00002
 #define S_IXOTH 00001
 
+#define STDIN_FILENO (STD_INPUT_HANDLE)
+#define STDOUT_FILENO (STD_OUTPUT_HANDLE)
+#define STDERR_FILENO (STD_ERROR_HANDLE)
+
 // automap will auto-release mmaped areas
 class autofd : public autohandle {
     mutable bool f_eof;
@@ -173,6 +177,20 @@ public:
     off_t lseek( off_t offset, int whence ) const
     {
         return lseek( *static_cast<const autohandle *>(this), offset, whence );
+    }
+    static int utimes( const char *filename, const struct timeval tv[2])
+    {
+        struct utimbuf buf;
+        buf.actime=tv[0].tv_sec;
+        buf.modtime=tv[1].tv_sec;
+        return utime(filename, &buf);
+    }
+    static autofd dup( int filedes )
+    {
+        autofd orig_std(GetStdHandle(filedes));
+        autofd ret(orig_std.Duplicate(false));
+        orig_std.release();
+        return ret;
     }
     // Nonstandard file io
  

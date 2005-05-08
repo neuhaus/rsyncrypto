@@ -20,6 +20,7 @@
 #elif defined(_WIN32)
 #define STRICT
 #include <windows.h>
+#include <sys/utime.h>
 #else
 #error Unsupported platform
 #endif
