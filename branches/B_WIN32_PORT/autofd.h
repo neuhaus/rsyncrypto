@@ -197,7 +197,7 @@ public:
     {
         if( path[0]!='\0' ) {
             for( int sublen=0; path[sublen]!='\0'; sublen++ ) {
-                if( sublen>0 && path[sublen]=='/' && path[sublen+1]!='/' ) {
+                if( sublen>0 && path[sublen]==DIRSEP_C && path[sublen+1]!=DIRSEP_C ) {
                     std::string subpath(path, sublen);
                     if( mkdir( subpath.c_str(), mode )!=0 && errno!=EEXIST )
                         throw rscerror("mkdir failed", errno, subpath.c_str() );
@@ -215,7 +215,7 @@ public:
         int i, last=0;
 
         for( i=0; path[i]!='\0'; ++i ) {
-            if( path[i]=='/' )
+            if( path[i]==DIRSEP_C )
                 last=i;
         }
 
@@ -228,15 +228,15 @@ public:
 
         int i;
         // Trim trailing slashes
-        for( i=ret.length()-1; i>0 && ret[i]=='/'; --i )
+        for( i=ret.length()-1; i>0 && ret[i]==DIRSEP_C; --i )
             ;
 
         ret.resize(++i);
         if( i>0 )
-            ret+="/";
+            ret+=DIRSEP_S;
 
         // Trim leading slashes
-        for( i=0; right[i]=='/'; ++i )
+        for( i=0; right[i]==DIRSEP_C; ++i )
             ;
         ret+=right+i;
 

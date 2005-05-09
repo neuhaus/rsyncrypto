@@ -3,8 +3,12 @@
 
 #ifndef _WIN32
 #include "config.h"
+#define DIRSEP_C '/'
+#define DIRSEP_S "/"
 #else
 #define PACKAGE_NAME "rsyncrypto"
+#define DIRSEP_C '\\'
+#define DIRSEP_S "\\"
 #endif
 
 #include <sys/types.h>
