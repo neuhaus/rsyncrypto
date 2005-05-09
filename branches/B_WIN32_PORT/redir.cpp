@@ -28,23 +28,49 @@
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
-#ifndef CRYPTO_H
-#define CRYPTO_H
-#include <openssl/rsa.h>
-#include "crypt_key.h"
+#ifdef _WIN32
+#error Win32 code is at win32/redir.cpp
+#else
+#include "rsyncrypto.h"
+#include "redir.h"
 
-enum CYPHER_TYPE { CYPHER_AES };
+void redir_pipe::child_redirect( int redir_type )
+{
+    autofd *redirected;
 
-//class key_header;
+    if( redir_type==STDIN_FILENO ) {
+        redirected=&get_read();
+    } else {
+        redirected=&get_write();
+    }
 
-//struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher);
-key *read_header( const autofd &headfd );
-void write_header( const char *filename, const key *head );
-size_t header_size( const RSA *rsa );
-void encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );
-RSA *extract_public_key( const char *pem_filename );
-RSA *extract_private_key( const char *key_filename );
-void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd );
-key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd );
+    dup2( redirected->get(), redir_type );
+    clear();
+}
+void redir_pipe::parent_redirect( int redir_type )
+{
+    if( redir_type==STDIN_FILENO ) {
+        clear_read();
+    } else {
+        clear_write();
+    }
+}
 
-#endif /* CRYPTO_H */
+void redir_fd::child_redirect( int redir_type )
+{
+    dup2( get(), redir_type );
+    clear();
+}
+void redir_fd::parent_redirect( int redir_type )
+{
+    clear();
+}
+
+void redir_null::child_redirect( int redir_type )
+{
+}
+void redir_null::parent_redirect( int redir_type )
+{
+}
+
+#endif

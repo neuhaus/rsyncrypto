@@ -163,7 +163,7 @@ public:
     }
     static int utimes( const char *filename, const struct timeval tv[2])
     {
-        return utimes( filename, tv );
+        return ::utimes( filename, tv );
     }
     static autofd dup( int filedes )
     {

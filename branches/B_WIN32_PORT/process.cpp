@@ -30,22 +30,28 @@
 #include "rsyncrypto.h"
 #include "process.h"
 
-process_ctl::process_ctl( const char *cmd, const autofd &input, const autofd &output ...)
+process_ctl::process_ctl( const char *cmd, redir *input, redir *output, redir *error, ... )
 {
     pid=fork();
     if( pid==-1 )
         throw rscerror("Error creating child process", errno, cmd);
     
     if( pid==0 ) {
+        // Child
+        if( input!=NULL )
+            input->child_redirect(STDIN_FILENO);
+        if( output!=NULL )
+            output->child_redirect(STDOUT_FILENO);
+        if( error!=NULL )
+            error->child_redirect(STDERR_FILENO);
+
         va_list args;
-        // The following line generates two false warnings on gcc 3.3.5. gcc 3.4 does not complain.
-        va_start(args, output);
+        va_start(args, error);
         int numargs=0;
         while( va_arg(args, char *)!=NULL )
             ++numargs;
         va_end(args);
-        // The following line generates two false warnings on gcc 3.3.5. gcc 3.4 does not complain.
-        va_start(args, output);
+        va_start(args, error);
 
         auto_array<char *> arguments(new char *[numargs+1]);
 
@@ -53,13 +59,15 @@ process_ctl::process_ctl( const char *cmd, const autofd &input, const autofd &ou
             ;
         va_end(args);
 
-        if( input.valid() ) {
-            dup2( input.get(), STDIN_FILENO );
-        }
-        if( output.valid() ) {
-            dup2( output.get(), STDOUT_FILENO );
-        }
         execvp(cmd, arguments.get() );
+    } else {
+        // Parent
+        if( input!=NULL )
+            input->parent_redirect(STDIN_FILENO);
+        if( output!=NULL )
+            output->parent_redirect(STDOUT_FILENO);
+        if( error!=NULL )
+            error->parent_redirect(STDERR_FILENO);
     }
 }
 

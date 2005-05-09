@@ -33,6 +33,7 @@
 #include "crypto.h"
 #include "process.h"
 #include "autopipe.h"
+#include "redir.h"
 
 /* Cyclic add and subtract */
 #define MOD_ADD(a,b,mod) (((a)+(b))%(mod))
@@ -153,15 +154,17 @@ key *decrypt_header( file_t fromfd, RSA *prv )
     return ret.release();
 }
 
-void encrypt_file( key *header, RSA *rsa, const autofd &fromfd, const autofd &tofd )
+// "encrypt_file" will also close the from and to file handles.
+void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
 {
     const size_t key_size=RSA_size(rsa);
 
     /* Skip the header. We'll only write it out once the file itself is written */
     autofd::lseek(tofd, header_size(rsa), SEEK_SET);
 
-    autopipe ipipe;
-    process_ctl gzip_process( FILENAME(gzip), fromfd, ipipe.get_write(), "--rsyncable", NULL );
+    redir_pipe ipipe;
+    redir_fd redir_from(fromfd);
+    process_ctl gzip_process( FILENAME(gzip), &redir_from, &ipipe, NULL,  "--rsyncable", NULL );
 
     // Run through gzip's output, and encrypt it
     const size_t block_size=header->block_size(); // Let's cache the block size
@@ -209,9 +212,12 @@ void encrypt_file( key *header, RSA *rsa, const autofd &fromfd, const autofd &to
     } else {
         throw rscerror("Error in running gzip");
     }
+
+    tofd.clear();
 }
 
-key *decrypt_file( key *header, RSA *prv, const autofd &fromfd, const autofd &tofd )
+// "decrypt_file" will also close the from and to file handles.
+key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd )
 {
     std::auto_ptr<key> new_header;
     if( header==NULL ) {
@@ -232,8 +238,9 @@ key *decrypt_file( key *header, RSA *prv, const autofd &fromfd, const autofd &to
     /* Skip the header */
     currpos=fromfd.lseek(header_size(prv), SEEK_SET);
 
-    autopipe opipe;
-    process_ctl gzip_process( FILENAME(gzip), opipe.get_read(), tofd, "-d", NULL );
+    redir_pipe opipe;
+    redir_fd redir_to(tofd);
+    process_ctl gzip_process( FILENAME(gzip), &opipe, &redir_to, NULL, "-d", NULL );
 
     size_t numread;
     const size_t block_size=header->block_size();
@@ -300,6 +307,7 @@ key *decrypt_file( key *header, RSA *prv, const autofd &fromfd, const autofd &to
         throw rscerror("gunzip failed to run");
 
     new_header.release();
+    fromfd.clear();
     
     return header;
 }

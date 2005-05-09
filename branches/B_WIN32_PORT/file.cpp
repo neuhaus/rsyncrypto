@@ -301,8 +301,6 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     }
 
     // Set the times on the encrypted file to match the plaintext file
-    infd.clear();
-    outfd.clear();
     if( archive ) {
         struct stat status;
 
@@ -334,7 +332,5 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     if( !headfd.valid() ) {
         write_header( key_file, head.get());
     }
-    infd.clear();
-    outfd.clear();
     copy_metadata( dst_file, &status );
 }

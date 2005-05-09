@@ -43,10 +43,18 @@ public:
     {
         return output;
     }
-    void clear()
+    void clear_read()
     {
         input.clear();
+    }
+    void clear_write()
+    {
         output.clear();
+    }
+    void clear()
+    {
+        clear_read();
+        clear_write();
     }
 };
 
