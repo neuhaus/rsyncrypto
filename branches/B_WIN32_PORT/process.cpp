@@ -30,7 +30,7 @@
 #include "rsyncrypto.h"
 #include "process.h"
 
-process_ctl::process_ctl( const char *cmd, redir *input, redir *output, redir *error, ... )
+process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, ... )
 {
     pid=fork();
     if( pid==-1 )
@@ -53,9 +53,10 @@ process_ctl::process_ctl( const char *cmd, redir *input, redir *output, redir *e
         va_end(args);
         va_start(args, error);
 
-        auto_array<char *> arguments(new char *[numargs+1]);
+        auto_array<char *> arguments(new char *[numargs+2]);
 
-        for( int i=0; (arguments[i]=va_arg(args, char *))!=NULL; ++i )
+        arguments[0]=cmd;
+        for( int i=1; (arguments[i]=va_arg(args, char *))!=NULL; ++i )
             ;
         va_end(args);
 

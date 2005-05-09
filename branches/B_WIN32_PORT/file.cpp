@@ -317,11 +317,12 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
 
     /* Decryption */
     autofd headfd( key_file, O_RDONLY );
-    if( headfd.valid() ) {
+    bool headeread=headfd.valid();
+    // headread indicates whether we need to write a new header to disk.
+    if( headeread ) {
         head=std::auto_ptr<key>(read_header( headfd ));
         headfd.clear();
     }
-    /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
 
     autofd infd(src_file, O_RDONLY);
     status=infd.fstat();
@@ -329,7 +330,7 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777);
     autofd outfd(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
-    if( !headfd.valid() ) {
+    if( !headeread ) {
         write_header( key_file, head.get());
     }
     copy_metadata( dst_file, &status );

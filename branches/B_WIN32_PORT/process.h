@@ -13,7 +13,7 @@ class process_ctl {
     process_ctl( const process_ctl & );
     process_ctl &operator= ( const process_ctl & );
 public:
-    process_ctl( const char *cmdline, redir *input, redir *output, redir *error, ... );
+    process_ctl( char *cmdline, redir *input, redir *output, redir *error, ... );
 
     int wait() const;
 };
