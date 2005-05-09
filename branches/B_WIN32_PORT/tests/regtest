@@ -20,7 +20,7 @@ runreg()
     cmdline=$1
     testname=$2
     shift 2
-    if [ "$options"="v" ]
+    if [ "$options" = "v" ]
     then
         echo "Testing $testname: $cmdline"
     else
