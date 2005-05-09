@@ -1,0 +1,56 @@
+#!/bin/sh
+
+set -e
+
+RSC=$1
+
+function runreg()
+{
+    cmdline=$1
+    testname=$2
+    shift 2
+    echo "Testing $testname:"
+    if ($cmdline)
+    then
+        while [ "$1" ]
+        do
+            echo -n "Comparing $1 to $2:"
+            if (diff $1 $2 >/dev/null)
+            then
+                echo " identical"
+            else
+                echo " diff failed"
+                exit 1
+            fi
+            shift 2
+        done
+        echo "$testname passed"
+    else
+        echo "rsyncrypto failed to run"
+        exit 1
+    fi
+}
+
+function dotest()
+{
+    echo "Running regressions on $1"
+    runreg "$RSC -d $1.enc $1.dec $1.key cert.crt" "decryption using symmetric key" $1 $1.dec
+    rm $1.dec
+    runreg "$RSC -d $1.enc $1.dec $1.key2 cert.key" "decryption using asymmetric key" $1 $1.dec $1.key $1.key2
+    rm $1.dec $1.key2
+    runreg "$RSC $1 $1.enc2 $1.key cert.key" "encryption using existing key"
+    runreg "$RSC -d $1.enc2 $1.dec $1.key cert.crt" "decryption of our own encryption - symmetric" $1 $1.dec
+    rm $1.dec
+    runreg "$RSC -d $1.enc2 $1.dec $1.key2 cert.key" "decryption of our own encryption - asymmetric" $1 $1.dec $1.key $1.key2
+    rm $1.dec $1.key2
+    echo "All tests on $1 successful"
+    echo ""
+}
+
+echo $RSC
+
+shopt -s extglob
+for reg in reg+([0-9])
+do
+    dotest $reg
+done
