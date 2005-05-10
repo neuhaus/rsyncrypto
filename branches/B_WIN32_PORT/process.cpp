@@ -39,11 +39,11 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
     if( pid==0 ) {
         // Child
         if( input!=NULL )
-            input->child_redirect(STDIN_FILENO);
+            input->child_redirect(STDIN_FILENO, NULL);
         if( output!=NULL )
-            output->child_redirect(STDOUT_FILENO);
+            output->child_redirect(STDOUT_FILENO, NULL);
         if( error!=NULL )
-            error->child_redirect(STDERR_FILENO);
+            error->child_redirect(STDERR_FILENO, NULL);
 
         va_list args;
         va_start(args, error);
@@ -64,11 +64,11 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
     } else {
         // Parent
         if( input!=NULL )
-            input->parent_redirect(STDIN_FILENO);
+            input->parent_redirect(STDIN_FILENO, NULL);
         if( output!=NULL )
-            output->parent_redirect(STDOUT_FILENO);
+            output->parent_redirect(STDOUT_FILENO, NULL);
         if( error!=NULL )
-            error->parent_redirect(STDERR_FILENO);
+            error->parent_redirect(STDERR_FILENO, NULL);
     }
 }
 
