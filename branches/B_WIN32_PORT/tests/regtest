@@ -15,6 +15,18 @@ EOF
     exit 1
 fi
 
+compare()
+{
+    echo -n "Comparing $1 to $2:"
+    if (diff $1 $2 >/dev/null)
+    then
+        echo " identical"
+    else
+        echo " diff failed"
+        exit 1
+    fi
+}
+
 runreg()
 {
     cmdline=$1
@@ -30,14 +42,7 @@ runreg()
     then
         while [ "$1" ]
         do
-            echo -n "Comparing $1 to $2:"
-            if (diff $1 $2 >/dev/null)
-            then
-                echo " identical"
-            else
-                echo " diff failed"
-                exit 1
-            fi
+            compare $1 $2
             shift 2
         done
         echo "$testname passed"
@@ -75,8 +80,45 @@ function dotest()
 
 echo $RSC
 
+rm -rf regtestdir.* || echo -n ""
+mkdir regtestdir.orig
+mkdir regtestdir.orig/dummy
+mkdir regtestdir.key
+mkdir regtestdir.key/dummy
+mkdir regtestdir.enc
+mkdir regtestdir.enc/dummy
 shopt -s extglob
 for reg in reg+([0-9])
 do
     dotest $reg
+    ln $reg regtestdir.orig/dummy
+    ln $reg.key regtestdir.key/dummy/$reg
+    ln $reg.enc regtestdir.enc/dummy/$reg
 done
+
+runreg "$RSC -vv -r -d regtestdir.enc regtestdir.dec regtestdir.key cert.crt" "recursive decryption using symmetric"
+for reg in reg+([0-9])
+do
+    compare regtestdir.orig/dummy/$reg regtestdir.dec/dummy/$reg
+done
+rm -rf regtestdir.dec
+runreg "$RSC -vv -r -d regtestdir.enc regtestdir.dec regtestdir.key2 cert.key" "recursive decryption using asymmetric"
+for reg in reg+([0-9])
+do
+    compare regtestdir.orig/dummy/$reg regtestdir.dec/dummy/$reg
+    compare regtestdir.key/dummy/$reg regtestdir.key2/dummy/$reg
+done
+rm -rf regtestdir.dec
+rm -rf regtestdir.key2
+runreg "$RSC -vv -r --trim=2 regtestdir.orig/dummy regtestdir.enc2/dummy regtestdir.key/dummy cert.key" "recursive encryption using existing"
+runreg "$RSC -vv -r --trim=2 -d regtestdir.enc2/dummy regtestdir.dec/ regtestdir.key2 cert.key" "recursive decryption using asymmetric with trim"
+for reg in reg+([0-9])
+do
+    compare regtestdir.orig/dummy/$reg regtestdir.dec/$reg
+    compare regtestdir.key/dummy/$reg regtestdir.key2/$reg
+done
+rm -rf regtestdir.dec
+rm -rf regtestdir.key2
+
+rm -rf regtestdir.*
+echo "All tests completed successfully"
