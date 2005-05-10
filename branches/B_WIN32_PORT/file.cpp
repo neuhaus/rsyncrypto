@@ -316,7 +316,13 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     struct stat status;
 
     /* Decryption */
-    autofd headfd( key_file, O_RDONLY );
+    autofd headfd;
+    try {
+        headfd=autofd( key_file, O_RDONLY );
+    } catch( const rscerror &err ) {
+        if( err.errornum()!=ENOENT )
+            throw;
+    }
     bool headeread=headfd.valid();
     // headread indicates whether we need to write a new header to disk.
     if( headeread ) {

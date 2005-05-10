@@ -45,13 +45,13 @@ public:
     autofd() : fd(-1), owner(false), f_eof(false)
     {
     }
-    explicit autofd( file_t fd_p ) : fd(fd_p), owner(fd_p!=-1?true:false), f_eof(false)
+    explicit autofd( file_t fd_p ) : fd(fd_p), owner(valid()), f_eof(false)
     {
     }
 #if defined(EXCEPT_CLASS)
-    autofd( file_t fd_p, bool except ) : fd(fd_p), owner(true), f_eof(false)
+    autofd( file_t fd_p, bool except ) : fd(fd_p), owner(valid()), f_eof(false)
     {
-        if( fd==-1 )
+        if( except && valid() )
             throw EXCEPT_CLASS("file open failed", errno);
     }
 
