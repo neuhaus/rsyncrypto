@@ -112,6 +112,10 @@ SOURCE=.\win32\process.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\win32\redir.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\win32\rsyncrypto.rc
 # End Source File
 # Begin Source File
@@ -185,11 +189,19 @@ SOURCE=.\random.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\win32\resource.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\rsyncrypto.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\win32\types.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\win32redir.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

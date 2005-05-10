@@ -46,6 +46,7 @@ CLEAN :
 	-@erase "$(INTDIR)\file.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\process.obj"
+	-@erase "$(INTDIR)\redir.obj"
 	-@erase "$(INTDIR)\rsyncrypto.pch"
 	-@erase "$(INTDIR)\rsyncrypto.res"
 	-@erase "$(INTDIR)\stdafx.obj"
@@ -71,7 +72,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\process.obj" \
 	"$(INTDIR)\stdafx.obj" \
-	"$(INTDIR)\rsyncrypto.res"
+	"$(INTDIR)\rsyncrypto.res" \
+	"$(INTDIR)\redir.obj"
 
 "$(OUTDIR)\rsyncrypto.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -102,6 +104,8 @@ CLEAN :
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\process.obj"
 	-@erase "$(INTDIR)\process.sbr"
+	-@erase "$(INTDIR)\redir.obj"
+	-@erase "$(INTDIR)\redir.sbr"
 	-@erase "$(INTDIR)\rsyncrypto.pch"
 	-@erase "$(INTDIR)\rsyncrypto.res"
 	-@erase "$(INTDIR)\stdafx.obj"
@@ -127,7 +131,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\file.sbr" \
 	"$(INTDIR)\main.sbr" \
 	"$(INTDIR)\process.sbr" \
-	"$(INTDIR)\stdafx.sbr"
+	"$(INTDIR)\stdafx.sbr" \
+	"$(INTDIR)\redir.sbr"
 
 "$(OUTDIR)\rsyncrypto.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -144,7 +149,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\process.obj" \
 	"$(INTDIR)\stdafx.obj" \
-	"$(INTDIR)\rsyncrypto.res"
+	"$(INTDIR)\rsyncrypto.res" \
+	"$(INTDIR)\redir.obj"
 
 "$(OUTDIR)\rsyncrypto.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -294,6 +300,24 @@ CPP_SWITCHES=/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOL
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF 
+
+SOURCE=.\win32\redir.cpp
+
+!IF  "$(CFG)" == "rsyncrypto - Win32 Release"
+
+
+"$(INTDIR)\redir.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\rsyncrypto.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "rsyncrypto - Win32 Debug"
+
+
+"$(INTDIR)\redir.obj"	"$(INTDIR)\redir.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\rsyncrypto.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
