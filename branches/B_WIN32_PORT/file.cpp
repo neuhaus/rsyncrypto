@@ -259,7 +259,12 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     // Read in the header, or generate a new one if can't
     {
-        headfd=autofd( key_file, O_RDONLY );
+        try {
+            headfd=autofd( key_file, O_RDONLY );
+        } catch( const rscerror &err ) {
+            if( err.errornum()!=ENOENT )
+                throw;
+        }
         if( headfd.valid() ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
