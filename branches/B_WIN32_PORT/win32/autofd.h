@@ -38,6 +38,23 @@ typedef HANDLE file_t;
 class autofd : public autohandle {
     mutable bool f_eof;
 
+    static time_t ft2ut( FILETIME ft )
+    {
+        // Converts FILETIME to time_t
+        static const ULONGLONG epoch_start=116444736000000000;
+        ULARGE_INTEGER unified_ft;
+        unified_ft.LowPart=ft.dwLowDateTime;
+        unified_ft.HighPart=ft.dwHighDateTime;
+        if( unified_ft.QuadPart<epoch_start )
+            return -1;
+
+        unified_ft.QuadPart-=epoch_start;
+        unified_ft.QuadPart/=10*1000*1000;
+        if( unified_ft.HighPart!=0 )
+            return -1;
+
+        return unified_ft.LowPart;
+    }
 public:
     autofd() : autohandle(INVALID_HANDLE_VALUE), f_eof(false)
     {
@@ -146,10 +163,20 @@ public:
     struct stat fstat() const
     {
         struct stat ret;
+        BY_HANDLE_FILE_INFORMATION info;
 
-        if( ::fstat( reinterpret_cast<int>(static_cast<file_t>(*static_cast<const autohandle *>
-            (this))), &ret )!=0 )
-            throw rscerror("stat failed", errno);
+        if( !GetFileInformationByHandle(*this, &info ) )
+            throw rscerror("stat failed", GetLastError());
+
+        ZeroMemory(&ret, sizeof(ret));
+        ret.st_atime=ft2ut(info.ftLastAccessTime);
+        ret.st_ctime=ft2ut(info.ftCreationTime);
+        ret.st_dev=0; // For a device - handle. Otherwise 0
+        //ret.st_mode; // unix mode
+        ret.st_mtime=ft2ut(info.ftLastWriteTime);
+        ret.st_nlink=info.nNumberOfLinks; // nlink
+        ret.st_rdev=0; // same as dev
+        ret.st_size=info.nFileSizeLow;
 
         return ret;
     }
