@@ -34,7 +34,7 @@
 #include "rsyncrypto.h"
 #include "redir.h"
 
-void redir_pipe::child_redirect( int redir_type )
+void redir_pipe::child_redirect( int redir_type, void *plat_opaq )
 {
     autofd *redirected;
 
@@ -47,7 +47,7 @@ void redir_pipe::child_redirect( int redir_type )
     dup2( redirected->get(), redir_type );
     clear();
 }
-void redir_pipe::parent_redirect( int redir_type )
+void redir_pipe::parent_redirect( int redir_type, void *plat_opaq )
 {
     if( redir_type==STDIN_FILENO ) {
         clear_read();
@@ -56,20 +56,20 @@ void redir_pipe::parent_redirect( int redir_type )
     }
 }
 
-void redir_fd::child_redirect( int redir_type )
+void redir_fd::child_redirect( int redir_type, void *plat_opaq )
 {
     dup2( get(), redir_type );
     clear();
 }
-void redir_fd::parent_redirect( int redir_type )
+void redir_fd::parent_redirect( int redir_type, void *plat_opaq )
 {
     clear();
 }
 
-void redir_null::child_redirect( int redir_type )
+void redir_null::child_redirect( int redir_type, void *plat_opaq )
 {
 }
-void redir_null::parent_redirect( int redir_type )
+void redir_null::parent_redirect( int redir_type, void *plat_opaq )
 {
 }
 

@@ -6,8 +6,8 @@
 // This is a base class for process output redirection
 class redir {
 public:
-    virtual void child_redirect( int redir_type )=0;
-    virtual void parent_redirect( int redir_type )=0;
+    virtual void child_redirect( int redir_type, void *plat_opaq )=0;
+    virtual void parent_redirect( int redir_type, void *plat_opaq )=0;
 };
 
 class redir_pipe : public redir, public autopipe {
@@ -21,8 +21,8 @@ public:
     virtual ~redir_pipe()
     {
     }
-    virtual void child_redirect( int redir_type );
-    virtual void parent_redirect( int redir_type );
+    virtual void child_redirect( int redir_type, void *plat_opaq );
+    virtual void parent_redirect( int redir_type, void *plat_opaq );
 };
 
 class redir_fd : public redir, public autofd {
@@ -47,15 +47,15 @@ public:
     virtual ~redir_fd()
     {
     }
-    virtual void child_redirect( int redir_type );
-    virtual void parent_redirect( int redir_type );
+    virtual void child_redirect( int redir_type, void *plat_opaq );
+    virtual void parent_redirect( int redir_type, void *plat_opaq );
 };
 
 // Do nothing redirection
 class redir_null : public redir {
 public:
-    virtual void child_redirect( int redir_type );
-    virtual void parent_redirect( int redir_type );
+    virtual void child_redirect( int redir_type, void *plat_opaq );
+    virtual void parent_redirect( int redir_type, void *plat_opaq );
 };
 
 #endif // REDIR_H

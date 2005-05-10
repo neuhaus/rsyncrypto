@@ -29,8 +29,9 @@
  */
 #include "../rsyncrypto.h"
 #include "process.h"
+#include "win32redir.h"
 
-process_ctl::process_ctl( const char *cmd, const autofd &input, const autofd &output, ...)
+process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, ... )
 {
     STARTUPINFO siStartInfo; 
     // Set up members of the STARTUPINFO structure. 
@@ -45,17 +46,15 @@ process_ctl::process_ctl( const char *cmd, const autofd &input, const autofd &ou
 
     autohandle input_stream;
 
-    if( input.get()!=INVALID_HANDLE_VALUE ) {
-        input_stream=input.Duplicate( true );
-        siStartInfo.hStdInput=input_stream;
-    }
+    win32_redir_opaq inop, outop, errop;
+    inop.si=outop.si=errop.si=&siStartInfo;
 
-    autohandle output_stream;
-
-    if( output.get()!=INVALID_HANDLE_VALUE ) {
-        output_stream=output.Duplicate( true );
-        siStartInfo.hStdOutput=output_stream;
-    }
+    if( input!=NULL )
+        input->parent_redirect( STDIN_FILENO, &inop );
+    if( output!=NULL )
+        output->parent_redirect( STDOUT_FILENO, &outop );
+    if( error!=NULL )
+        error->parent_redirect( STDERR_FILENO, &errop );
 
     // Set up members of the PROCESS_INFORMATION structure. 
     ZeroMemory( &pInfo, sizeof(pInfo) );    
