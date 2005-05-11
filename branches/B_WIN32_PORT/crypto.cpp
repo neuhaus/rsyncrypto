@@ -162,7 +162,7 @@ void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
     /* Skip the header. We'll only write it out once the file itself is written */
     autofd::lseek(tofd, header_size(rsa), SEEK_SET);
 
-    redir_pipe ipipe;
+    redir_pipe ipipe(8000);
     redir_fd redir_from(fromfd);
     process_ctl gzip_process( const_cast<char *>(FILENAME(gzip)), &redir_from, &ipipe, NULL,  "--rsyncable", NULL );
 

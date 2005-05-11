@@ -73,13 +73,14 @@ public:
     {
         DWORD access=0, disposition=0;
 
-        if( (flags&(O_CREAT|O_EXCL))!=0 )
+#define CHECK_MASK(a) ((flags&(a))==(a))
+        if( CHECK_MASK(O_CREAT|O_EXCL) )
             disposition=CREATE_NEW;
-        else if( (flags&(O_CREAT|O_TRUNC))!=0 )
+        else if( CHECK_MASK(O_CREAT|O_TRUNC) )
             disposition=CREATE_ALWAYS;
-        else if( (flags&O_CREAT)!=0 )
+        else if( CHECK_MASK(O_CREAT) )
             disposition=OPEN_ALWAYS;
-        else if( (flags&O_TRUNC)!=0 )
+        else if( CHECK_MASK(O_TRUNC) )
             disposition=TRUNCATE_EXISTING;
         else
             disposition=OPEN_EXISTING;
@@ -96,6 +97,7 @@ public:
             break;
         }
 
+        ODS("CreateFile %s\n", pathname);
         static_cast<autohandle &>(*this)=autohandle(CreateFile(pathname, access,
             FILE_SHARE_READ|FILE_SHARE_WRITE, // We are a unix program at heart
             NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL ));
@@ -127,6 +129,7 @@ public:
         if( !ReadFile( fd, buf, count, &ures, NULL ) )
             throw rscerror("read failed", GetLastError());
 
+        ODS("Read %d bytes from %08x\n", ures, fd);
         return ures;
     }
     ssize_t read( void *buf, size_t count ) const
@@ -141,9 +144,11 @@ public:
     static ssize_t write( file_t fd, const void *buf, size_t count )
     {
         DWORD written;
+        ODS("Going to write %d bytes to %08x\n", count, fd );
         if( !WriteFile( fd, buf, count, &written, NULL ) )
             throw rscerror("write failed", GetLastError());
 
+        ODS("Wrote %d bytes to %08x\n", written, fd);
         return written;
     }
     ssize_t write( const void *buf, size_t count )

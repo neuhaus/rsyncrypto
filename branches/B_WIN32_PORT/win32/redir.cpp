@@ -42,14 +42,17 @@ void redir_pipe::parent_redirect( int redir_type, void *plat_opaq )
     if( redir_type==STDIN_FILENO ) {
         opaq->handle=get_read().Duplicate(true);
         opaq->si->hStdInput=opaq->handle;
+        ODS("Pipe child input=%08x\n", opaq->si->hStdInput);
         clear_read();
     } else {
         opaq->handle=get_write().Duplicate(true);
         clear_write();
         if( redir_type==STDOUT_FILENO ) {
             opaq->si->hStdOutput=opaq->handle;
+            ODS("Pipe child output=%08x\n", opaq->si->hStdOutput);
         } else {
             opaq->si->hStdError=opaq->handle;
+            ODS("Pipe child error=%08x\n", opaq->si->hStdError);
         }
     }
 }
@@ -67,12 +70,15 @@ void redir_fd::parent_redirect( int redir_type, void *plat_opaq )
     {
     case STDIN_FILENO:
         opaq->si->hStdInput=opaq->handle;
+        ODS("File child input=%08x\n", opaq->si->hStdInput);
         break;
     case STDOUT_FILENO:
         opaq->si->hStdOutput=opaq->handle;
+        ODS("File child output=%08x\n", opaq->si->hStdOutput);
         break;
     case STDERR_FILENO:
         opaq->si->hStdError=opaq->handle;
+        ODS("File child error=%08x\n", opaq->si->hStdError);
         break;
     }
 

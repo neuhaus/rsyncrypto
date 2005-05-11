@@ -16,6 +16,10 @@ public:
     explicit autohandle( HANDLE handle_p=NULL ) : handle(handle_p),
         owner(valid())
     {
+#if defined(_DEBUG)
+        if( handle_p )
+            ODS("autohandle(%08x)\n", handle );
+#endif
     }
     autohandle( const autohandle &that ) : handle(that.release()), owner(true)
     {
@@ -49,6 +53,9 @@ public:
     void clear()
     {
         if( owner ) {
+#if defined(_DEBUG)
+            ODS("autohandle clear %08x\n", handle );
+#endif
             CloseHandle( handle);
             handle=NULL;
             owner=false;
@@ -82,6 +89,9 @@ public:
 #endif
         }
 
+#if defined(_DEBUG)
+            ODS("Duplicate %08x->%08x\n", handle, hNewHandle );
+#endif
         return hNewHandle;
     }
 };

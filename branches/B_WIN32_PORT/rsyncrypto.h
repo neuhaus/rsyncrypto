@@ -164,6 +164,17 @@ extern std::ostream *report0, *report1, *report2, *report3;
 #include "autofd.h"
 #include "autommap.h"
 #elif defined(_WIN32)
+static inline ODS(const char *format, ... )
+{
+    char buffer[500];
+
+    va_list args;
+    va_start(args, format);
+
+    _vsnprintf(buffer, sizeof(buffer), format, args );
+    OutputDebugString(buffer);
+}
+
 #include "win32/types.h"
 #include "win32/autofd.h"
 #include "win32/autommap.h"

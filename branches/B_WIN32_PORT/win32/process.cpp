@@ -80,6 +80,7 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
 
     va_end(args);
 
+    ODS("CreateProcess\n");
     // Create the child process.
     if( CreateProcess(NULL, 
         const_cast<char *>(cmdline.c_str()),       // command line 
@@ -103,9 +104,11 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
 
 int process_ctl::wait() const
 {
+    ODS("Wait for %08x to exit\n", hProcess);
     WaitForSingleObject(hProcess, INFINITE);
     DWORD exitcode=-1;
     GetExitCodeProcess( hProcess, &exitcode );
+    ODS("Process %08x quit with error code %d\n", hProcess, exitcode );
 
     return exitcode;
 }
