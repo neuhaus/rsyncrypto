@@ -87,7 +87,7 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
         NULL,          // process security attributes 
         NULL,          // primary thread security attributes 
         TRUE,          // handles are inherited 
-        DEBUG_ONLY_THIS_PROCESS, /* XXX - use CREATE_NO_WINDOW ? */             // creation flags 
+        CREATE_DEFAULT_ERROR_MODE|NORMAL_PRIORITY_CLASS, // creation flags 
         NULL,          // use parent's environment 
         NULL,          // use parent's current directory 
         &siStartInfo,  // STARTUPINFO pointer 
