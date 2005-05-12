@@ -65,7 +65,7 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
     cmdline+="\" ";
 
     va_list args;
-    va_start(args, output);
+    va_start(args, error);
     const char *param;
     while( (param=va_arg(args, const char *))!=NULL ) {
         if( *param=='\0' || strchr( param, ' ' )==NULL ) {
