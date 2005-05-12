@@ -42,8 +42,6 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
     siStartInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     siStartInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
 
-    HANDLE hProcess=GetCurrentProcess();
-
     autohandle input_stream;
 
     win32_redir_opaq inop, outop, errop;
@@ -107,8 +105,9 @@ int process_ctl::wait() const
     ODS("Wait for %08x to exit\n", hProcess);
     WaitForSingleObject(hProcess, INFINITE);
     DWORD exitcode=-1;
-    GetExitCodeProcess( hProcess, &exitcode );
-    ODS("Process %08x quit with error code %d\n", hProcess, exitcode );
+    if( !GetExitCodeProcess( hProcess, &exitcode ) )
+        throw rscerror("Couldn't get child process return code",GetLastError());
+    ODS("Process %08x quit with error code %d\n", static_cast<HANDLE>(hProcess), exitcode );
 
     return exitcode;
 }
