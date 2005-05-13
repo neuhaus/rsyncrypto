@@ -126,7 +126,7 @@ public:
     static ssize_t read( file_t fd, void *buf, size_t count )
     {
         DWORD ures;
-        if( !ReadFile( fd, buf, count, &ures, NULL ) )
+        if( !ReadFile( fd, buf, count, &ures, NULL ) && GetLastError()!=ERROR_BROKEN_PIPE )
             throw rscerror("read failed", GetLastError());
 
         ODS("Read %d bytes from %08x\n", ures, fd);
