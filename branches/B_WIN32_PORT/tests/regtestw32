@@ -6,8 +6,7 @@
 set -e
 
 RSC=$1
-GZIP=$2
-options=$3
+options=$2
 
 if [ ! "$1" ]
 then
@@ -96,9 +95,9 @@ shopt -s extglob
 for reg in reg+([0-9])
 do
     dotest $reg
-    ln $reg regtestdir.orig/dummy
-    ln $reg.key regtestdir.key/dummy/$reg
-    ln $reg.enc regtestdir.enc/dummy/$reg
+    cp $reg regtestdir.orig/dummy
+    cp $reg.key regtestdir.key/dummy/$reg
+    cp $reg.enc regtestdir.enc/dummy/$reg
 done
 
 runreg "$RSC -vv -r -d regtestdir.enc regtestdir.dec regtestdir.key cert.crt" "recursive decryption using symmetric"
