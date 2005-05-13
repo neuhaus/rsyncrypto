@@ -133,19 +133,21 @@ void encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 key *decrypt_header( file_t fromfd, RSA *prv )
 {
     const size_t key_size=RSA_size(prv);
-    autommap filemap(NULL, header_size(prv), PROT_READ|PROT_WRITE, MAP_PRIVATE, fromfd, 0);
+    size_t headsize=header_size(prv);
+    autommap filemap(NULL, headsize, PROT_READ, MAP_PRIVATE, fromfd, 0);
 
     if( *static_cast<uint32_t *>(filemap.get())!=htonl(HEADER_ENCRYPTION_VERSION) )
         throw rscerror("Wrong file or header encrypted with wrong encryption");
 
     unsigned char *buff=filemap.get_uc()+sizeof(HEADER_ENCRYPTION_VERSION);
+    auto_array<unsigned char> decrypted(new unsigned char[headsize]);
 
-    if( RSA_private_decrypt(key_size, buff, buff, prv, RSA_PKCS1_OAEP_PADDING)==-1 ) {
+    if( RSA_private_decrypt(key_size, buff, decrypted.get(), prv, RSA_PKCS1_OAEP_PADDING)==-1 ) {
         unsigned long rsaerr=ERR_get_error();
         throw rscerror(ERR_error_string(rsaerr, NULL));
     }
 
-    std::auto_ptr<key> ret(key::read_key( buff ));
+    std::auto_ptr<key> ret(key::read_key( decrypted.get() ));
 
     // Let's verify that we have read the correct data from the file, by reencoding the key we got and comparing
     // the cyphertexts.
