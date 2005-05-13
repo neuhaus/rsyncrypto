@@ -1,2 +1,4 @@
 *.aps
 .*.swp
+*.dep
+*.plg
