@@ -76,8 +76,8 @@ function dotest()
 
     # Let's test some command line options
 	# No ready null command available - don't run this test.
-    # runreg "$RSC -d --gzip=.\nullgzip $1.enc $1.dec.gz $1.key cert.crt && gunzip $1.dec.gz" "test seperate gunzip" $1 $1.dec
-    # rm $1.dec
+    runreg "$RSC -d --gzip=nullgzip.exe $1.enc $1.dec.gz $1.key cert.crt && gunzip $1.dec.gz" "test seperate gunzip" $1 $1.dec
+    rm $1.dec
 
     echo "All tests on $1 successful"
     echo ""
