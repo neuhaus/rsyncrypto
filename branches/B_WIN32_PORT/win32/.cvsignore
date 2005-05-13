@@ -2,3 +2,5 @@
 .*.swp
 *.dep
 *.plg
+Debug
+Release

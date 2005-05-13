@@ -30,25 +30,34 @@ RSC=rc.exe
 
 !IF  "$(CFG)" == "nullgzip - Win32 Release"
 
-OUTDIR=.\..\Release
+OUTDIR=.\Release
 INTDIR=.\Release
 # Begin Custom Macros
-OutDir=.\..\Release
+OutDir=.\Release
 # End Custom Macros
 
-ALL : "$(OUTDIR)\nullgzip.exe"
+!IF "$(RECURSE)" == "0" 
 
+ALL : "$(OUTDIR)\nullgzip.exe" "C:\Documents and Settings\sun\Sources\rsyncrypto\tests\nullgzip.exe"
 
+!ELSE 
+
+ALL : "rsyncrypto - Win32 Release" "$(OUTDIR)\nullgzip.exe" "C:\Documents and Settings\sun\Sources\rsyncrypto\tests\nullgzip.exe"
+
+!ENDIF 
+
+!IF "$(RECURSE)" == "1" 
+CLEAN :"rsyncrypto - Win32 ReleaseCLEAN" 
+!ELSE 
 CLEAN :
+!ENDIF 
 	-@erase "$(INTDIR)\nullgzip.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(OUTDIR)\nullgzip.exe"
+	-@erase "C:\Documents and Settings\sun\Sources\rsyncrypto\tests\nullgzip.exe"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-"$(INTDIR)" :
-    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
 CPP_PROJ=/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"$(INTDIR)\nullgzip.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
@@ -56,7 +65,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\nullgzip.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\nullgzip.pdb" /machine:I386 /out:"$(OUTDIR)\nullgzip.exe" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\nullgzip.pdb" /machine:I386 /out:"$(OUTDIR)\nullgzip.exe" 
 LINK32_OBJS= \
 	"$(INTDIR)\nullgzip.obj"
 
@@ -65,18 +74,41 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
+WkspDir=.
+TargetName=nullgzip
+InputPath=.\Release\nullgzip.exe
+SOURCE="$(InputPath)"
+
+"..\tests\nullgzip.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	<<tempfile.bat 
+	@echo off 
+	copy "$(InputPath)" "$(WkspDir)\tests"
+<< 
+	
+
 !ELSEIF  "$(CFG)" == "nullgzip - Win32 Debug"
 
-OUTDIR=.\..\Debug
+OUTDIR=.\Debug
 INTDIR=.\Debug
 # Begin Custom Macros
-OutDir=.\..\Debug
+OutDir=.\Debug
 # End Custom Macros
 
-ALL : "$(OUTDIR)\nullgzip.exe" "$(OUTDIR)\nullgzip.bsc"
+!IF "$(RECURSE)" == "0" 
 
+ALL : "$(OUTDIR)\nullgzip.exe" "$(OUTDIR)\nullgzip.bsc" "C:\Documents and Settings\sun\Sources\rsyncrypto\tests\nullgzip.exe"
 
+!ELSE 
+
+ALL : "rsyncrypto - Win32 Debug" "$(OUTDIR)\nullgzip.exe" "$(OUTDIR)\nullgzip.bsc" "C:\Documents and Settings\sun\Sources\rsyncrypto\tests\nullgzip.exe"
+
+!ENDIF 
+
+!IF "$(RECURSE)" == "1" 
+CLEAN :"rsyncrypto - Win32 DebugCLEAN" 
+!ELSE 
 CLEAN :
+!ENDIF 
 	-@erase "$(INTDIR)\nullgzip.obj"
 	-@erase "$(INTDIR)\nullgzip.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -85,14 +117,12 @@ CLEAN :
 	-@erase "$(OUTDIR)\nullgzip.exe"
 	-@erase "$(OUTDIR)\nullgzip.ilk"
 	-@erase "$(OUTDIR)\nullgzip.pdb"
+	-@erase "C:\Documents and Settings\sun\Sources\rsyncrypto\tests\nullgzip.exe"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-"$(INTDIR)" :
-    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
-
-CPP_PROJ=/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\nullgzip.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ  /c 
+CPP_PROJ=/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\nullgzip.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\nullgzip.bsc" 
 BSC32_SBRS= \
@@ -104,7 +134,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\nullgzip.pdb" /debug /machine:I386 /out:"$(OUTDIR)\nullgzip.exe" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\nullgzip.pdb" /debug /machine:I386 /out:"$(OUTDIR)\nullgzip.exe" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\nullgzip.obj"
 
@@ -112,6 +142,18 @@ LINK32_OBJS= \
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
+
+WkspDir=.
+TargetName=nullgzip
+InputPath=.\Debug\nullgzip.exe
+SOURCE="$(InputPath)"
+
+"..\tests\nullgzip.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	<<tempfile.bat 
+	@echo off 
+	copy "$(InputPath)" "$(WkspDir)\tests"
+<< 
+	
 
 !ENDIF 
 
@@ -169,6 +211,32 @@ SOURCE=.\nullgzip.cpp
 
 "$(INTDIR)\nullgzip.obj"	"$(INTDIR)\nullgzip.sbr" : $(SOURCE) "$(INTDIR)"
 
+
+!ENDIF 
+
+!IF  "$(CFG)" == "nullgzip - Win32 Release"
+
+"rsyncrypto - Win32 Release" : 
+   cd "\Documents and Settings\sun\Sources\rsyncrypto"
+   $(MAKE) /$(MAKEFLAGS) /F ".\rsyncrypto.mak" CFG="rsyncrypto - Win32 Release" 
+   cd ".\win32"
+
+"rsyncrypto - Win32 ReleaseCLEAN" : 
+   cd "\Documents and Settings\sun\Sources\rsyncrypto"
+   $(MAKE) /$(MAKEFLAGS) /F ".\rsyncrypto.mak" CFG="rsyncrypto - Win32 Release" RECURSE=1 CLEAN 
+   cd ".\win32"
+
+!ELSEIF  "$(CFG)" == "nullgzip - Win32 Debug"
+
+"rsyncrypto - Win32 Debug" : 
+   cd "\Documents and Settings\sun\Sources\rsyncrypto"
+   $(MAKE) /$(MAKEFLAGS) /F ".\rsyncrypto.mak" CFG="rsyncrypto - Win32 Debug" 
+   cd ".\win32"
+
+"rsyncrypto - Win32 DebugCLEAN" : 
+   cd "\Documents and Settings\sun\Sources\rsyncrypto"
+   $(MAKE) /$(MAKEFLAGS) /F ".\rsyncrypto.mak" CFG="rsyncrypto - Win32 Debug" RECURSE=1 CLEAN 
+   cd ".\win32"
 
 !ENDIF 
 
