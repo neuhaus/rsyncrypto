@@ -12,3 +12,5 @@ Debug
 Release
 *.dep
 *.ncb
+*.opt
+*.plg

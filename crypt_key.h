@@ -3,8 +3,8 @@
 
 class key {
 private:
-    static const uint32_t VERSION_MAGIC_1=0xD657EA1Cul;
-    static const uint32_t VERSION_MAGIC_CUR=VERSION_MAGIC_1;
+    static const uint32_t VERSION_MAGIC_1;
+    static const uint32_t VERSION_MAGIC_CUR;
 
 protected:
     // Define the key header in it's export form

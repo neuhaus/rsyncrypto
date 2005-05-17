@@ -20,10 +20,6 @@
 #ifndef _AUTOMMAP_H
 #define _AUTOMMAP_H
 
-#include <sys/types.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <errno.h>
 
 // automap will auto-release mmaped areas
@@ -48,7 +44,7 @@ public:
         }
     }
     // Map an entire file into memory
-    autommap(int fd, int prot) : ptr(reinterpret_cast<void *>(-1)), size(0)
+    autommap(file_t fd, int prot) : ptr(reinterpret_cast<void *>(-1)), size(0)
     {
         struct stat filestat;
         if( fstat(fd, &filestat)==0 ) {
