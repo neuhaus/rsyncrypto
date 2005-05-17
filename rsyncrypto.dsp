@@ -39,6 +39,7 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Yu"rsyncrypto.h" /FD /c
@@ -48,8 +49,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libeay32.lib impargtable2.lib Ws2_32.lib /nologo /subsystem:console /machine:I386
 
 !ELSEIF  "$(CFG)" == "rsyncrypto - Win32 Debug"
 
@@ -62,17 +63,18 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ  /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Yu"rsyncrypto.h" /FD /GZ  /c
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /Yu"rsyncrypto.h" /FD /GZ /c
 # ADD BASE RSC /l 0x40d /d "_DEBUG"
 # ADD RSC /l 0x40d /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 libeay32.lib impargtable2.lib Ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 
 !ENDIF 
 
@@ -86,10 +88,6 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\aes_crypt.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\blocksizes.cpp
 # End Source File
 # Begin Source File
 
@@ -109,12 +107,21 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\win32\process.cpp
+# ADD CPP /Yu"../rsyncrypto.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\redir.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\win32\rsyncrypto.rc
 # End Source File
 # Begin Source File
 
 SOURCE=.\win32\stdafx.cpp
-# ADD CPP /Yc"rsyncrypto.h"
+# ADD CPP /Yc"../rsyncrypto.h"
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -134,11 +141,27 @@ SOURCE=.\autodir.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\autofd.h
+SOURCE=.\win32\autodir.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\autommap.h
+SOURCE=.\win32\autofd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\autohandle.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\autommap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\autopipe.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\autopipe.h
 # End Source File
 # Begin Source File
 
@@ -154,7 +177,31 @@ SOURCE=.\file.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\process.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\process.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\random.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\resource.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\rsyncrypto.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\types.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32\win32redir.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

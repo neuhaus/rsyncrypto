@@ -5,13 +5,14 @@ cert.crt - a sample X509 certificate (1024bit RSA) which can be used for encrypt
 cert.key - cert.crt's private key
 For both use openssl to examine. e.g. - openssl x509 -in cert.crt -noout -text
 
-gzip - a shell script for nullifying the compression part of the process.
+nullgzip - a shell script for nullifying the compression part of the process.
 Sometimes, for debugging purposes, it is more convinent to not compress the file
 prior to it's encryption. This is especially useful when it is desired to compare
 the image right before encryption with the image right after decryption.
 
-To disable compression, use the "gzip" option to specify "tests/gzip". This will make the
-gzip in "tests" override the system wide gzip. This gzip is a simple pass through.
+To disable compression, use the "gzip" option to specify "tests/nullgzip". This
+will make the gzip in "tests" override the system wide gzip. This gzip is a simple
+pass through.
 
 reg? - plain text files that have caused problems in the past.
 reg?.key - the key files with which they caused problems.
@@ -30,3 +31,7 @@ Please note, however, that testcrypt will not generate brand new files each time
 It will only append X bytes to the existing file. How many bytes are appended each
 time is determined by the second parameter to testcrypt. The first parameter tells
 testcrypt how many iterations to make.
+
+regtest - an exercising program. Uses the reg* files to make sure that the compiled
+version of rsyncrypto correctly decrypts and encrypts in a way compatible to
+previous versions.

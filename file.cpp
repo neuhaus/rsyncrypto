@@ -48,7 +48,7 @@ static void copy_metadata( const char *destfilename, const struct stat *data )
     tv[1].tv_usec=0;
 #endif
 
-    if( utimes( destfilename, tv )==-1 )
+    if( autofd::utimes( destfilename, tv )==-1 )
 	throw rscerror("Setting time failed", errno, destfilename );
 }
 
@@ -60,7 +60,7 @@ static int calc_trim( const char *path, int trim_count )
         throw rscerror("Cannot trim empty path");
 
     do {
-        if( (path[ret]=='/' || path[ret]=='\0') && ret!=0 && path[ret-1]!='/' )
+        if( (path[ret]==DIRSEP_C || path[ret]=='\0') && ret!=0 && path[ret-1]!=DIRSEP_C )
             trim_count--;
     } while( trim_count>0 && path[ret++]!='\0' );
 
@@ -68,7 +68,7 @@ static int calc_trim( const char *path, int trim_count )
         throw rscerror("Not enough directories to trim");
 
     // Skip trailing slashes
-    while( path[ret]=='/' )
+    while( path[ret]==DIRSEP_C )
         ret++;
 
     return ret;
@@ -81,9 +81,9 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
 
     if( strcmp(src, "-")==0 ) {
         // Src is stdin
-        srcfd=autofd(dup(STDIN_FILENO), true);
+        srcfd=autofd::dup(STDIN_FILENO);
     } else {
-        srcfd=autofd(open(src, O_RDONLY), true);
+        srcfd=autofd(src, O_RDONLY);
     }
 
     while( !srcfd.eof() ) {
@@ -173,9 +173,11 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                 }
             }
             break;
+#if defined S_IFLNK
         case S_IFLNK:
             // Symbolic link
             break;
+#endif
         default:
             // Unhandled type
             throw rscerror("Unhandled file type");
@@ -197,11 +199,13 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
                     // Need to erase directory
                     if( VERBOSE(1) )
                         std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
-                    rmdir( source_file );
-                    rmdir( key_file );
+                    autofd::rmdir( source_file );
+                    autofd::rmdir( key_file );
                     break;
                 case S_IFREG:
+#if defined S_IFLNK
                 case S_IFLNK:
+#endif
                     if( VERBOSE(1) )
                         std::cout<<"Delete "<<source_file<<std::endl;
                     if( unlink( source_file )!=0 )
@@ -255,8 +259,13 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     // Read in the header, or generate a new one if can't
     {
-        headfd=autofd(open( key_file, O_RDONLY ));
-        if( headfd!=-1 ) {
+        try {
+            headfd=autofd( key_file, O_RDONLY );
+        } catch( const rscerror &err ) {
+            if( err.errornum()!=ENOENT )
+                throw;
+        }
+        if( headfd.valid() ) {
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
 
@@ -268,7 +277,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
             }
                 
         }
-        if( headfd==-1 ) {
+        if( !headfd.valid() ) {
             head=std::auto_ptr<key>(key::new_key(key::CYPHER_AES, VAL(keysize), VAL(rollwin),
                         VAL(rollsens), VAL(rollmin)));
         }
@@ -282,23 +291,21 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     autofd infd;
     if( strcmp(source_file, "-")!=0 )
-        infd=autofd(open(source_file, open_flags), true);
+        infd=autofd(source_file, open_flags);
     else {
-        infd=autofd(dup(STDIN_FILENO), true);
+        infd=autofd::dup(STDIN_FILENO);
         // If source is stdin, there is nothing to archive
         archive=false;
     }
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777 );
-    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666), true);
+    autofd outfd(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666);
     encrypt_file( head.get(), rsa_key, infd, outfd );
-    if( headfd==-1 ) {
+    if( !headfd.valid() ) {
         write_header( key_file, head.get() );
     }
 
     // Set the times on the encrypted file to match the plaintext file
-    infd.clear();
-    outfd.clear();
     if( archive ) {
         struct stat status;
 
@@ -314,23 +321,28 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     struct stat status;
 
     /* Decryption */
-    autofd headfd(open( key_file, O_RDONLY ));
-    if( headfd!=-1 ) {
-        head=std::auto_ptr<key>(read_header( headfd ));
-        close(headfd);
+    autofd headfd;
+    try {
+        headfd=autofd( key_file, O_RDONLY );
+    } catch( const rscerror &err ) {
+        if( err.errornum()!=ENOENT )
+            throw;
     }
-    /* headfd indicates whether we need to write a new header to disk. -1 means yes. */
+    bool headeread=headfd.valid();
+    // headread indicates whether we need to write a new header to disk.
+    if( headeread ) {
+        head=std::auto_ptr<key>(read_header( headfd ));
+        headfd.clear();
+    }
 
-    autofd infd(open(src_file, O_RDONLY), true);
-    fstat(infd, &status);
+    autofd infd(src_file, O_RDONLY);
+    status=infd.fstat();
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777);
-    autofd outfd(open(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666), true);
+    autofd outfd(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666);
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
-    if( headfd==-1 ) {
+    if( !headeread ) {
         write_header( key_file, head.get());
     }
-    infd.clear();
-    outfd.clear();
     copy_metadata( dst_file, &status );
 }

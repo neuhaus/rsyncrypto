@@ -27,24 +27,58 @@
  *
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
+#include "rsyncrypto.h"
+#include "process.h"
 
-#ifndef CRYPTO_H
-#define CRYPTO_H
-#include <openssl/rsa.h>
-#include "crypt_key.h"
+process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, ... )
+{
+    pid=fork();
+    if( pid==-1 )
+        throw rscerror("Error creating child process", errno, cmd);
+    
+    if( pid==0 ) {
+        // Child
+        if( input!=NULL )
+            input->child_redirect(STDIN_FILENO, NULL);
+        if( output!=NULL )
+            output->child_redirect(STDOUT_FILENO, NULL);
+        if( error!=NULL )
+            error->child_redirect(STDERR_FILENO, NULL);
 
-enum CYPHER_TYPE { CYPHER_AES };
+        va_list args;
+        va_start(args, error);
+        int numargs=0;
+        while( va_arg(args, char *)!=NULL )
+            ++numargs;
+        va_end(args);
+        va_start(args, error);
 
-//class key_header;
+        auto_array<char *> arguments(new char *[numargs+2]);
 
-//struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher);
-key *read_header( const autofd &headfd );
-void write_header( const char *filename, const key *head );
-size_t header_size( const RSA *rsa );
-void encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );
-RSA *extract_public_key( const char *pem_filename );
-RSA *extract_private_key( const char *key_filename );
-void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd );
-key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd );
+        arguments[0]=cmd;
+        for( int i=1; (arguments[i]=va_arg(args, char *))!=NULL; ++i )
+            ;
+        va_end(args);
 
-#endif /* CRYPTO_H */
+        execvp(cmd, arguments.get() );
+    } else {
+        // Parent
+        if( input!=NULL )
+            input->parent_redirect(STDIN_FILENO, NULL);
+        if( output!=NULL )
+            output->parent_redirect(STDOUT_FILENO, NULL);
+        if( error!=NULL )
+            error->parent_redirect(STDERR_FILENO, NULL);
+    }
+}
+
+int process_ctl::wait() const
+{
+    int childstatus;
+
+    do {
+        waitpid(pid, &childstatus, 0);
+    } while( !WIFEXITED(childstatus) );
+
+    return WEXITSTATUS(childstatus);
+}
