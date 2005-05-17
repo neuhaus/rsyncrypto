@@ -60,7 +60,7 @@ static int calc_trim( const char *path, int trim_count )
         throw rscerror("Cannot trim empty path");
 
     do {
-        if( (path[ret]=='/' || path[ret]=='\0') && ret!=0 && path[ret-1]!='/' )
+        if( (path[ret]==DIRSEP_C || path[ret]=='\0') && ret!=0 && path[ret-1]!=DIRSEP_C )
             trim_count--;
     } while( trim_count>0 && path[ret++]!='\0' );
 
@@ -68,7 +68,7 @@ static int calc_trim( const char *path, int trim_count )
         throw rscerror("Not enough directories to trim");
 
     // Skip trailing slashes
-    while( path[ret]=='/' )
+    while( path[ret]==DIRSEP_C )
         ret++;
 
     return ret;
