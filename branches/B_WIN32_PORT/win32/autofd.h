@@ -257,12 +257,12 @@ public:
                 if( sublen>0 && path[sublen]==DIRSEP_C && path[sublen+1]!=DIRSEP_C ) {
                     std::string subpath(path, sublen);
                     if( !CreateDirectory( subpath.c_str(), NULL ) &&
-                        GetLastError()!=ERROR_FILE_EXISTS )
+                        GetLastError()!=ERROR_ALREADY_EXISTS )
                         throw rscerror("mkdir failed", GetLastError(), subpath.c_str() );
                 }
             }
 
-            if( CreateDirectory( path, NULL )!=0 && GetLastError()!=ERROR_FILE_EXISTS )
+            if( CreateDirectory( path, NULL )!=0 && GetLastError()!=ERROR_ALREADY_EXISTS )
                 throw rscerror("mkdir failed", GetLastError(), path );
         }
     }
