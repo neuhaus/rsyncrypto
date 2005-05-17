@@ -29,6 +29,7 @@
  */
 #include "rsyncrypto.h"
 #include "crypt_key.h"
+#include "random.h"
 
 startup_options options;
 
@@ -50,7 +51,6 @@ int main( int argc, char *argv[] )
 
     ARG(verbosity).count=3;
 
-    autofd random(open("/dev/urandom", O_RDONLY));
     std::auto_ptr<key> testkey(key::new_key( key::CYPHER_AES, 0, VAL(rollwin), VAL(rollmin),
                 VAL(rollsens) ));
 
@@ -62,8 +62,10 @@ int main( int argc, char *argv[] )
         }
 
         unsigned char buff;
-        random.read( &buff, 1 );
+        random::rand( &buff, 1 );
 
         border=testkey->calc_boundry( buff );
     } while( times>0 );
+
+    return 0;
 }

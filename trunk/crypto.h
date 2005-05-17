@@ -38,13 +38,13 @@ enum CYPHER_TYPE { CYPHER_AES };
 //class key_header;
 
 //struct key_header *gen_header(int key_length, enum CYPHER_TYPE cypher);
-key *read_header( int headfd );
+key *read_header( const autofd &headfd );
 void write_header( const char *filename, const key *head );
 size_t header_size( const RSA *rsa );
 void encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );
 RSA *extract_public_key( const char *pem_filename );
 RSA *extract_private_key( const char *key_filename );
-void encrypt_file( key *header, RSA *rsa, int fromfd, int tofd );
-key *decrypt_file( key *header, RSA *prv, int fromfd, int tofd );
+void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd );
+key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd );
 
 #endif /* CRYPTO_H */

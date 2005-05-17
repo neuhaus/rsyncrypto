@@ -1,3 +1,6 @@
+2005-05-17 Shachar Shemesh
+	* Merge Win32 port into HEAD
+
 2005-05-03 Shachar Shemesh
 	* Move from using "getopt_long" for processing command options to
 	  using argtable.
