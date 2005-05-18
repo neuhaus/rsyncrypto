@@ -136,6 +136,7 @@ struct startup_options {
 
         if( arg_nullcheck(argtable)==0 ) {
             // Fill in default values
+            keysize->ival[0]=0;
             trim->ival[0]=1;
             rollwin->ival[0]=8192;
             rollmin->ival[0]=8192;
