@@ -245,6 +245,9 @@ public:
             ret+=ch;
         }
 
+        if( ch=='\n' && ret.length()>0 && ret[ret.length()-1]=='\r' )
+            ret.resize(ret.length()-1);
+
         return ret;
     }
     // Recursively create directories
