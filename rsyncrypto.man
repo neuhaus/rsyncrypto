@@ -107,6 +107,15 @@ files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
 during the encryption (and thus decryption) operation.
 .TP
+.B \-m, \-\-meta\-encrypt=translation_file
+Encrypt the meta information. If this option is specified, this means that file
+names, as well as other data (currently, file permission in Unix) are encrypted
+as well. This is done by changing the name of the encrypted file to a random
+string of characters, and storing the translation in the file given as parameter.
+If working in recursive mode, this file is automatically also included in the
+encryption, and is given the fixed name "filelist". This is done so that
+decryption of the file names is possible when the symmetric keys are lost.
+.TP
 .BR \-\-trim =num
 Determine how many directory levels to trim from the beginning of the \fIsrcdir\fP
 path when creating directories under \fIdstdir\fP. The default value is 1. See
@@ -151,6 +160,22 @@ Increase verbosity level. Specify several time to be more verbose.
 .P
 If \fIsrcfile\fP is given as `-', the plain text data will be read fro stdin.
 This does not yet work for decompression (see \fBBUGS\fP).
+.P
+.BR \-\-meta\-encrypt
+.P
+The meta encrypt option allows encryption of file names, as well as other meta
+data. This is not so much "encryption", as it is table replacement. File names
+are replaced by a random string of characters, and the translation table is
+stored in a special file, that is given as a parameter to the "meta-encrypt"
+argument.
+.P
+If the "\-r" option is used, this file is automatically encrypted too. To
+allow cold decryption (i.e. - decryption using only the assymetric private key)
+this file's name is not encrypted itself, and it will always be called
+"filelist".
+.P
+The filelist file format is a binary representation of the meta data for the
+files. The format is documented seperately.
 .P
 .BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
 .P
