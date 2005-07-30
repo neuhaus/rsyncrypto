@@ -37,33 +37,9 @@
 
 void usage()
 {
-    fprintf(stderr, "Usage: " PACKAGE_NAME " <src> <dst> <keys> <publickey file>\n"
-            "Options:\n"
-            "-h                   Help - this page\n"
-            "-d                   Decrypt.\n"
-            "-r                   <src> <dst> and <keys> are all directory names. The\n"
-            "                     encryption will apply to all files in them recursively\n"
-            "-c                   Only encrypt changed files - works only in recursive mode\n"
-            "--trim               Number of directory entries to trim from the begining of\n"
-            "                     the path. Default is 1\n"
-            "--delete             In recursive mode, delete files in <dst> not in <src>\n"
-            "--delete-keys        In recursive mode, delete also keys. Implies --detelte\n"
-            "--filelist           <src> is a file (or \"-\" for stdin) with file and directory\n"
-            "                     names to process.\n"
-            "-b keysize           Must be one of 128, 192 or 256 bits. Encryption only.\n"
-            "--fr                 Force new rollover parameters, even if previous encryption\n"
-            "                     used a different setting.\n"
-            "--fk                 Force new key size, even if previous encryption used a\n"
-            "                     different setting\n"
-            "--no-archive-mode    Do not try to preserve timestamps, permissions etc.\n"
-            "--gzip               path to gzip program to use\n"
-            "\nAdvance options:\n"
-            "--roll-win           Rollover window size. Default is 8192 byte\n"
-            "--roll-min           Minimal number of guaranteed non-rolled bytes. Default 8192\n"
-            "--roll-sensitivity   How sensitive are we to cutting a block. Default is\n"
-            "                     \"roll-win\"\n\n"
-            "Currently only AES encryption is supported\n");
-
+    fprintf(stderr, "rsyncrypto ");
+    arg_print_syntax(stderr, options.argtable, "\n\n");
+    arg_print_glossary(stderr, options.argtable, "%-22s %s\n");
     exit(0);
 }
 
