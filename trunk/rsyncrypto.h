@@ -50,6 +50,8 @@
 #include <iostream>
 #include <string>
 
+#include <map>
+
 #include <argtable2.h>
 
 #if !HAVE_LSTAT
@@ -91,10 +93,11 @@ struct startup_options {
     struct arg_lit *decrypt, *verbosity, *recurse, *changed;
     struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim;
     struct arg_file *gzip;
-    struct arg_file *src, *dst, *key, *master;
+    struct arg_file *src, *dst, *key, *master, *metaenc;
+    struct arg_rem *rem1;
     struct arg_end *end;
 
-    void *argtable[22];
+    void *argtable[24];
 
     startup_options()
     {
@@ -111,6 +114,7 @@ struct startup_options {
         argtable[i++]=recurse=arg_lit0( "r", "recurse",
                 "<src> <dst> and <keys> are directory names, and are processed recursively");
         argtable[i++]=changed=arg_lit0( "c", "changed", "Only encrypt changed files. Requires -r");
+        argtable[i++]=metaenc=arg_file0( "m", "meta-encrypt", "translation_file", "Encrypt meta data (file names, permissions)");
         argtable[i++]=trim=arg_int0( NULL, "trim", "<n>",
                 "Number of directory entries to trim from the begining of the path. Default 1");
         argtable[i++]=del=arg_lit0( NULL, "delete", "Delete files under <dst> not under <src>. Requires -r");
@@ -125,6 +129,7 @@ struct startup_options {
         argtable[i++]=noarch=arg_lit0( NULL, "no-archive-mode", "Do not try to preserve timestamps");
         argtable[i++]=gzip=arg_file0( NULL, "gzip", "<file>",
                 "Path to gzip-like program to use. Must accept a --rsyncable command option");
+	argtable[i++]=rem1=arg_rem( "Advanced options:", "" );
         argtable[i++]=rollwin=arg_int0( NULL, "roll-win", "<n>", "Rollover window size. Default is 8192 byte");
         argtable[i++]=rollmin=arg_int0( NULL, "roll-min", "<n>",
                 "Minimal number of guaranteed non-rolled bytes. Default 8192");
@@ -132,7 +137,8 @@ struct startup_options {
                 "How sensitive are we to cutting a block. Default is \"roll-wine\"");
         argtable[i++]=end=arg_end(2);
 
-        assert(i==sizeof(argtable)/sizeof(argtable[0]));
+	// If this assert fails, you forgot to fix the size of the "Argtable" array.
+        assert(i==sizeof(argtable)/sizeof(argtable[0])); 
 
         if( arg_nullcheck(argtable)==0 ) {
             // Fill in default values

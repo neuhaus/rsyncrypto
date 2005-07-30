@@ -1,5 +1,6 @@
 2005-07-29 Shachar Shemesh
 	* Use argtable to print the argument list
+	* Add the "--meta-encrypt" option
 
 Version 0.15
 2005-05-19 Shachar Shemesh
