@@ -61,7 +61,7 @@ AC_LINK_IFELSE([AC_LANG_FUNC_LINK_TRY([lstat])],
 
 # Checks for header files.
 AC_SYS_LARGEFILE
-AC_CHECK_HEADER([argtable2.h])
+AC_CHECK_HEADERS([argtable2.h] [ext/hash_map])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_MSG_CHECKING([for O_NOATIME support in open])

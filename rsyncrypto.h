@@ -50,7 +50,12 @@
 #include <iostream>
 #include <string>
 
+#if HAVE_EXT_HASH_MAP
+#include <ext/hash_map>
+#define HASH_MAP 1
+#else
 #include <map>
+#endif
 
 #include <argtable2.h>
 
