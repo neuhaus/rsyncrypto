@@ -34,7 +34,6 @@
 #include "crypto.h"
 #include "argtable2.h"
 
-
 void usage()
 {
     fprintf(stderr, "rsyncrypto ");
