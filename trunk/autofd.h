@@ -24,7 +24,7 @@
 
 typedef int file_t;
 
-// automap will auto-release mmaped areas
+// autofd handles file descriptors
 class autofd {
     file_t fd;
     mutable bool owner, f_eof;

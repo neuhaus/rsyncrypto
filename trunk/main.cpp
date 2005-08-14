@@ -33,6 +33,7 @@
 #include "file.h"
 #include "crypto.h"
 #include "argtable2.h"
+#include "filelist.h"
 
 void usage()
 {
@@ -91,14 +92,20 @@ int main( int argc, char *argv[] )
 
         const char *opname=NULL;
         encryptfunc op;
+	bool encrypt=true;
 
         if( EXISTS(decrypt) ) {
             op=file_decrypt;
             opname="Decrypting";
+	    encrypt=false;
         } else {
             op=file_encrypt;
             opname="Encrypting";
         }
+
+	if( EXISTS(metaenc) ) {
+	    metadata::fill_map(FILENAME(metaenc), encrypt);
+	}
 
         if( EXISTS(recurse) ) {
             dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname);
