@@ -50,7 +50,7 @@
 #include <iostream>
 #include <string>
 
-#if HAVE_EXT_HASH_MAP
+#if HAVE_EXT_HASH_MAP && 0
 #include <ext/hash_map>
 #define HASH_MAP 1
 #else

@@ -42,10 +42,10 @@ Block structure:
 1 byte : directory seperator character
 string : Textual platform name (uname -o or equivalent) - ASCII
 
-The Platform block holds an identification of the OS from which the file was taken. The platform codes are defined in "filelist.h". Some codes:
-Posix - 00
-Win32 - 01
-MaxOSX - 02
+The Platform block holds an identification of the OS from which the file was taken. The platform codes are defined in "filelist_format.h". Some codes:
+Posix - 03
+Win32 - 0B
+MaxOS - 07
 
 == Block 0001 - Original File Name ==
 
