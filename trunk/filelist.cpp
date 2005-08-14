@@ -34,9 +34,59 @@
 
 std::map<std::string, metadata> filelist;
 
+static bool readblock( const autommap &map, size_t offset, size_t *block_size, metadata &data )
+{
+    // XXX Read block, categorize it, and send it to handler function
+
+    return true;
+}
+
+static size_t readchunk( const autommap &map, size_t offset, bool encrypt )
+{
+    size_t chunk_offset=0;
+    size_t block_size=0;
+
+    metadata data;
+    
+    while( offset+chunk_offset<map.getsize() &&
+            readblock( map, offset+chunk_offset, &block_size, data ) )
+        chunk_offset+=block_size;
+
+    if( offset+chunk_offset>=map.getsize() )
+        throw rscerror("Corrupt filelist - truncated chunk");
+
+    // XXX add metadata to map
+    
+    return chunk_offset+block_size;
+}
+
 void metadata::fill_map( const char *list_filename, bool encrypt )
 {
-    autofd listfile( list_filename, O_RDONLY );
+    bool nofile=false;
+    autofd listfile_fd;
 
-    
+    try {
+	autofd _listfile_fd( list_filename, O_RDONLY );
+        listfile_fd=_listfile_fd;
+    } catch( const rscerror &err ) {
+	if( err.errornum()!=ENOENT )
+	    throw;
+	nofile=true;
+    }
+
+    // If the file doesn't exist, an empty map is what "initialization" is for us. Simply get out.
+    if( !nofile ) {
+	autommap listfile( listfile_fd, PROT_READ );
+
+	// Check magic to make sure we are dealing with the correct file
+	const uint32_t *ulp=static_cast<const uint32_t *>(listfile.get());
+	if( *ulp!=ntohl(FILELIST_MAGIC_VER1) ) {
+	    throw rscerror( "Invalid magic in filelist" );
+	}
+        
+        size_t offset=sizeof(FILELIST_MAGIC_VER1);
+        while( offset<listfile.getsize() ) {
+            offset+=readchunk( listfile, offset, encrypt );
+        }
+    }
 }
