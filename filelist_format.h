@@ -22,14 +22,32 @@ struct block_platform {
     struct block_std_header header;
     uint8_t platform;
     char dir_sep;
-    char name[];
+    char name[1];
 };
 
+// OS and filesystem types. Taken from the gzip definition.
+static const uint16_t PLATFORM_FAT=0, // FAT filesystem
+	     PLATFORM_AMIGA=1,
+	     PLATFORM_VMS=2,
+	     PLATFORM_UNIX=3,
+	     PLATFORM_VM_CMS=4,
+	     PLATFORM_ATARI_TOS=5,
+	     PLATFORM_HPFS=6,
+	     PLATFORM_MAC=7,
+	     PLATFORM_Z_SYSTEM=8,
+	     PLATFORM_CPM=9,
+	     PLATFORM_TOPS_20=10,
+	     PLATFORM_NTFS=11,
+	     PLATFORM_QDOS=12,
+	     PLATFORM_ACORN_RISCOS=13,
+	     PLATFORM_UNKNOWN=255;
+
+// Original file name
 struct block_ofilename {
     struct block_std_header header;
     uint8_t file_type;
     uint8_t file_name_enc;
-    char name[];
+    char name[1];
 };
 
 // file types
@@ -41,21 +59,16 @@ static const uint8_t FILETYPE_FIFO=0x01, // Named pipe
 	     FILETYPE_LINK=0x12, // Symbolic link
 	     FILETYPE_SOCK=0x14;
 
-// OS and filesystem types. Taken from the gzip definition.
-static const uint16_t OS_TYPE_FAT=0, // FAT filesystem
-	     OS_TYPE_AMIGA=1,
-	     OS_TYPE_VMS=2,
-	     OS_TYPE_UNIX=3,
-	     OS_TYPE_VM_CMS=4,
-	     OS_TYPE_ATARI_TOS=5,
-	     OS_TYPE_HPFS=6,
-	     OS_TYPE_MAC=7,
-	     OS_TYPE_Z_SYSTEM=8,
-	     OS_TYPE_CPM=9,
-	     OS_TYPE_TOPS_20=10,
-	     OS_TYPE_NTFS=11,
-	     OS_TYPE_QDOS=12,
-	     OS_TYPE_ACORN_RISCOS=13,
-	     OS_TYPE_UNKNOWN=255;
+// Encoded file name
+struct block_efilename {
+    struct block_std_header header;
+    char file_name[1]; // Encoded file name
+};
 
+struct block_posix_perm {
+    struct block_std_header header;
+    uid_t uid;
+    gid_t gid;
+    mode_t mode;
+};
 #endif // FILELIST_FORMAT_H
