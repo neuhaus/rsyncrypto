@@ -8,6 +8,10 @@ class redir {
 public:
     virtual void child_redirect( int redir_type, void *plat_opaq )=0;
     virtual void parent_redirect( int redir_type, void *plat_opaq )=0;
+
+    virtual ~redir()
+    {
+    }
 };
 
 class redir_pipe : public redir, public autopipe {
