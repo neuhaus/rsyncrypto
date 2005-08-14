@@ -86,6 +86,10 @@ public:
         ptr=reinterpret_cast<void *>(-1);
         size=0;
     }
+
+    size_t getsize() const {
+        return size;
+    }
 };
 
 #endif // _AUTOMMAP_H
