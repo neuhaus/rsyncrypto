@@ -18,6 +18,8 @@ static const uint16_t BLK_TYPE_PLATFORM=0, // Platform
 	     BLK_TYPE_NOP=0xfffe, // No Operation
 	     BLK_TYPE_EOC=0xffff; // End of chunk
 
+static const uint16_t BLK_TYPE_MAX_MANDATORY=0x0002;
+
 struct block_platform {
     struct block_std_header header;
     uint8_t platform;

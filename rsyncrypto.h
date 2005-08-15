@@ -49,6 +49,7 @@
 #include <memory>
 #include <iostream>
 #include <string>
+#include <set>
 
 #if HAVE_EXT_HASH_MAP && 0
 #include <ext/hash_map>
