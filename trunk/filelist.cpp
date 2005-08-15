@@ -32,30 +32,99 @@
 #include "filelist.h"
 #include "filelist_format.h"
 
-std::map<std::string, metadata> filelist;
+filelistmaptype filelist;
 
-static bool readblock( const autommap &map, size_t offset, size_t *block_size, metadata &data )
+#define DEPEND_BLOCK(type, curtype) do { if( blocks.find(type)==blocks.end() ) \
+    throw rscerror("Corrupt filelist - block " #curtype " depends on block " #type); } while(false)
+#define BLOCK_MINSIZE(type, size) do { if( block_length<(size) ) \
+    throw rscerror("Corrupt filelist - " #type " block too short"); } while(false)
+        
+bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size, std::set<uint16_t> &blocks )
 {
-    // XXX Read block, categorize it, and send it to handler function
+    const unsigned char *block=map.get_uc()+offset;
+    size_t endpos=map.getsize()-offset;
+
+    if( endpos<4 ) {
+        // Block must be at least 4 bytes long
+        throw rscerror("Corrupt filelist - truncated block");
+    }
+
+    const uint16_t *usp=reinterpret_cast<const uint16_t *>(block);
+    size_t block_length=ntohs(usp[0]);
+    uint16_t type=ntohs(usp[1]);
+
+    if( block_length>endpos )
+        // Block tried to exceed file's length
+        throw rscerror("Corrupt filelist - block file overrun");
+
+    if( !blocks.insert(type).second ) {
+        // Duplicate block type
+        throw rscerror("Corrupt filelist - duplicate block type");
+    }
+    
+    // Handle the specific block
+    // XXX Think of a more generic way to do this
+    switch(type)
+    {
+    case BLK_TYPE_PLATFORM:
+        // May need to translate the path name to local directory seperator
+        BLOCK_MINSIZE(BLK_TYPE_PLATFORM, 7);
+        dirsep=reinterpret_cast<const char *>(block)[5];
+        break;
+    case BLK_TYPE_OFILENAME:
+        // Make sure we have already seen the platform block
+        DEPEND_BLOCK(BLK_TYPE_PLATFORM, BLK_TYPE_OFILENAME);
+        BLOCK_MINSIZE(BLK_TYPE_OFILENAME, 7);
+        break;
+    case BLK_TYPE_EFILENAME:
+        break;
+    case BLK_TYPE_POSIX_PERM:
+        break;
+    case BLK_TYPE_NOP:
+        break;
+    case BLK_TYPE_EOC:
+        break;
+    default:
+        // Unknown block type
+        break;
+    }
 
     return true;
 }
 
-static size_t readchunk( const autommap &map, size_t offset, bool encrypt )
+size_t metadata::readchunk( const autommap &map, size_t offset, bool encrypt )
 {
     size_t chunk_offset=0;
     size_t block_size=0;
 
     metadata data;
+    std::set<uint16_t> blocks;
     
     while( offset+chunk_offset<map.getsize() &&
-            readblock( map, offset+chunk_offset, &block_size, data ) )
+            data.readblock( map, offset+chunk_offset, &block_size, blocks ) )
         chunk_offset+=block_size;
 
     if( offset+chunk_offset>=map.getsize() )
         throw rscerror("Corrupt filelist - truncated chunk");
 
-    // XXX add metadata to map
+    // Make sure that all mandatory fields were present
+    for(uint16_t i=0; i<=BLK_TYPE_MAX_MANDATORY; ++i )
+        if( blocks.find(i)==blocks.end() )
+            throw rscerror("Corrupt filelist - missing mandatory block");
+    
+    // Hashing direction (encoded->unencoded file names or vice versa) depends on whether we are encrypting or
+    // decrypting
+    std::string key;
+    if( encrypt ) {
+        key=data.plainname;
+    } else {
+        key=data.ciphername;
+    }
+
+    if( !filelist.insert(filelistmaptype::value_type(key, data)).second ) {
+        // filelist already had an item with the same key
+        throw rscerror("Corrupt filelist - duplicate key");
+    }
     
     return chunk_offset+block_size;
 }

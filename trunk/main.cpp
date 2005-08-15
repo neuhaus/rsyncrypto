@@ -47,7 +47,8 @@ startup_options options;
 
 void parse_cmdline( int argc, char *argv[] )
 {
-    int nerrors=arg_parse( argc, argv, options.argtable );
+    // XXX int nerrors=
+    arg_parse( argc, argv, options.argtable );
 
     if( EXISTS(trim) && !EXISTS(recurse) && !EXISTS(filelist) )
         throw rscerror("Cannot trim names when not doing directory recursion");
