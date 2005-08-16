@@ -39,6 +39,16 @@ filelistmaptype filelist;
 #define BLOCK_MINSIZE(type, size) do { if( block_length<(size) ) \
     throw rscerror("Corrupt filelist - " #type " block too short"); } while(false)
         
+static void replace_dir_sep( std::string &path, char dirsep )
+{
+    // Shortpath if we have nothing to do
+    if( dirsep!=DIRSEP_C ) {
+        for( std::string::iterator i=path.begin(); i!=path.end(); ++i )
+            if( *i==dirsep )
+                *i=DIRSEP_C;
+    }
+}
+
 bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size, std::set<uint16_t> &blocks )
 {
     const unsigned char *block=map.get_uc()+offset;
@@ -57,11 +67,16 @@ bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size
         // Block tried to exceed file's length
         throw rscerror("Corrupt filelist - block file overrun");
 
+    if( (block_length%8)!=0 )
+        throw rscerror("Corrupt filelist - alignment error in block size");
+
     if( !blocks.insert(type).second ) {
         // Duplicate block type
         throw rscerror("Corrupt filelist - duplicate block type");
     }
     
+    bool more=true;
+
     // Handle the specific block
     // XXX Think of a more generic way to do this
     switch(type)
@@ -75,21 +90,33 @@ bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size
         // Make sure we have already seen the platform block
         DEPEND_BLOCK(BLK_TYPE_PLATFORM, BLK_TYPE_OFILENAME);
         BLOCK_MINSIZE(BLK_TYPE_OFILENAME, 7);
+        if( block[block_length-1]!='\0' )
+            throw rscerror("Corrupt filelist - corrupt BLK_TYPE_OFILENAME block");
+        plainname=std::string(reinterpret_cast<const char *>(block+6));
+        replace_dir_sep(plainname, dirsep);
         break;
     case BLK_TYPE_EFILENAME:
+        // Make sure we have already seen the platform block
+        DEPEND_BLOCK(BLK_TYPE_PLATFORM, BLK_TYPE_EFILENAME);
+        BLOCK_MINSIZE(BLK_TYPE_EFILENAME, 5);
+        if( block[block_length-1]!='\0' )
+            throw rscerror("Corrupt filelist - corrupt BLK_TYPE_EFILENAME block");
+        ciphername=std::string(reinterpret_cast<const char *>(block+4));
+        replace_dir_sep(ciphername, dirsep);
         break;
     case BLK_TYPE_POSIX_PERM:
         break;
     case BLK_TYPE_NOP:
         break;
     case BLK_TYPE_EOC:
+        more=false;
         break;
     default:
         // Unknown block type
         break;
     }
 
-    return true;
+    return more;
 }
 
 size_t metadata::readchunk( const autommap &map, size_t offset, bool encrypt )
