@@ -44,8 +44,13 @@ static void replace_dir_sep( std::string &path, char dirsep )
     // Shortpath if we have nothing to do
     if( dirsep!=DIRSEP_C ) {
         for( std::string::iterator i=path.begin(); i!=path.end(); ++i )
+        {
+            if( *i==DIRSEP_C )
+                throw rscerror("Untranslateable file name");
+
             if( *i==dirsep )
                 *i=DIRSEP_C;
+        }
     }
 }
 
@@ -56,7 +61,7 @@ bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size
 
     if( endpos<4 ) {
         // Block must be at least 4 bytes long
-        throw rscerror("Corrupt filelist - truncated block");
+        throw rscerror("Corrupt filelist - block size below minimum");
     }
 
     const uint16_t *usp=reinterpret_cast<const uint16_t *>(block);
@@ -67,13 +72,15 @@ bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size
         // Block tried to exceed file's length
         throw rscerror("Corrupt filelist - block file overrun");
 
-    if( (block_length%8)!=0 )
+    if( (block_length%4)!=0 )
         throw rscerror("Corrupt filelist - alignment error in block size");
 
     if( !blocks.insert(type).second ) {
         // Duplicate block type
         throw rscerror("Corrupt filelist - duplicate block type");
     }
+
+    *block_size=block_length;
     
     bool more=true;
 
