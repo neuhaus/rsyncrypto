@@ -32,7 +32,11 @@
 #include "filelist.h"
 #include "filelist_format.h"
 
+#include "file.h"
+
 filelistmaptype filelist;
+
+static const size_t CODED_FILE_ENTROPY=64;
 
 #define DEPEND_BLOCK(type, curtype) do { if( blocks.find(type)==blocks.end() ) \
     throw rscerror("Corrupt filelist - block " #curtype " depends on block " #type); } while(false)
@@ -191,5 +195,53 @@ void metadata::fill_map( const char *list_filename, bool encrypt )
         while( offset<listfile.getsize() ) {
             offset+=readchunk( listfile, offset, encrypt );
         }
+    }
+}
+
+// This function merges a directory passed as "left" with a path suffix passed as "right" into a single
+// path. If no file encoding is required, this merely concats the two. If file encoding is required, the
+// suffix part is encoded or decoded (based on whether we are currently encrypting or decrypting) based
+// on the translation table in filelist. If we are encrypting and the encoding is new, a new table entry
+// is created.
+std::string metadata::create_combined_path( const char *left, const char *right )
+{
+    // If no meta encryption takes place, just call "combine_paths"
+    if( !EXISTS(metaenc) )
+	return autofd::combine_paths(left,right);
+
+    // Different case for encryption or decryption
+    if( EXISTS(decrypt) ) {
+	// Decryption
+	
+	// Find out how many directories are just "overhead".
+	int skip_count=calc_trim( right, VAL(metanest));
+
+	filelistmaptype::const_iterator iter=filelist.find(right+skip_count);
+	if( iter==filelist.end() )
+	    // Oops - we don't know how this file was called before we hashed it's name!
+	    throw rscerror("Filename translation not found", 0, left);
+	
+	return autofd::combine_paths(left, iter->second.plainname.c_str());
+    } else {
+	// Encryption
+	
+	// Find out whether we already have an encoding for this file
+	filelistmaptype::const_iterator iter=filelist.find(right);
+	if( iter==filelist.end() ) {
+	    // Need to create new encoding
+	    uint8_t buffer[CODED_FILE_ENTROPY/8];
+
+	    // Generate an encoded form for the file.
+	    if( !RAND_bytes( buffer, CODED_FILE_ENTROPY ) )
+	    {
+		throw rscerror("No random entropy for file name", 0, left);
+	    }
+
+	    // Base64 encode the random sequence
+
+	} else {
+	    // We already have an encoding
+	    // XXX - Find out how many directory levels to descend
+	}
     }
 }
