@@ -97,13 +97,13 @@ public:
 struct startup_options {
     struct arg_lit *help, *del, *delkey, *filelist, *fr, *fk, *noarch;
     struct arg_lit *decrypt, *verbosity, *recurse, *changed;
-    struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim;
+    struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim, *metanest;
     struct arg_file *gzip;
     struct arg_file *src, *dst, *key, *master, *metaenc;
     struct arg_rem *rem1;
     struct arg_end *end;
 
-    void *argtable[24];
+    void *argtable[25];
 
     startup_options()
     {
@@ -121,6 +121,7 @@ struct startup_options {
                 "<src> <dst> and <keys> are directory names, and are processed recursively");
         argtable[i++]=changed=arg_lit0( "c", "changed", "Only encrypt changed files. Requires -r");
         argtable[i++]=metaenc=arg_file0( "m", "meta-encrypt", "translation_file", "Encrypt meta data (file names, permissions)");
+	argtable[i++]=metanest=arg_int0( NULL, "meta-nesting", "<n>", "set the hash directory tree depth" );
         argtable[i++]=trim=arg_int0( NULL, "trim", "<n>",
                 "Number of directory entries to trim from the begining of the path. Default 1");
         argtable[i++]=del=arg_lit0( NULL, "delete", "Delete files under <dst> not under <src>. Requires -r");

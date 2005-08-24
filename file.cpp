@@ -33,6 +33,7 @@
 #include "file.h"
 #include "autodir.h"
 #include "crypto.h"
+#include "filelist.h"
 
 static void copy_metadata( const char *destfilename, const struct stat *data )
 {
@@ -52,12 +53,15 @@ static void copy_metadata( const char *destfilename, const struct stat *data )
 	throw rscerror("Setting time failed", errno, destfilename );
 }
 
-static int calc_trim( const char *path, int trim_count )
+int calc_trim( const char *path, int trim_count )
 {
     int ret=0;
 
     if( path[0]=='\0' )
         throw rscerror("Cannot trim empty path");
+
+    if( trim_count==0 )
+	return 0;
 
     do {
         if( (path[ret]==DIRSEP_C || path[ret]=='\0') && ret!=0 && path[ret-1]!=DIRSEP_C )
@@ -236,8 +240,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     int src_offset=calc_trim( src_dir, VAL(trim) ); 
 
     // Implement standard recursive descent on src_dir
-    autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0777 );
-    autofd::mkpath( autofd::combine_paths(key_dir, src_dir+src_offset).c_str(), 0700 );
+    autofd::mkpath( create_combined_path(dst_dir, src_dir+src_offset).c_str(), 0777 );
+    autofd::mkpath( create_combined_path(key_dir, src_dir+src_offset).c_str(), 0700 );
 
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
 
@@ -269,10 +273,10 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
 
-            if( EXISTS(fr) && ( head->get_sum_span()!=VAL(rollwin) ||
-                        head->get_sum_mod()!=VAL(rollsens) ||
-                        head->get_sum_min_dist()!=VAL(rollmin)) ||
-                    EXISTS(fk) && head->get_key_size()!=VAL(keysize) ) {
+            if( EXISTS(fr) && ( head->get_sum_span()!=static_cast<uint32_t>(VAL(rollwin)) ||
+                        head->get_sum_mod()!=static_cast<uint32_t>(VAL(rollsens)) ||
+                        head->get_sum_min_dist()!=static_cast<uint32_t>(VAL(rollmin))) ||
+                    EXISTS(fk) && head->get_key_size()!=static_cast<uint32_t>(VAL(keysize)) ) {
                 headfd.clear();
             }
                 

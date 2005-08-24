@@ -10,4 +10,6 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
 void file_encrypt( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key );
 void file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key);
 
+int calc_trim( const char *path, int trim_count );
+    
 #endif // FILE_H
