@@ -30,6 +30,4 @@ public:
 typedef std::map<std::string, metadata> filelistmaptype;
 extern filelistmaptype filelist;
 
-std::string create_combined_path( const char *left, const char *right );
-
 #endif
