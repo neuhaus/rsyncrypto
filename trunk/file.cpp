@@ -240,8 +240,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     int src_offset=calc_trim( src_dir, VAL(trim) ); 
 
     // Implement standard recursive descent on src_dir
-    autofd::mkpath( create_combined_path(dst_dir, src_dir+src_offset).c_str(), 0777 );
-    autofd::mkpath( create_combined_path(key_dir, src_dir+src_offset).c_str(), 0700 );
+    autofd::mkpath( metadata::create_combined_path(dst_dir, src_dir+src_offset).c_str(), 0777 );
+    autofd::mkpath( metadata::create_combined_path(key_dir, src_dir+src_offset).c_str(), 0700 );
 
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
 

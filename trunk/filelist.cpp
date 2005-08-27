@@ -225,6 +225,8 @@ std::string metadata::create_combined_path( const char *left, const char *right 
     } else {
 	// Encryption
 	
+	std::string c_name; // Crypted name of file
+
 	// Find out whether we already have an encoding for this file
 	filelistmaptype::const_iterator iter=filelist.find(right);
 	if( iter==filelist.end() ) {
@@ -232,16 +234,36 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    uint8_t buffer[CODED_FILE_ENTROPY/8];
 
 	    // Generate an encoded form for the file.
-	    if( !RAND_bytes( buffer, CODED_FILE_ENTROPY ) )
+	    if( !RAND_bytes( buffer, CODED_FILE_ENTROPY/8 ) )
 	    {
 		throw rscerror("No random entropy for file name", 0, left);
 	    }
 
 	    // Base64 encode the random sequence
+	    BIO *mem=BIO_new(BIO_s_mem());
+	    BIO *b64=BIO_new(BIO_f_base64());
+	    mem=BIO_push(b64, mem);
+	    BIO_write(mem, buffer, sizeof(buffer) );
+	    BIO_flush(mem);
 
+	    char encodedfile[CODED_FILE_ENTROPY/8*2+4];
+	    const char *biomem;
+	    long encoded_size=BIO_get_mem_data(mem, &biomem);
+	    memcpy( encodedfile, biomem, encoded_size );
+	    encodedfile[encoded_size]='\0';
+
+	    metadata newdata;
+	    newdata.plainname=right;
+	    newdata.ciphername=c_name=encodedfile;
+	    newdata.dirsep=DIRSEP_C;
+
+	    filelist[right]=newdata;
+
+	    BIO_free_all(mem);
 	} else {
 	    // We already have an encoding
-	    // XXX - Find out how many directory levels to descend
+	    
+	    c_name=iter->second.ciphername;
 	}
     }
 }
