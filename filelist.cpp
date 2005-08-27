@@ -246,11 +246,16 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    BIO_write(mem, buffer, sizeof(buffer) );
 	    BIO_flush(mem);
 
-	    char encodedfile[CODED_FILE_ENTROPY/8*2+4];
+	    char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
+	    // Keeping non destructor protected memory around. Must not throw exceptions
 	    const char *biomem;
 	    long encoded_size=BIO_get_mem_data(mem, &biomem);
+
 	    memcpy( encodedfile, biomem, encoded_size );
 	    encodedfile[encoded_size]='\0';
+
+	    BIO_free_all(mem);
+	    // Freed memory. Can throw exceptions again
 
 	    metadata newdata;
 	    newdata.plainname=right;
@@ -259,7 +264,6 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 
 	    filelist[right]=newdata;
 
-	    BIO_free_all(mem);
 	} else {
 	    // We already have an encoding
 	    
