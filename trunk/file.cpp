@@ -139,8 +139,8 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
     struct dirent *ent;
     while( (ent=dir.read())!=NULL ) {
         std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
-        std::string dst_filename(autofd::combine_paths(dst_dir, src_filename.c_str()+src_offset));
-        std::string key_filename(autofd::combine_paths(key_dir, src_filename.c_str()+src_offset));
+        std::string dst_filename(metadata::create_combined_path(dst_dir, src_filename.c_str()+src_offset));
+        std::string key_filename(metadata::create_combined_path(key_dir, src_filename.c_str()+src_offset));
         
         struct stat status, dststat;
         lstat( src_filename.c_str(), &status );
@@ -240,8 +240,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     int src_offset=calc_trim( src_dir, VAL(trim) ); 
 
     // Implement standard recursive descent on src_dir
-    autofd::mkpath( metadata::create_combined_path(dst_dir, src_dir+src_offset).c_str(), 0777 );
-    autofd::mkpath( metadata::create_combined_path(key_dir, src_dir+src_offset).c_str(), 0700 );
+    autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0777 );
+    autofd::mkpath( autofd::combine_paths(key_dir, src_dir+src_offset).c_str(), 0700 );
 
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
 
