@@ -242,6 +242,7 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    // Base64 encode the random sequence
 	    BIO *mem=BIO_new(BIO_s_mem());
 	    BIO *b64=BIO_new(BIO_f_base64());
+	    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
 	    mem=BIO_push(b64, mem);
 	    BIO_write(mem, buffer, sizeof(buffer) );
 	    BIO_flush(mem);
@@ -249,7 +250,10 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
 	    // Keeping non destructor protected memory around. Must not throw exceptions
 	    const char *biomem;
-	    long encoded_size=BIO_get_mem_data(mem, &biomem);
+	    unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
+
+	    // This should never happen, but make sure, at least for debug builds
+	    assert(encoded_size<sizeof(encodedfile) );
 
 	    memcpy( encodedfile, biomem, encoded_size );
 	    encodedfile[encoded_size]='\0';
@@ -269,5 +273,24 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    
 	    c_name=iter->second.ciphername;
 	}
+
+	// Calculate the name as results from the required directory nesting level
+	nest_name(c_name);
+
+	return autofd::combine_paths(left, c_name.c_str());
     }
+}
+
+void metadata::nest_name( std::string &name )
+{
+    int nestlevel=VAL(metanest);
+    std::string retval(name);
+
+    while( nestlevel>0 ) {
+	std::string partial(name, nestlevel);
+	retval=autofd::combine_paths(partial.c_str(), retval.c_str() );
+	nestlevel--;
+    }
+
+    name=retval;
 }
