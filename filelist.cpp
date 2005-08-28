@@ -255,8 +255,27 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    // This should never happen, but make sure, at least for debug builds
 	    assert(encoded_size<sizeof(encodedfile) );
 
-	    memcpy( encodedfile, biomem, encoded_size );
-	    encodedfile[encoded_size]='\0';
+	    // Base64 uses "/", which is not a good character for file names.
+	    unsigned int i, diff=0;
+	    for( i=0; i<encoded_size; ++i ) {
+		switch( biomem[i] ) {
+		case '/':
+		    // Change / into underscore '_'
+		    encodedfile[i-diff]='_';
+		    break;
+		case '+':
+		    // Not really problematic, but to simplify regexp, change '+' into '-'
+		    encodedfile[i-diff]='-';
+		    break;
+		case '=':
+		    // Ignore the Base64 pad character altogether.
+		    diff++;
+		    break;
+		default:
+		    encodedfile[i-diff]=biomem[i];
+		}
+	    }
+	    encodedfile[encoded_size-diff]='\0';
 
 	    BIO_free_all(mem);
 	    // Freed memory. Can throw exceptions again
