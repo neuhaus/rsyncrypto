@@ -165,9 +165,6 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
             // Directory
             if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
                 if( !op_handle_dir ) {
-                    autofd::mkpath( dst_filename.c_str(), 0777 );
-                    autofd::mkpath( key_filename.c_str(), 0700 );
-
                     recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
                             op_handle_dir, opname );
                 } else {
