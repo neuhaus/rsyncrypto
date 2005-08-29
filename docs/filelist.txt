@@ -20,7 +20,9 @@ Writers may use an algorithm that prepends the nesting level of the entry to the
 
 == Chunk Format ==
 
-Each chunk is composed of a series of specific data. The first two bytes are the number of data blocks in this chunk. The data blocks have two types. The mandatory blocks, which must appear in each and every chunk, and the optional blocks, which may be present or not. For ease of parsing, the mandatory blocks must appear first in the chunk, in increasing block type order.
+Each chunk is composed of a series of specific data (data blocks). The data blocks have two types. The mandatory blocks, which must appear in each and every chunk, and the optional blocks, which may be present or not. For ease of parsing, the mandatory blocks must appear first in the chunk, in increasing block type order.
+
+The end of chunk is marked using a special "end of chunk" data block.
 
 == Data Block Format - Overview ==
 
