@@ -36,7 +36,12 @@
 
 filelistmaptype filelist;
 
-static const size_t CODED_FILE_ENTROPY=64;
+// XXX - On entropy of file name:
+// At the moment, we do not employ any collision detection, which means we are trying to minimize the chances
+// of a collision happening. Originally, we used a 64 bit entropy, but that has a 50% chance of creating a
+// collision for encrypting 4 billion files (easy, right?). While these chances are not particularily high,
+// a 22 characters file name isn't so high as to justify making a fuss of the increase.
+static const size_t CODED_FILE_ENTROPY=128;
 
 #define DEPEND_BLOCK(type, curtype) do { if( blocks.find(type)==blocks.end() ) \
     throw rscerror("Corrupt filelist - block " #curtype " depends on block " #type); } while(false)
