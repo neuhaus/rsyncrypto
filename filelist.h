@@ -24,6 +24,7 @@ public:
     {
     }
     static void fill_map( const char *list_filename, bool encrypt );
+    static void write_map( const char *list_filename );
     static std::string create_combined_path( const char *left, const char *right );
 
 private:
