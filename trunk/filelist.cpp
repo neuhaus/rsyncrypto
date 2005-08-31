@@ -35,6 +35,8 @@
 #include "file.h"
 
 filelistmaptype filelist;
+std::map<std::string, std::string> reversemap; // Cypher->plain mapping for encryption usage
+
 
 // XXX - On entropy of file name:
 // At the moment, we do not employ any collision detection, which means we are trying to minimize the chances
@@ -160,6 +162,7 @@ size_t metadata::readchunk( const autommap &map, size_t offset, bool encrypt )
     std::string key;
     if( encrypt ) {
         key=data.plainname;
+	reversemap[data.ciphername]=data.plainname;
     } else {
         key=data.ciphername;
     }
@@ -219,6 +222,9 @@ void metadata::write_map( const char *list_filename )
 #define WRITE16(a) do { buffer.u16=htons(a); file.write( &buffer.u16, sizeof(buffer.u16) ); } while(false)
 #define WRITE8(a)  do { buffer.u8=(a); file.write( &buffer.u8, sizeof(buffer.u8) ); } while(false)
     WRITE32(FILELIST_MAGIC_VER1);
+
+    for( filelistmaptype::const_iterator i=filelist.begin(); i!=filelist.end(); ++i ) {
+    }
 }
 
 // This function merges a directory passed as "left" with a path suffix passed as "right" into a single
@@ -253,55 +259,65 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	// Find out whether we already have an encoding for this file
 	filelistmaptype::const_iterator iter=filelist.find(right);
 	if( iter==filelist.end() ) {
-	    // Need to create new encoding
-	    uint8_t buffer[CODED_FILE_ENTROPY/8];
-
-	    // Generate an encoded form for the file.
-	    if( !RAND_bytes( buffer, CODED_FILE_ENTROPY/8 ) )
-	    {
-		throw rscerror("No random entropy for file name", 0, left);
-	    }
-
-	    // Base64 encode the random sequence
-	    BIO *mem=BIO_new(BIO_s_mem());
-	    BIO *b64=BIO_new(BIO_f_base64());
-	    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
-	    mem=BIO_push(b64, mem);
-	    BIO_write(mem, buffer, sizeof(buffer) );
-	    BIO_flush(mem);
-
+	    int i=0;
 	    char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
-	    // Keeping non destructor protected memory around. Must not throw exceptions
-	    const char *biomem;
-	    unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
+	    
+	    // Make sure we have no encoded name collisions
+	    do {
+		// Need to create new encoding
+		uint8_t buffer[CODED_FILE_ENTROPY/8];
 
-	    // This should never happen, but make sure, at least for debug builds
-	    assert(encoded_size<sizeof(encodedfile) );
-
-	    // Base64 uses "/", which is not a good character for file names.
-	    unsigned int i, diff=0;
-	    for( i=0; i<encoded_size; ++i ) {
-		switch( biomem[i] ) {
-		case '/':
-		    // Change / into underscore '_'
-		    encodedfile[i-diff]='_';
-		    break;
-		case '+':
-		    // Not really problematic, but to simplify regexp, change '+' into '-'
-		    encodedfile[i-diff]='-';
-		    break;
-		case '=':
-		    // Ignore the Base64 pad character altogether.
-		    diff++;
-		    break;
-		default:
-		    encodedfile[i-diff]=biomem[i];
+		// Generate an encoded form for the file.
+		if( !RAND_bytes( buffer, CODED_FILE_ENTROPY/8 ) )
+		{
+		    throw rscerror("No random entropy for file name", 0, left);
 		}
-	    }
-	    encodedfile[encoded_size-diff]='\0';
 
-	    BIO_free_all(mem);
-	    // Freed memory. Can throw exceptions again
+		// Base64 encode the random sequence
+		BIO *mem=BIO_new(BIO_s_mem());
+		BIO *b64=BIO_new(BIO_f_base64());
+		BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
+		mem=BIO_push(b64, mem);
+		BIO_write(mem, buffer, sizeof(buffer) );
+		BIO_flush(mem);
+
+		// Keeping non destructor protected memory around. Must not throw exceptions
+		const char *biomem;
+		unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
+
+		// This should never happen, but make sure, at least for debug builds
+		assert(encoded_size<sizeof(encodedfile) );
+
+		// Base64 uses "/", which is not a good character for file names.
+		unsigned int i, diff=0;
+		for( i=0; i<encoded_size; ++i ) {
+		    switch( biomem[i] ) {
+		    case '/':
+			// Change / into underscore '_'
+			encodedfile[i-diff]='_';
+			break;
+		    case '+':
+			// Not really problematic, but to simplify regexp, change '+' into '-'
+			encodedfile[i-diff]='-';
+			break;
+		    case '=':
+			// Ignore the Base64 pad character altogether.
+			diff++;
+			break;
+		    default:
+			encodedfile[i-diff]=biomem[i];
+		    }
+		}
+		encodedfile[encoded_size-diff]='\0';
+
+		BIO_free_all(mem);
+		// Freed memory. Can throw exceptions again
+	    } while( reversemap.find(encodedfile)!=reversemap.end() && // Found a unique encoding
+		    (++i)<5 ); // Tried too many times.
+
+	    if(i==5) {
+		throw rscerror("Failed to locate unique encoding for file");
+	    }
 
 	    metadata newdata;
 	    newdata.plainname=right;
@@ -309,10 +325,9 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    newdata.dirsep=DIRSEP_C;
 
 	    filelist[right]=newdata;
-
 	} else {
 	    // We already have an encoding
-	    
+
 	    c_name=iter->second.ciphername;
 	}
 
