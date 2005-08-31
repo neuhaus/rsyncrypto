@@ -203,6 +203,24 @@ void metadata::fill_map( const char *list_filename, bool encrypt )
     }
 }
 
+// Write out the content of "filelist" into the specified file
+void metadata::write_map( const char *list_filename )
+{
+    union {
+	uint8_t u8;
+	uint16_t u16;
+	uint32_t u32;
+    } buffer;
+
+    autofd file(list_filename, O_WRONLY|O_CREAT, 0777 );
+
+    // Write the file magic number
+#define WRITE32(a) do { buffer.u32=htonl(a); file.write( &buffer.u32, sizeof(buffer.u32) ); } while(false)
+#define WRITE16(a) do { buffer.u16=htons(a); file.write( &buffer.u16, sizeof(buffer.u16) ); } while(false)
+#define WRITE8(a)  do { buffer.u8=(a); file.write( &buffer.u8, sizeof(buffer.u8) ); } while(false)
+    WRITE32(FILELIST_MAGIC_VER1);
+}
+
 // This function merges a directory passed as "left" with a path suffix passed as "right" into a single
 // path. If no file encoding is required, this merely concats the two. If file encoding is required, the
 // suffix part is encoded or decoded (based on whether we are currently encrypting or decrypting) based
@@ -311,7 +329,7 @@ void metadata::nest_name( std::string &name )
     std::string retval(name);
 
     while( nestlevel>0 ) {
-	std::string partial(name, nestlevel);
+	std::string partial(name.c_str(), nestlevel);
 	retval=autofd::combine_paths(partial.c_str(), retval.c_str() );
 	nestlevel--;
     }
