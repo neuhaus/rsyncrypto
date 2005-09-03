@@ -6,7 +6,7 @@ class metadata {
     std::string ciphername;
 
     char dirsep;
-#ifdef POSIX
+#ifdef __unix
     uid_t uid;
     gid_t gid;
     mode_t mode; 
@@ -18,8 +18,8 @@ class metadata {
             std::set<uint16_t> &blocks );
 public:
     metadata() : dirsep('\0')
-#ifdef POSIX
-                 ,uid(-1), gid(-1), mode(0)
+#ifdef __unix
+                 ,uid(~(0u)), gid(~(0u)), mode(0)
 #endif
     {
     }
@@ -33,5 +33,7 @@ private:
 
 typedef std::map<std::string, metadata> filelistmaptype;
 extern filelistmaptype filelist;
+typedef std::map<std::string, std::string> revlistmap;
+extern revlistmap reversemap; // Cypher->plain mapping for encryption usage
 
 #endif

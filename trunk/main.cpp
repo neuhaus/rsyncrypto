@@ -110,6 +110,13 @@ int main( int argc, char *argv[] )
 
         if( EXISTS(recurse) ) {
             dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname);
+	    if( encrypt && EXISTS(metaenc) ) {
+		// Write the (possibly changed) filelist back to the file
+		metadata::write_map(FILENAME(metaenc));
+		// Encrypt the filelist file itself
+		file_encrypt(FILENAME(metaenc), autofd::combine_paths(FILENAME(dst), "filelist").c_str(),
+			autofd::combine_paths(FILENAME(key), "filelist").c_str(), rsa_key );
+	    }
         } else if( EXISTS(filelist) ) {
             filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname);
         } else {
