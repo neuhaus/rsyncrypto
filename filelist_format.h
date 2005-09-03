@@ -61,6 +61,8 @@ static const uint8_t FILETYPE_FIFO=0x01, // Named pipe
 	     FILETYPE_LINK=0x12, // Symbolic link
 	     FILETYPE_SOCK=0x14;
 
+static const uint8_t NAMEENC_UNKNOWN=0, NAMEENC_UTF8=1;
+
 // Encoded file name
 struct block_efilename {
     struct block_std_header header;

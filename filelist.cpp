@@ -35,7 +35,7 @@
 #include "file.h"
 
 filelistmaptype filelist;
-std::map<std::string, std::string> reversemap; // Cypher->plain mapping for encryption usage
+revlistmap reversemap; // Cypher->plain mapping for encryption usage
 
 
 // XXX - On entropy of file name:
@@ -162,7 +162,6 @@ size_t metadata::readchunk( const autommap &map, size_t offset, bool encrypt )
     std::string key;
     if( encrypt ) {
         key=data.plainname;
-	reversemap[data.ciphername]=data.plainname;
     } else {
         key=data.ciphername;
     }
@@ -170,6 +169,12 @@ size_t metadata::readchunk( const autommap &map, size_t offset, bool encrypt )
     if( !filelist.insert(filelistmaptype::value_type(key, data)).second ) {
         // filelist already had an item with the same key
         throw rscerror("Corrupt filelist - duplicate key");
+    }
+
+    // If we are encrypting, we will also need the other map direction
+    if( encrypt && !reversemap.insert(revlistmap::value_type(data.ciphername, data.plainname)).second ) {
+	// Oops - two files map to the same cipher name
+	throw rscerror("Corrupt filelist - dupliace encrypted name");
     }
     
     return chunk_offset+block_size;
@@ -203,27 +208,6 @@ void metadata::fill_map( const char *list_filename, bool encrypt )
         while( offset<listfile.getsize() ) {
             offset+=readchunk( listfile, offset, encrypt );
         }
-    }
-}
-
-// Write out the content of "filelist" into the specified file
-void metadata::write_map( const char *list_filename )
-{
-    union {
-	uint8_t u8;
-	uint16_t u16;
-	uint32_t u32;
-    } buffer;
-
-    autofd file(list_filename, O_WRONLY|O_CREAT, 0777 );
-
-    // Write the file magic number
-#define WRITE32(a) do { buffer.u32=htonl(a); file.write( &buffer.u32, sizeof(buffer.u32) ); } while(false)
-#define WRITE16(a) do { buffer.u16=htons(a); file.write( &buffer.u16, sizeof(buffer.u16) ); } while(false)
-#define WRITE8(a)  do { buffer.u8=(a); file.write( &buffer.u8, sizeof(buffer.u8) ); } while(false)
-    WRITE32(FILELIST_MAGIC_VER1);
-
-    for( filelistmaptype::const_iterator i=filelist.begin(); i!=filelist.end(); ++i ) {
     }
 }
 
@@ -273,6 +257,7 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 		    throw rscerror("No random entropy for file name", 0, left);
 		}
 
+		// Keeping non destructor protected memory around. Must not throw exceptions
 		// Base64 encode the random sequence
 		BIO *mem=BIO_new(BIO_s_mem());
 		BIO *b64=BIO_new(BIO_f_base64());
@@ -281,7 +266,6 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 		BIO_write(mem, buffer, sizeof(buffer) );
 		BIO_flush(mem);
 
-		// Keeping non destructor protected memory around. Must not throw exceptions
 		const char *biomem;
 		unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
 
@@ -325,6 +309,7 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	    newdata.dirsep=DIRSEP_C;
 
 	    filelist[right]=newdata;
+	    reversemap[encodedfile]=right;
 	} else {
 	    // We already have an encoding
 
