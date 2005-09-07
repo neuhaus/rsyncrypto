@@ -95,7 +95,7 @@ public:
 };
 
 struct startup_options {
-    struct arg_lit *help, *del, *delkey, *filelist, *fr, *fk, *noarch;
+    struct arg_lit *help, *del, *delkey, *filelist, *fr, *fk, *noarch, *version;
     struct arg_lit *decrypt, *verbosity, *recurse, *changed;
     struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim, *metanest;
     struct arg_file *gzip;
@@ -103,7 +103,7 @@ struct startup_options {
     struct arg_rem *rem1;
     struct arg_end *end;
 
-    void *argtable[25];
+    void *argtable[26];
 
     startup_options()
     {
@@ -114,6 +114,7 @@ struct startup_options {
         argtable[i++]=master=arg_file1( NULL, NULL, "<master key>",
                 "Master key (public key certificate or private key)" );
         argtable[i++]=help=arg_lit0( "h", "help", "Display this page.");
+        argtable[i++]=version=arg_lit0( "V", "version", "Display the rsyncrypto version.");
         argtable[i++]=verbosity=arg_litn( "v", "verbose", 0, 5,
                 "Produce more verbose output. Specify repeatedly for more verbosity");
         argtable[i++]=decrypt=arg_lit0( "d", "decrypt", "Decrypt");
