@@ -35,9 +35,16 @@
 #include "argtable2.h"
 #include "filelist.h"
 
+void version()
+{
+    printf("%s by Shachar Shemesh\n", PACKAGE_STRING);
+    printf("This program was developed as part of Lingnu Open Source Consulting's online\n"
+	    "backup service. For further details check out http://www.lingnu.com\n");
+}
+
 void usage()
 {
-    fprintf(stderr, "rsyncrypto ");
+    fprintf(stderr, "%s ", PACKAGE_STRING );
     arg_print_syntax(stderr, options.argtable, "\n\n");
     arg_print_glossary(stderr, options.argtable, "%-22s %s\n");
     exit(0);
@@ -83,6 +90,11 @@ int main( int argc, char *argv[] )
     try {
         parse_cmdline( argc, argv );
 
+	if( EXISTS(version) ) {
+	    version();
+	    exit(0);
+	}
+	
         if( EXISTS(help) )
             usage();
 
