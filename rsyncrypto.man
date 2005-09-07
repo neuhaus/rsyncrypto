@@ -83,6 +83,9 @@ starting with two dashes (`-').
 .B \-h, \-\-help
 Show summary of options.
 .TP
+.B \-V, \-\-version
+Print out the current version number.
+.TP
 .B \-d
 Decrypt \fIsrc\fP into \fIdst\fP. The default behavior is to encrypt \fIsrc\fP
 into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
