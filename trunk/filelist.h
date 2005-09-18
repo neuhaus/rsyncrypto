@@ -36,4 +36,7 @@ extern filelistmaptype filelist;
 typedef std::map<std::string, std::string> revlistmap;
 extern revlistmap reversemap; // Cypher->plain mapping for encryption usage
 
+// The file name by which the file list is stored inside the encrypted directory
+static const char FILELISTNAME[]="filelist";
+
 #endif

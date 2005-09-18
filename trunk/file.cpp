@@ -147,21 +147,31 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
         switch( status.st_mode & S_IFMT ) {
         case S_IFREG:
             // Regular file
-	    dst_filename=metadata::create_combined_path(dst_dir, src_filename.c_str()+src_offset);
-	    key_filename=metadata::create_combined_path(key_dir, src_filename.c_str()+src_offset);
-            if( !EXISTS(changed) || lstat( dst_filename.c_str(), &dststat )!=0 ||
-                    dststat.st_mtime!=status.st_mtime ) {
-                if( VERBOSE(1) && opname!=NULL )
-                    std::cerr<<opname<<" "<<src_filename<<std::endl;
-                try {
-                    op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
-                } catch( const rscerror &err ) {
-                    std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
-                }
-            } else {
-                if( VERBOSE(2) && opname!=NULL )
-                    std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
-            }
+	    {
+		bool ignore_file=false;
+		if( EXISTS(metaenc) ) {
+		    if( strcmp(src_filename.c_str()+src_offset+1, FILELISTNAME )==0 )
+			ignore_file=true;
+
+		    if( !ignore_file ) {
+			dst_filename=metadata::create_combined_path(dst_dir, src_filename.c_str()+src_offset);
+			if( !EXISTS(decrypt) )
+			    key_filename=metadata::create_combined_path(key_dir, src_filename.c_str()+src_offset);
+		    }
+		}
+		if( (!EXISTS(changed) || lstat( dst_filename.c_str(), &dststat )!=0 ||
+			dststat.st_mtime!=status.st_mtime) && !ignore_file ) {
+		    if( VERBOSE(1) && opname!=NULL )
+			std::cerr<<opname<<" "<<src_filename<<std::endl;
+		    try {
+			op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+		    } catch( const rscerror &err ) {
+			std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
+		    }
+		} else if( VERBOSE(2) && opname!=NULL && !ignore_file ) {
+		    std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
+		}
+	    }
             break;
         case S_IFDIR:
             // Directory

@@ -226,10 +226,15 @@ std::string metadata::create_combined_path( const char *left, const char *right 
     if( EXISTS(decrypt) ) {
 	// Decryption
 	
-	// Find out how many directories are just "overhead".
-	int skip_count=calc_trim( right, VAL(metanest));
+	// Get just the file part of the path
+	for( int skip=0; right[skip]!='\0'; ++skip ) {
+	    if( right[skip]==DIRSEP_C ) {
+		right+=skip+1;
+		skip=0;
+	    }
+	}
 
-	filelistmaptype::const_iterator iter=filelist.find(right+skip_count);
+	filelistmaptype::const_iterator iter=filelist.find(right);
 	if( iter==filelist.end() )
 	    // Oops - we don't know how this file was called before we hashed it's name!
 	    throw rscerror("Filename translation not found", 0, right);
