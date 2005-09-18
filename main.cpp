@@ -117,6 +117,11 @@ int main( int argc, char *argv[] )
         }
 
 	if( EXISTS(metaenc) ) {
+	    if( EXISTS(recurse) || EXISTS(filelist) ) {
+		// First decrypt the encrypted file list
+		file_decrypt(autofd::combine_paths(FILENAME(src), FILELISTNAME).c_str(), FILENAME(metaenc),
+			autofd::combine_paths(FILENAME(key), FILELISTNAME).c_str(), rsa_key );
+	    }
 	    metadata::fill_map(FILENAME(metaenc), encrypt);
 	}
 
