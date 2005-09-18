@@ -139,14 +139,16 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
     struct dirent *ent;
     while( (ent=dir.read())!=NULL ) {
         std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
-        std::string dst_filename(metadata::create_combined_path(dst_dir, src_filename.c_str()+src_offset));
-        std::string key_filename(metadata::create_combined_path(key_dir, src_filename.c_str()+src_offset));
+        std::string dst_filename(autofd::combine_paths(dst_dir, src_filename.c_str()+src_offset));
+        std::string key_filename(autofd::combine_paths(key_dir, src_filename.c_str()+src_offset));
         
         struct stat status, dststat;
         lstat( src_filename.c_str(), &status );
         switch( status.st_mode & S_IFMT ) {
         case S_IFREG:
             // Regular file
+	    dst_filename=metadata::create_combined_path(dst_dir, src_filename.c_str()+src_offset);
+	    key_filename=metadata::create_combined_path(key_dir, src_filename.c_str()+src_offset);
             if( !EXISTS(changed) || lstat( dst_filename.c_str(), &dststat )!=0 ||
                     dststat.st_mtime!=status.st_mtime ) {
                 if( VERBOSE(1) && opname!=NULL )
