@@ -232,7 +232,7 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 	filelistmaptype::const_iterator iter=filelist.find(right+skip_count);
 	if( iter==filelist.end() )
 	    // Oops - we don't know how this file was called before we hashed it's name!
-	    throw rscerror("Filename translation not found", 0, left);
+	    throw rscerror("Filename translation not found", 0, right);
 	
 	return autofd::combine_paths(left, iter->second.plainname.c_str());
     } else {
