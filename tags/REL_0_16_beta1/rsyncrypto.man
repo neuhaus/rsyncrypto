@@ -1,0 +1,249 @@
+.TH RSYNCRYPTO 1 "February 20, 2005" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.\" Please adjust this date whenever revising the manpage.
+.SH NAME
+rsyncrypto \- rsync friendly encryption
+.SH SYNOPSIS
+.B rsyncrypto
+.RI [ options ] " srcfile dstfile keyfile key"
+.br
+.B rsyncrypto
+.RI [ options ] " -r srcdir dstdir keysdir key"
+.SH DESCRIPTION
+This manual page documents the \fBrsyncrypto\fP command.
+.PP
+\fBrsyncrypto\fP is a utility that encrypts a file (or a directory structure)
+in a way that ensures that local changes to the plain text file will result in
+local changes to the cipher text file. This, in turn, ensures that doing
+\fBrsync\fP to synchronize the encrypted files to another machine will have
+only a small impact on \fBrsync\fP's efficiency.
+.PP
+\fBrsyncrypto\fP will encrypt files using a symmetric block cipher (AES). Each
+file is encrypted using a unique key. The file key is stored in two locations.
+One is the "\fIkey\fP" file, and the second is inside the encrypted file
+itself. The second copy is encrypted using a RSA public key, which can be
+shared for all encrypted files.
+.PP
+Decrypting the file can take place in one of two forms:
+.TP
+.B Warm Decryption
+\fIkeyfile\fP is used to decrypt \fIsrcfile\fP into \fIdstfile\fP.
+.TP
+.B Cold Decryption
+If \fIkeyfile\fP is lost and \fIkey\fP is the \fBprivate\fP key for the RSA
+encryption, extract and create \fIkeyfile\fP from the encrypted \fIsrcfile\fP,
+and create both \fIkeyfile\fP and \fIdstfile\fP.
+.PP
+If both \fIkeyfile\fP and the private key are not available, decryption cannot
+take place. Typically, this means that you would either want to transfer the
+encrypted files in whatever way (secure or insecure, but probably \fBrsync\fP
+:), and keep the plain text file, as well as the key file, secure. As long as
+you saved the RSA private key, you can reconstruct them both.
+.SH PARAMETERS
+The parameters meaning depend on the existence of the \fI-r\fP and \fI-d\fP
+flags.
+.TP
+\fIsrcfile\fP or \fIsrcdir\fP
+This is the source for the operation. This will be the plain text file for
+encryption, and the cipher text file for decryption. If the \fI-r\fP option is
+given, \fIsrcdir\fP is the directory from which files are to be
+encrypted/decrypted. Otherwise, \fIsrcfile\fP is the file to be
+encrypted/decrypted. In any case, \fIsrc\fP must exist prior to running
+\fBrsyncrypto\fP.
+.TP
+\fIdstfile\fP or \fIdstdir\fP
+Similar to \fIsrc\fP, this is the destination of the operation. It will be
+the plain text to be created if \fI-d\fP was given, or the encrypted file
+otherwise.
+.TP
+\fIkeyfile\fP or \fIkeydir\fP
+The file holding the symmetric key for the encryption, or a directory in which
+symmetric key files reside. If the later, the key files will have the same name
+as the plain text files.
+.TP
+\fIkey\fP
+This file can either be a X509 certificate holding a public key, or a PEM format
+private key. The private key is never needed unless a cold decryption is
+required. See the
+.BR req (1)
+or
+.BR x509 (1)
+manual pages for more info.
+.P
+If \fIdst\fP does not exist, it will be created. The directory in which it
+is to be created must exist prior to running \fBrsyncrypto\fP.
+.P
+If encrypting, and a symmetric key for the file is found, the same parameters
+will be used for the encryption unless the \fI\-\-fr\fP or \fI\-\-fk\fP options
+are used. If that's the case, the key file is going to be replaced with the
+correct parameters.
+.SH OPTIONS
+These programs follow the usual GNU command line syntax, with long options
+starting with two dashes (`-').
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.TP
+.B \-V, \-\-version
+Print out the current version number.
+.TP
+.B \-d
+Decrypt \fIsrc\fP into \fIdst\fP. The default behavior is to encrypt \fIsrc\fP
+into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
+.TP
+.B \-r
+Recursively encrypt/decrypt an entire directory structure. All files under
+\fIsrcdir\fP will be encrypted to files of the same name and path (almost, see
+\fI\-\-trim\fP) under \fIdstdir\fP. If not already there, a key file will be
+created for each file under \fIkeydir\fP.
+.TP
+.B \-\-filelist
+The first argument is a pointer to a file (or "\-" for stdin) that has a list
+of files to process. Any name ending with a "/" is taken to be a directory in
+recursive mode, and any other name is a file name. The second argument is a
+directory where the files are encrypted to. \-\-filelist and \-r are mutually
+exclusive.
+.TP
+.B \-c
+Check the src and destination modified time (in one second resolution) prior
+to performing the operation. If the modified time is the same, assume that the
+files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
+file sizes are not compared. This is because the file size is expected to change
+during the encryption (and thus decryption) operation.
+.TP
+.B \-m, \-\-meta\-encrypt=translation_file
+Encrypt the meta information. If this option is specified, this means that file
+names, as well as other data (currently, file permission in Unix) are encrypted
+as well. This is done by changing the name of the encrypted file to a random
+string of characters, and storing the translation in the file given as parameter.
+If working in recursive mode, this file is automatically also included in the
+encryption, and is given the fixed name "filelist". This is done so that
+decryption of the file names is possible when the symmetric keys are lost.
+.TP
+.BR \-\-trim =num
+Determine how many directory levels to trim from the beginning of the \fIsrcdir\fP
+path when creating directories under \fIdstdir\fP. The default value is 1. See
+.B "THE TRIM OPTION"
+for more details.
+.TP
+.B \-\-delete
+When in recursive mode, delete files and directories under \fIdstdir\fP that do
+not exist under \fIsrcdir\fP.
+.TP
+.BI \-b " num"
+Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
+Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
+will only affect files for which no \fIkeyfile\fP exists.
+.TP
+.BI \-\-gzip =path
+By default, \fBrsyncrypto\fP will compress the plain text prior to encrypting
+it. In order not to become rsync unfriendly due to the compression,
+\fBrsyncrypto\fP will search the path for an instance of
+.BR gzip (1)
+that supports the \fI\-\-rsyncable\fP option. If the system's default gzip does
+not support this option (only Debian's does, at the time of this writing), use
+this option to tell \fBrsyncrypto\fP to use a different instance of gzip. The
+tests directory of rsyncrypto's source has a file called "gzip", that does NULL
+compression by redirecting the input and output to
+.BR cat (1).
+.TP
+.BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
+Affects the rolling block algorithm. See \fBNOTES\fP.
+.TP
+.BR \-\-fk ", " \-\-fr
+If command line, or a version with different defaults, dictate different
+values for the \fI\-\-roll\-*\fP options or the \fI\-b\fP option, these will only
+affect files for which \fIkeyfile\fP does not yet exist. specifying the
+\fI\-\-fk\fP or \fI\-\-fr\fP will recreate \fIkeyfile\fP if it has values different
+than those in the previous key file.
+.TP
+.B \-v
+Increase verbosity level. Specify several time to be more verbose.
+.SH NOTES
+.B encrypting stdin
+.P
+If \fIsrcfile\fP is given as `-', the plain text data will be read fro stdin.
+This does not yet work for decompression (see \fBBUGS\fP).
+.P
+.BR \-\-meta\-encrypt
+.P
+The meta encrypt option allows encryption of file names, as well as other meta
+data. This is not so much "encryption", as it is table replacement. File names
+are replaced by a random string of characters, and the translation table is
+stored in a special file, that is given as a parameter to the "meta-encrypt"
+argument.
+.P
+If the "\-r" option is used, this file is automatically encrypted too. To
+allow cold decryption (i.e. - decryption using only the assymetric private key)
+this file's name is not encrypted itself, and it will always be called
+"filelist".
+.P
+The filelist file format is a binary representation of the meta data for the
+files. The format is documented seperately.
+.P
+.BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
+.P
+These values affect some of the inner workings of \fBrsyncrypto\fP's decision
+making.  In particular, these affect how \fBrsyncrypto\fP decides when to
+revert to the IV.
+
+These options should not be played with unless you understand what you are
+doing. They are not dangerous, in that they will never cause data loss. Any
+value should still allow decryption of the file. They do have an affect on
+\fBrsync\fP's efficiency.
+.P
+These options are only there to allow quick response in case a security problem
+pops up with their default values. If that happens, an advisory may come out
+giving new values to fill in as a workaround. Until that happens, most users
+are advised to leave these options alone.
+.SH "THE TRIM OPTION"
+When running \fBrsyncrypto\fP in recursive mode, the directory structure under
+\fIsrcdir\fP is re-created under \fIdstdir\fP, with one directory stripped from
+the path. In other words, if we have a directory structure which has:
+.P
+a/b/c/file
+.P
+running \fBrsyncrypto\fP with \fIsrcdir\fP of "a/b", and \fIdstdir\fP of "f"
+will create "f/b/c/file".
+.P
+The \fI\-\-trim\fP options lets the user say how many parts to trim from
+\fIsrcdir\fP when creating directories under \fIdstdir\fP and \fIkeydir\fP. If, in the
+above example, we said
+.IR \-\-trim =0
+then "f/a/b/c/file" would have been created. Likewise, if we said
+.IR \-\-trim =2
+then "f/c/file" would have been created.
+.P
+It is an error to give a trim value which is higher than the number of
+directory parts actually in \fIsrcdir\fP. In the above example,
+.IR \-\-trim =3
+would result in an error.
+.SH SECURITY
+The roll values affect, to a not totally known degree, how much information
+is "leaked" between plain text and cipher text. The default values are supposed
+to leak less than 20 bits of aggregated information about the plain text file
+for every 8KB, in the worst case. These values, we hope, will be considered
+secure enough for most usages. However, if your country's fate is at stake, use
+a non-rsync optimized encryption, such as the one provided by
+.BR openssl (1).
+.SH EXAMPLES
+Soon.
+.SH BUGS
+Not providing a correct key file may result in segmentation fault.
+.P
+It is not yet possible to decrypt using password protected private key.
+.P
+Decrypting from stdin is not yet supported.
+.SH SEE ALSO
+.BR rsync (1),
+.BR gzip (1),
+.BR openssl (1),
+.BR x509 (1),
+.BR req (1).
+.br
+.SH AUTHOR
+rsyncrypto was written by Shachar Shemesh for Lingnu Open Source Consulting ltd.
+http://www.lingnu.com
+.PP
+This manual page was written by Shachar Shemesh <debianpkg@shemesh.biz>
+.SH PROJECT HOMEPAGE
+http://sourceforge.net/projects/rsyncrypto
