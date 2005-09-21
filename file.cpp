@@ -118,7 +118,8 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                     std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str()+src_offset );
                     std::string keyfile=autofd::combine_paths( key_dir, srcname.c_str()+src_offset );
 
-                    dir_encrypt( srcname.c_str(), dst_dir, key_dir, rsa_key, op, opname );
+                    dir_encrypt( srcname.c_str(), dst_dir, key_dir, rsa_key, op, opname, name_concat,
+			    name_concat );
                 }
                 break;
             default:
@@ -132,70 +133,63 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
 }
 
 static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op, int src_offset, bool op_handle_dir, const char *opname )
+        encryptfunc op, int src_offset, bool op_handle_dir, const char *opname, namefunc dstname,
+	namefunc keyname )
 {
     autodir dir(src_dir);
 
     struct dirent *ent;
     while( (ent=dir.read())!=NULL ) {
         std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
-        std::string dst_filename(autofd::combine_paths(dst_dir, src_filename.c_str()+src_offset));
-        std::string key_filename(autofd::combine_paths(key_dir, src_filename.c_str()+src_offset));
         
         struct stat status, dststat;
         lstat( src_filename.c_str(), &status );
-        switch( status.st_mode & S_IFMT ) {
-        case S_IFREG:
-            // Regular file
-	    {
-		bool ignore_file=false;
-		if( EXISTS(metaenc) ) {
-		    if( strcmp(src_filename.c_str()+src_offset+1, FILELISTNAME )==0 )
-			ignore_file=true;
+        std::string dst_filename(dstname(dst_dir, src_filename.c_str()+src_offset, status.st_mode));
+        std::string key_filename(keyname(key_dir, src_filename.c_str()+src_offset, status.st_mode));
 
-		    if( !ignore_file ) {
-			dst_filename=metadata::create_combined_path(dst_dir, src_filename.c_str()+src_offset);
-			if( !EXISTS(decrypt) )
-			    key_filename=metadata::create_combined_path(key_dir, src_filename.c_str()+src_offset);
+	if( dst_filename.length()>0 ) {
+	    switch( status.st_mode & S_IFMT ) {
+	    case S_IFREG:
+		// Regular file
+		{
+		    if( !EXISTS(changed) || lstat( dst_filename.c_str(), &dststat )!=0 ||
+			    dststat.st_mtime!=status.st_mtime ) {
+			if( VERBOSE(1) && opname!=NULL )
+			    std::cerr<<opname<<" "<<src_filename<<std::endl;
+			try {
+			    op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+			} catch( const rscerror &err ) {
+			    std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
+			}
+		    } else if( VERBOSE(2) && opname!=NULL ) {
+			std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
 		    }
 		}
-		if( (!EXISTS(changed) || lstat( dst_filename.c_str(), &dststat )!=0 ||
-			dststat.st_mtime!=status.st_mtime) && !ignore_file ) {
-		    if( VERBOSE(1) && opname!=NULL )
-			std::cerr<<opname<<" "<<src_filename<<std::endl;
-		    try {
+		break;
+	    case S_IFDIR:
+		// Directory
+		if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
+		    if( !op_handle_dir ) {
+			recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
+				op_handle_dir, opname, dstname, keyname );
+		    } else {
+			recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
+				op_handle_dir, opname, dstname, keyname );
 			op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
-		    } catch( const rscerror &err ) {
-			std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
 		    }
-		} else if( VERBOSE(2) && opname!=NULL && !ignore_file ) {
-		    std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
 		}
-	    }
-            break;
-        case S_IFDIR:
-            // Directory
-            if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
-                if( !op_handle_dir ) {
-                    recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
-                            op_handle_dir, opname );
-                } else {
-                    recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
-                            op_handle_dir, opname );
-                    op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
-                }
-            }
-            break;
+		break;
 #if defined S_IFLNK
-        case S_IFLNK:
-            // Symbolic link
-            break;
+	    case S_IFLNK:
+		// Symbolic link
+		break;
 #endif
-        default:
-            // Unhandled type
-            throw rscerror("Unhandled file type");
-            break;
-        }
+	    default:
+		// Unhandled type
+		throw rscerror("Unhandled file type");
+		break;
+	    }
+	}
     }
 }
 
@@ -204,31 +198,31 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
     struct stat status;
 
     if( lstat( dst_file, &status )!=0 ) {
-        if( errno==ENOENT ) {
-            // Need to erase file
-            if( lstat( source_file, &status )==0  ) {
-                switch( status.st_mode & S_IFMT ) {
-                case S_IFDIR:
-                    // Need to erase directory
-                    if( VERBOSE(1) )
-                        std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
-                    autofd::rmdir( source_file );
-                    autofd::rmdir( key_file );
-                    break;
-                case S_IFREG:
+	if( errno==ENOENT ) {
+	    // Need to erase file
+	    if( lstat( source_file, &status )==0  ) {
+		switch( status.st_mode & S_IFMT ) {
+		case S_IFDIR:
+		    // Need to erase directory
+		    if( VERBOSE(1) )
+			std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
+		    autofd::rmdir( source_file );
+		    autofd::rmdir( key_file );
+		    break;
+		case S_IFREG:
 #if defined S_IFLNK
-                case S_IFLNK:
+		case S_IFLNK:
 #endif
-                    if( VERBOSE(1) )
-                        std::cout<<"Delete "<<source_file<<std::endl;
-                    if( unlink( source_file )!=0 )
-                        throw rscerror("Erasing file", errno, source_file );
-                    if( EXISTS(delkey) ) {
-                        if( VERBOSE(1) )
-                            std::cout<<"Delete "<<key_file<<std::endl;
-                        if( unlink( key_file )!=0 && errno!=ENOENT )
-                            throw rscerror("Erasing file", errno, key_file );
-                    }
+		    if( VERBOSE(1) )
+			std::cout<<"Delete "<<source_file<<std::endl;
+		    if( unlink( source_file )!=0 )
+			throw rscerror("Erasing file", errno, source_file );
+		    if( EXISTS(delkey) ) {
+			if( VERBOSE(1) )
+			    std::cout<<"Delete "<<key_file<<std::endl;
+			if( unlink( key_file )!=0 && errno!=ENOENT )
+			    throw rscerror("Erasing file", errno, key_file );
+		    }
                     break;
                 default:
                     throw rscerror("Unhandled file type", 0, source_file );
@@ -243,7 +237,7 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
 }
 
 void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op, const char *opname )
+        encryptfunc op, const char *opname, namefunc dstname, namefunc keyname )
 {
     // How many bytes of src_dir to skip when creating dirs under dst_dir
     int src_offset=calc_trim( src_dir, VAL(trim) ); 
@@ -252,7 +246,7 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0777 );
     autofd::mkpath( autofd::combine_paths(key_dir, src_dir+src_offset).c_str(), 0700 );
 
-    recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname );
+    recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname, dstname, keyname );
 
     if( EXISTS(del) ) {
         std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
@@ -261,7 +255,7 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
         dst_src_name=autofd::combine_paths(dst_src_name.c_str(), src_dir+src_offset);
         
         recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
-                dst_src_offset, true, NULL );
+                dst_src_offset, true, NULL, dstname, keyname );
     }
 }
 
@@ -358,4 +352,9 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
         write_header( key_file, head.get());
     }
     copy_metadata( dst_file, &status );
+}
+
+std::string name_concat( const char *left, const char *right, mode_t mode )
+{
+    return autofd::combine_paths( left, right );
 }

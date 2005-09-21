@@ -37,12 +37,6 @@
 filelistmaptype filelist;
 revlistmap reversemap; // Cypher->plain mapping for encryption usage
 
-
-// XXX - On entropy of file name:
-// At the moment, we do not employ any collision detection, which means we are trying to minimize the chances
-// of a collision happening. Originally, we used a 64 bit entropy, but that has a 50% chance of creating a
-// collision for encrypting 4 billion files (easy, right?). While these chances are not particularily high,
-// a 22 characters file name isn't so high as to justify making a fuss of the increase.
 static const size_t CODED_FILE_ENTROPY=128;
 
 #define DEPEND_BLOCK(type, curtype) do { if( blocks.find(type)==blocks.end() ) \
@@ -211,76 +205,49 @@ void metadata::fill_map( const char *list_filename, bool encrypt )
     }
 }
 
-// This function merges a directory passed as "left" with a path suffix passed as "right" into a single
-// path. If no file encoding is required, this merely concats the two. If file encoding is required, the
-// suffix part is encoded or decoded (based on whether we are currently encrypting or decrypting) based
-// on the translation table in filelist. If we are encrypting and the encoding is new, a new table entry
-// is created.
-std::string metadata::create_combined_path( const char *left, const char *right )
+std::string metadata::namecat_encrypt( const char *left, const char *right, mode_t mode )
 {
-    // If no meta encryption takes place, just call "combine_paths"
-    if( !EXISTS(metaenc) )
-	return autofd::combine_paths(left,right);
+    if( !S_ISREG(mode) )
+	return autofd::combine_paths(left, right);
 
-    // Different case for encryption or decryption
-    if( EXISTS(decrypt) ) {
-	// Decryption
-	
-	// Get just the file part of the path
-	for( int skip=0; right[skip]!='\0'; ++skip ) {
-	    if( right[skip]==DIRSEP_C ) {
-		right+=skip+1;
-		skip=0;
+    std::string c_name; // Crypted name of file
+
+    // Find out whether we already have an encoding for this file
+    filelistmaptype::const_iterator iter=filelist.find(right);
+    if( iter==filelist.end() ) {
+	int i=0;
+	char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
+
+	// Make sure we have no encoded name collisions
+	do {
+	    // Need to create new encoding
+	    uint8_t buffer[CODED_FILE_ENTROPY/8];
+
+	    // Generate an encoded form for the file.
+	    if( !RAND_bytes( buffer, CODED_FILE_ENTROPY/8 ) )
+	    {
+		throw rscerror("No random entropy for file name", 0, left);
 	    }
-	}
 
-	filelistmaptype::const_iterator iter=filelist.find(right);
-	if( iter==filelist.end() )
-	    // Oops - we don't know how this file was called before we hashed it's name!
-	    throw rscerror("Filename translation not found", 0, right);
-	
-	return autofd::combine_paths(left, iter->second.plainname.c_str());
-    } else {
-	// Encryption
-	
-	std::string c_name; // Crypted name of file
+	    // Keeping non destructor protected memory around. Must not throw exceptions
+	    // Base64 encode the random sequence
+	    BIO *mem=BIO_new(BIO_s_mem());
+	    BIO *b64=BIO_new(BIO_f_base64());
+	    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
+	    mem=BIO_push(b64, mem);
+	    BIO_write(mem, buffer, sizeof(buffer) );
+	    BIO_flush(mem);
 
-	// Find out whether we already have an encoding for this file
-	filelistmaptype::const_iterator iter=filelist.find(right);
-	if( iter==filelist.end() ) {
-	    int i=0;
-	    char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
-	    
-	    // Make sure we have no encoded name collisions
-	    do {
-		// Need to create new encoding
-		uint8_t buffer[CODED_FILE_ENTROPY/8];
+	    const char *biomem;
+	    unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
 
-		// Generate an encoded form for the file.
-		if( !RAND_bytes( buffer, CODED_FILE_ENTROPY/8 ) )
-		{
-		    throw rscerror("No random entropy for file name", 0, left);
-		}
+	    // This should never happen, but make sure, at least for debug builds
+	    assert(encoded_size<sizeof(encodedfile) );
 
-		// Keeping non destructor protected memory around. Must not throw exceptions
-		// Base64 encode the random sequence
-		BIO *mem=BIO_new(BIO_s_mem());
-		BIO *b64=BIO_new(BIO_f_base64());
-		BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
-		mem=BIO_push(b64, mem);
-		BIO_write(mem, buffer, sizeof(buffer) );
-		BIO_flush(mem);
-
-		const char *biomem;
-		unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
-
-		// This should never happen, but make sure, at least for debug builds
-		assert(encoded_size<sizeof(encodedfile) );
-
-		// Base64 uses "/", which is not a good character for file names.
-		unsigned int i, diff=0;
-		for( i=0; i<encoded_size; ++i ) {
-		    switch( biomem[i] ) {
+	    // Base64 uses "/", which is not a good character for file names.
+	    unsigned int i, diff=0;
+	    for( i=0; i<encoded_size; ++i ) {
+		switch( biomem[i] ) {
 		    case '/':
 			// Change / into underscore '_'
 			encodedfile[i-diff]='_';
@@ -295,37 +262,63 @@ std::string metadata::create_combined_path( const char *left, const char *right 
 			break;
 		    default:
 			encodedfile[i-diff]=biomem[i];
-		    }
 		}
-		encodedfile[encoded_size-diff]='\0';
-
-		BIO_free_all(mem);
-		// Freed memory. Can throw exceptions again
-	    } while( reversemap.find(encodedfile)!=reversemap.end() && // Found a unique encoding
-		    (++i)<5 ); // Tried too many times.
-
-	    if(i==5) {
-		throw rscerror("Failed to locate unique encoding for file");
 	    }
+	    encodedfile[encoded_size-diff]='\0';
 
-	    metadata newdata;
-	    newdata.plainname=right;
-	    newdata.ciphername=c_name=encodedfile;
-	    newdata.dirsep=DIRSEP_C;
+	    BIO_free_all(mem);
+	    // Freed memory. Can throw exceptions again
+	} while( reversemap.find(encodedfile)!=reversemap.end() && // Found a unique encoding
+		(++i)<5 ); // Tried too many times.
 
-	    filelist[right]=newdata;
-	    reversemap[encodedfile]=right;
-	} else {
-	    // We already have an encoding
-
-	    c_name=iter->second.ciphername;
+	if(i==5) {
+	    throw rscerror("Failed to locate unique encoding for file");
 	}
 
-	// Calculate the name as results from the required directory nesting level
-	nest_name(c_name);
+	metadata newdata;
+	newdata.plainname=right;
+	newdata.ciphername=c_name=encodedfile;
+	newdata.dirsep=DIRSEP_C;
 
-	return autofd::combine_paths(left, c_name.c_str());
+	filelist[right]=newdata;
+	reversemap[encodedfile]=right;
+    } else {
+	// We already have an encoding
+
+	c_name=iter->second.ciphername;
     }
+
+    // Calculate the name as results from the required directory nesting level
+    nest_name(c_name);
+
+    return autofd::combine_paths(left, c_name.c_str());
+}
+
+std::string metadata::namecat_decrypt( const char *left, const char *right, mode_t mode )
+{
+    if( !S_ISREG(mode) )
+	return autofd::combine_paths(left, right);
+
+    while( *right==DIRSEP_C )
+	++right;
+
+    if( *right=='\0' || strcmp(right, FILELISTNAME)==0 )
+	return "";
+
+    // Get just the file part of the path
+    for( int skip=0; right[skip]!='\0'; ++skip ) {
+	if( right[skip]==DIRSEP_C ) {
+	    right+=skip+1;
+	    skip=0;
+	}
+    }
+
+    filelistmaptype::const_iterator iter=filelist.find(right);
+    if( iter==filelist.end() )
+	// Oops - we don't know how this file was called before we hashed it's name!
+	throw rscerror("Filename translation not found", 0, right);
+
+    return autofd::combine_paths(left, iter->second.plainname.c_str());
 }
 
 void metadata::nest_name( std::string &name )
