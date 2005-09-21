@@ -105,6 +105,7 @@ int main( int argc, char *argv[] )
 
         const char *opname=NULL;
         encryptfunc op;
+	namefunc nameop=name_concat, keynameop=name_concat;
 	bool encrypt=true;
 
         if( EXISTS(decrypt) ) {
@@ -117,16 +118,23 @@ int main( int argc, char *argv[] )
         }
 
 	if( EXISTS(metaenc) ) {
-	    if( EXISTS(recurse) || EXISTS(filelist) ) {
-		// First decrypt the encrypted file list
-		file_decrypt(autofd::combine_paths(FILENAME(src), FILELISTNAME).c_str(), FILENAME(metaenc),
-			autofd::combine_paths(FILENAME(key), FILELISTNAME).c_str(), rsa_key );
+	    if( encrypt ) {
+		nameop=metadata::namecat_encrypt;
+		keynameop=nameop;
+	    } else {
+		if( EXISTS(recurse) || EXISTS(filelist) ) {
+		    // First decrypt the encrypted file list
+		    file_decrypt(autofd::combine_paths(FILENAME(src), FILELISTNAME).c_str(), FILENAME(metaenc),
+			    autofd::combine_paths(FILENAME(key), FILELISTNAME).c_str(), rsa_key );
+		}
+
+		nameop=metadata::namecat_decrypt;
 	    }
 	    metadata::fill_map(FILENAME(metaenc), encrypt);
 	}
 
         if( EXISTS(recurse) ) {
-            dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname);
+            dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, nameop, keynameop);
 	    if( encrypt && EXISTS(metaenc) ) {
 		// Write the (possibly changed) filelist back to the file
 		metadata::write_map(FILENAME(metaenc));
