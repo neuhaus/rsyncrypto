@@ -58,7 +58,9 @@ void parse_cmdline( int argc, char *argv[] )
     arg_parse( argc, argv, options.argtable );
 
     if( EXISTS(trim) && !EXISTS(recurse) && !EXISTS(filelist) )
-        throw rscerror("Cannot trim names when not doing directory recursion");
+        throw rscerror("Cannot trim names when not doing directory recursion or filelist");
+    if( EXISTS(metaenc) && !EXISTS(recurse) && !EXISTS(filelist) )
+        throw rscerror("Cannot encrypt names when not doing directory recursion or filelist");
     if( EXISTS(delkey) )
         ARG(del).count=1;
 
@@ -105,7 +107,7 @@ int main( int argc, char *argv[] )
 
         const char *opname=NULL;
         encryptfunc op;
-	namefunc nameop=name_concat, keynameop=name_concat;
+	namefunc srcnameop=name_concat, nameop=name_concat, keynameop=name_concat;
 	bool encrypt=true;
 
         if( EXISTS(decrypt) ) {
@@ -143,7 +145,8 @@ int main( int argc, char *argv[] )
 			autofd::combine_paths(FILENAME(key), FILELISTNAME).c_str(), rsa_key );
 	    }
         } else if( EXISTS(filelist) ) {
-            filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname);
+            filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, srcnameop,
+		    nameop, keynameop);
         } else {
             op(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key);
         }

@@ -79,7 +79,7 @@ int calc_trim( const char *path, int trim_count )
 }
 
 void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op, const char *opname )
+        encryptfunc op, const char *opname, namefunc srcnameop, namefunc dstnameop, namefunc keynameop )
 {
     autofd srcfd;
 
@@ -94,9 +94,15 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
         std::string srcname=srcfd.readline();
 
         if( srcname!="" ) try {
+	    // Seperate the prefix from the actual name
+	    size_t src_offset=calc_trim( srcname.c_str(), VAL(trim) );
+	    std::string src_prefix(srcname.c_str(), src_offset);
+	    srcname=std::string(srcname.c_str()+src_offset);
+	    
+	    // Perform name (de)mangling
+	    std::string src=srcnameop( src_prefix.c_str(), srcname.c_str(), 0 );
 
-            struct stat filestat=autofd::stat( srcname.c_str() );
-            int src_offset=calc_trim( srcname.c_str(), VAL(trim) );
+            struct stat filestat=autofd::stat( src.c_str() );
 
             switch( filestat.st_mode&S_IFMT ) {
             case S_IFREG:
@@ -104,10 +110,10 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                     if( VERBOSE(1) )
                         std::cerr<<opname<<" file: "<<srcname<<std::endl;
 
-                    std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str()+src_offset );
-                    std::string keyfile=autofd::combine_paths( key_dir, srcname.c_str()+src_offset );
+                    std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
+                    std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
 
-                    op( srcname.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key );
+                    op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key );
                 }
                 break;
             case S_IFDIR:
@@ -115,10 +121,11 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                     if( VERBOSE(1) )
                         std::cerr<<opname<<" directory: "<<srcname<<std::endl;
 
-                    std::string dstfile=autofd::combine_paths( dst_dir, srcname.c_str()+src_offset );
-                    std::string keyfile=autofd::combine_paths( key_dir, srcname.c_str()+src_offset );
+		    // XXX What happens if there is an actual directory inside a meta-encrypted dir?
+                    std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
+                    std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
 
-                    dir_encrypt( srcname.c_str(), dst_dir, key_dir, rsa_key, op, opname, name_concat,
+                    dir_encrypt( src.c_str(), dst_dir, key_dir, rsa_key, op, opname, name_concat,
 			    name_concat );
                 }
                 break;
