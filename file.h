@@ -9,7 +9,7 @@ typedef std::string(* namefunc)(const char *left, const char *right, mode_t mode
 std::string name_concat( const char *left, const char *right, mode_t mode );
 
 void filelist_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op, const char *opname );
+        encryptfunc op, const char *opname, namefunc srcnameop, namefunc dstnameop, namefunc keynameop );
 void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
         encryptfunc op, const char *opname, namefunc dstname, namefunc keyname );
 void file_encrypt( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key );
