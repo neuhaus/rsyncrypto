@@ -1,3 +1,8 @@
+== Notice ==
+This document is on hold. It may be used for the format for saving meta-data inside the encrypted file itself, but will not be used for the "filelist" file. The filelist file will only contain a simple filename conversion.
+
+This document is here purely for archival reasons.
+
 == The "filelist" File ==
 
 If the -m (--meta-encrypt) option is given, the file names, as well as other meta-data about the files, is garbled. All files are issued as standard permission files (according to the umask on Unix like systems). Their names are turned into a random stream of characters, and their ownership is that of the user running rsyncrypto. The real information about all of tha above is stored inside a special file, called "filelist". Of course, filelist is encrypted according to the standard rsyncrypto encryption. It is treated in a special way, it does not go through the same series of name changes as the rest of the files. This is done so that the file list itself could be identified and restored first, in case of a restore where the symmetric keys themselves have been lost.
