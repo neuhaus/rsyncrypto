@@ -125,8 +125,7 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                     std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
                     std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
 
-                    dir_encrypt( src.c_str(), dst_dir, key_dir, rsa_key, op, opname, name_concat,
-			    name_concat );
+                    dir_encrypt( src.c_str(), dst_dir, key_dir, rsa_key, op, opname, dstnameop, keynameop );
                 }
                 break;
             default:
@@ -250,8 +249,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     int src_offset=calc_trim( src_dir, VAL(trim) ); 
 
     // Implement standard recursive descent on src_dir
-    autofd::mkpath( autofd::combine_paths(dst_dir, src_dir+src_offset).c_str(), 0777 );
-    autofd::mkpath( autofd::combine_paths(key_dir, src_dir+src_offset).c_str(), 0700 );
+    autofd::mkpath( dstname(dst_dir, src_dir+src_offset, S_IFDIR ).c_str(), 0777 );
+    autofd::mkpath( keyname(key_dir, src_dir+src_offset, S_IFDIR ).c_str(), 0700 );
 
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname, dstname, keyname );
 

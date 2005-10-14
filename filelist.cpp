@@ -207,91 +207,99 @@ void metadata::fill_map( const char *list_filename, bool encrypt )
 
 std::string metadata::namecat_encrypt( const char *left, const char *right, mode_t mode )
 {
-    if( !S_ISREG(mode) )
-	return autofd::combine_paths(left, right);
+    switch( mode&S_IFMT ) {
+    case S_IFREG:
+	{
+	    std::string c_name; // Crypted name of file
 
-    std::string c_name; // Crypted name of file
+	    // Find out whether we already have an encoding for this file
+	    filelistmaptype::const_iterator iter=filelist.find(right);
+	    if( iter==filelist.end() ) {
+		int i=0;
+		char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
 
-    // Find out whether we already have an encoding for this file
-    filelistmaptype::const_iterator iter=filelist.find(right);
-    if( iter==filelist.end() ) {
-	int i=0;
-	char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
+		// Make sure we have no encoded name collisions
+		do {
+		    // Need to create new encoding
+		    uint8_t buffer[CODED_FILE_ENTROPY/8];
 
-	// Make sure we have no encoded name collisions
-	do {
-	    // Need to create new encoding
-	    uint8_t buffer[CODED_FILE_ENTROPY/8];
+		    // Generate an encoded form for the file.
+		    if( !RAND_bytes( buffer, CODED_FILE_ENTROPY/8 ) )
+		    {
+			throw rscerror("No random entropy for file name", 0, left);
+		    }
 
-	    // Generate an encoded form for the file.
-	    if( !RAND_bytes( buffer, CODED_FILE_ENTROPY/8 ) )
-	    {
-		throw rscerror("No random entropy for file name", 0, left);
-	    }
+		    // Keeping non destructor protected memory around. Must not throw exceptions
+		    // Base64 encode the random sequence
+		    BIO *mem=BIO_new(BIO_s_mem());
+		    BIO *b64=BIO_new(BIO_f_base64());
+		    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
+		    mem=BIO_push(b64, mem);
+		    BIO_write(mem, buffer, sizeof(buffer) );
+		    BIO_flush(mem);
 
-	    // Keeping non destructor protected memory around. Must not throw exceptions
-	    // Base64 encode the random sequence
-	    BIO *mem=BIO_new(BIO_s_mem());
-	    BIO *b64=BIO_new(BIO_f_base64());
-	    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
-	    mem=BIO_push(b64, mem);
-	    BIO_write(mem, buffer, sizeof(buffer) );
-	    BIO_flush(mem);
+		    const char *biomem;
+		    unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
 
-	    const char *biomem;
-	    unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
+		    // This should never happen, but make sure, at least for debug builds
+		    assert(encoded_size<sizeof(encodedfile) );
 
-	    // This should never happen, but make sure, at least for debug builds
-	    assert(encoded_size<sizeof(encodedfile) );
+		    // Base64 uses "/", which is not a good character for file names.
+		    unsigned int i, diff=0;
+		    for( i=0; i<encoded_size; ++i ) {
+			switch( biomem[i] ) {
+			    case '/':
+				// Change / into underscore '_'
+				encodedfile[i-diff]='_';
+				break;
+			    case '+':
+				// Not really problematic, but to simplify regexp, change '+' into '-'
+				encodedfile[i-diff]='-';
+				break;
+			    case '=':
+				// Ignore the Base64 pad character altogether.
+				diff++;
+				break;
+			    default:
+				encodedfile[i-diff]=biomem[i];
+			}
+		    }
+		    encodedfile[encoded_size-diff]='\0';
 
-	    // Base64 uses "/", which is not a good character for file names.
-	    unsigned int i, diff=0;
-	    for( i=0; i<encoded_size; ++i ) {
-		switch( biomem[i] ) {
-		    case '/':
-			// Change / into underscore '_'
-			encodedfile[i-diff]='_';
-			break;
-		    case '+':
-			// Not really problematic, but to simplify regexp, change '+' into '-'
-			encodedfile[i-diff]='-';
-			break;
-		    case '=':
-			// Ignore the Base64 pad character altogether.
-			diff++;
-			break;
-		    default:
-			encodedfile[i-diff]=biomem[i];
+		    BIO_free_all(mem);
+		    // Freed memory. Can throw exceptions again
+		} while( reversemap.find(encodedfile)!=reversemap.end() && // Found a unique encoding
+			(++i)<5 ); // Tried too many times.
+
+		if(i==5) {
+		    throw rscerror("Failed to locate unique encoding for file");
 		}
+
+		metadata newdata;
+		newdata.plainname=right;
+		newdata.ciphername=c_name=encodedfile;
+		newdata.dirsep=DIRSEP_C;
+
+		filelist[right]=newdata;
+		reversemap[encodedfile]=right;
+	    } else {
+		// We already have an encoding
+
+		c_name=iter->second.ciphername;
 	    }
-	    encodedfile[encoded_size-diff]='\0';
 
-	    BIO_free_all(mem);
-	    // Freed memory. Can throw exceptions again
-	} while( reversemap.find(encodedfile)!=reversemap.end() && // Found a unique encoding
-		(++i)<5 ); // Tried too many times.
+	    // Calculate the name as results from the required directory nesting level
+	    nest_name(c_name);
 
-	if(i==5) {
-	    throw rscerror("Failed to locate unique encoding for file");
+	    return autofd::combine_paths(left, c_name.c_str());
 	}
-
-	metadata newdata;
-	newdata.plainname=right;
-	newdata.ciphername=c_name=encodedfile;
-	newdata.dirsep=DIRSEP_C;
-
-	filelist[right]=newdata;
-	reversemap[encodedfile]=right;
-    } else {
-	// We already have an encoding
-
-	c_name=iter->second.ciphername;
+	break;
+    case S_IFDIR:
+	return left;
+	break;
+    default:
+	return autofd::combine_paths(left, right);
     }
-
-    // Calculate the name as results from the required directory nesting level
-    nest_name(c_name);
-
-    return autofd::combine_paths(left, c_name.c_str());
 }
 
 std::string metadata::namecat_decrypt( const char *left, const char *right, mode_t mode )
