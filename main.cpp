@@ -135,8 +135,13 @@ int main( int argc, char *argv[] )
 	    metadata::fill_map(FILENAME(metaenc), encrypt);
 	}
 
-        if( EXISTS(recurse) ) {
-            dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, dstnameop, keynameop);
+        if( EXISTS(recurse) || EXISTS(filelist) ) {
+	    if( EXISTS(recurse) )
+		dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, dstnameop, keynameop);
+	    else
+		filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, srcnameop,
+			dstnameop, keynameop);
+
 	    if( encrypt && EXISTS(metaenc) ) {
 		// Write the (possibly changed) filelist back to the file
 		metadata::write_map(FILENAME(metaenc));
@@ -144,9 +149,6 @@ int main( int argc, char *argv[] )
 		file_encrypt(FILENAME(metaenc), autofd::combine_paths(FILENAME(dst), FILELISTNAME).c_str(),
 			autofd::combine_paths(FILENAME(key), FILELISTNAME).c_str(), rsa_key );
 	    }
-        } else if( EXISTS(filelist) ) {
-            filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, srcnameop,
-		    dstnameop, keynameop);
         } else {
             op(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key);
         }
