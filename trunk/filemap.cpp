@@ -28,22 +28,30 @@
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
+/*
+ * The file format is ALMOST text-editor friendly. Not quite, though.
+ * Each "line" contains a single character indicating the directory seperator
+ * (/, \ etc). The encrypted file name, a space, and then the unencrypted file
+ * name. Each line is terminated with a NULL.
+ */
+
 #include "rsyncrypto.h"
-#include "filelist.h"
-#include "filelist_format.h"
+#include "filemap.h"
 
 #include "file.h"
 
-filelistmaptype filelist;
-revlistmap reversemap; // Cypher->plain mapping for encryption usage
+filemaptype namemap;
+revfilemap reversemap; // Cypher->plain mapping for encryption usage
 
 static const size_t CODED_FILE_ENTROPY=128;
 
+#if 0
 #define DEPEND_BLOCK(type, curtype) do { if( blocks.find(type)==blocks.end() ) \
     throw rscerror("Corrupt filelist - block " #curtype " depends on block " #type); } while(false)
 #define BLOCK_MINSIZE(type, size) do { if( block_length<(size) ) \
     throw rscerror("Corrupt filelist - " #type " block too short"); } while(false)
-        
+#endif
+
 static void replace_dir_sep( std::string &path, char dirsep )
 {
     // Shortpath if we have nothing to do
@@ -59,7 +67,8 @@ static void replace_dir_sep( std::string &path, char dirsep )
     }
 }
 
-bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size, std::set<uint16_t> &blocks )
+#if 0
+bool filemap::readblock( const autommap &map, size_t offset, size_t *block_size, std::set<uint16_t> &blocks )
 {
     const unsigned char *block=map.get_uc()+offset;
     size_t endpos=map.getsize()-offset;
@@ -131,12 +140,12 @@ bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size
     return more;
 }
 
-size_t metadata::readchunk( const autommap &map, size_t offset, bool encrypt )
+size_t filemap::readchunk( const autommap &map, size_t offset, bool encrypt )
 {
     size_t chunk_offset=0;
     size_t block_size=0;
 
-    metadata data;
+    filemap data;
     std::set<uint16_t> blocks;
     
     while( offset+chunk_offset<map.getsize() &&
@@ -173,8 +182,9 @@ size_t metadata::readchunk( const autommap &map, size_t offset, bool encrypt )
     
     return chunk_offset+block_size;
 }
+#endif
 
-void metadata::fill_map( const char *list_filename, bool encrypt )
+void filemap::fill_map( const char *list_filename, bool encrypt )
 {
     bool nofile=false;
     autofd listfile_fd;
@@ -192,20 +202,58 @@ void metadata::fill_map( const char *list_filename, bool encrypt )
     if( !nofile ) {
 	autommap listfile( listfile_fd, PROT_READ );
 
-	// Check magic to make sure we are dealing with the correct file
-	const uint32_t *ulp=static_cast<const uint32_t *>(listfile.get());
-	if( *ulp!=ntohl(FILELIST_MAGIC_VER1) ) {
-	    throw rscerror( "Invalid magic in filelist" );
-	}
-        
-        size_t offset=sizeof(FILELIST_MAGIC_VER1);
+        size_t offset=0;
         while( offset<listfile.getsize() ) {
-            offset+=readchunk( listfile, offset, encrypt );
+	    filemap entry;
+	    char ch=-1;
+	    
+	    entry.dirsep=listfile.get_uc()[offset++];
+	    int i;
+	    for( i=0; i+offset<listfile.getsize() && (ch=listfile.get_uc()[offset+i])!=' ' &&
+		    ch!='\0'; ++i )
+		;
+
+	    if( ch!=' ' )
+		throw rscerror("Corrupt filemap - no plaintext file");
+
+	    entry.ciphername=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
+	    offset+=i+1;
+	    
+	    for( i=0; i+offset<listfile.getsize() && (ch=listfile.get_uc()[offset+i])!='\0'; ++i )
+		;
+	    if( ch!='\0' )
+		throw rscerror("Corrupt filemap - file is not NULL terminated");
+
+	    offset+=i+1;
+
+	    entry.plainname=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
+
+	    replace_dir_sep( entry.plainname, entry.dirsep );
+
+	    // Hashing direction (encoded->unencoded file names or vice versa) depends on whether we are encrypting or
+	    // decrypting
+	    std::string key;
+	    if( encrypt ) {
+		key=entry.plainname;
+	    } else {
+		key=entry.ciphername;
+	    }
+
+	    if( !namemap.insert(filemaptype::value_type(key, entry)).second ) {
+		// filemap already had an item with the same key
+		throw rscerror("Corrupt filemap - dupliacte key");
+	    }
+
+	    // If we are encrypting, we will also need the other map direction
+	    if( encrypt && !reversemap.insert(revfilemap::value_type(entry.ciphername, entry.plainname)).second ) {
+		// Oops - two files map to the same cipher name
+		throw rscerror("Corrupt filemap - dupliace encrypted name");
+	    }
         }
     }
 }
 
-std::string metadata::namecat_encrypt( const char *left, const char *right, mode_t mode )
+std::string filemap::namecat_encrypt( const char *left, const char *right, mode_t mode )
 {
     switch( mode&S_IFMT ) {
     case S_IFREG:
@@ -213,8 +261,8 @@ std::string metadata::namecat_encrypt( const char *left, const char *right, mode
 	    std::string c_name; // Crypted name of file
 
 	    // Find out whether we already have an encoding for this file
-	    filelistmaptype::const_iterator iter=filelist.find(right);
-	    if( iter==filelist.end() ) {
+	    filemaptype::const_iterator iter=namemap.find(right);
+	    if( iter==namemap.end() ) {
 		int i=0;
 		char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
 
@@ -275,12 +323,12 @@ std::string metadata::namecat_encrypt( const char *left, const char *right, mode
 		    throw rscerror("Failed to locate unique encoding for file");
 		}
 
-		metadata newdata;
+		filemap newdata;
 		newdata.plainname=right;
 		newdata.ciphername=c_name=encodedfile;
 		newdata.dirsep=DIRSEP_C;
 
-		filelist[right]=newdata;
+		namemap[right]=newdata;
 		reversemap[encodedfile]=right;
 	    } else {
 		// We already have an encoding
@@ -302,7 +350,7 @@ std::string metadata::namecat_encrypt( const char *left, const char *right, mode
     }
 }
 
-std::string metadata::namecat_decrypt( const char *left, const char *right, mode_t mode )
+std::string filemap::namecat_decrypt( const char *left, const char *right, mode_t mode )
 {
     if( !S_ISREG(mode) )
 	return autofd::combine_paths(left, right);
@@ -310,7 +358,7 @@ std::string metadata::namecat_decrypt( const char *left, const char *right, mode
     while( *right==DIRSEP_C )
 	++right;
 
-    if( *right=='\0' || strcmp(right, FILELISTNAME)==0 )
+    if( *right=='\0' || strcmp(right, FILEMAPNAME)==0 )
 	return "";
 
     // Get just the file part of the path
@@ -321,17 +369,17 @@ std::string metadata::namecat_decrypt( const char *left, const char *right, mode
 	}
     }
 
-    filelistmaptype::const_iterator iter=filelist.find(right);
-    if( iter==filelist.end() )
+    filemaptype::const_iterator iter=namemap.find(right);
+    if( iter==namemap.end() )
 	// Oops - we don't know how this file was called before we hashed it's name!
 	throw rscerror("Filename translation not found", 0, right);
 
     return autofd::combine_paths(left, iter->second.plainname.c_str());
 }
 
-void metadata::nest_name( std::string &name )
+void filemap::nest_name( std::string &name )
 {
-    int nestlevel=VAL(metanest);
+    int nestlevel=VAL(nenest);
     std::string retval(name);
 
     while( nestlevel>0 ) {
@@ -341,4 +389,20 @@ void metadata::nest_name( std::string &name )
     }
 
     name=retval;
+}
+
+// Create the file name mapping file
+void filemap::write_map( const char *map_filename )
+{
+    autofd file(map_filename, O_WRONLY|O_CREAT, 0777 );
+
+    for( revfilemap::const_iterator i=reversemap.begin(); i!=reversemap.end(); ++i ) {
+	const filemap *data=&namemap[i->second];
+
+	file.write( &(data->dirsep), sizeof( data->dirsep ) );
+	file.write( data->ciphername.c_str(), data->ciphername.length() );
+	file.write( " ", 1 );
+	file.write( data->plainname.c_str(), data->plainname.length() );
+	file.write( "", 1 );
+    }
 }

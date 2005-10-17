@@ -33,7 +33,7 @@
 #include "file.h"
 #include "crypto.h"
 #include "argtable2.h"
-#include "filelist.h"
+#include "filemap.h"
 
 void version()
 {
@@ -59,7 +59,7 @@ void parse_cmdline( int argc, char *argv[] )
 
     if( EXISTS(trim) && !EXISTS(recurse) && !EXISTS(filelist) )
         throw rscerror("Cannot trim names when not doing directory recursion or filelist");
-    if( EXISTS(metaenc) && !EXISTS(recurse) && !EXISTS(filelist) )
+    if( EXISTS(nameenc) && !EXISTS(recurse) && !EXISTS(filelist) )
         throw rscerror("Cannot encrypt names when not doing directory recursion or filelist");
     if( EXISTS(delkey) )
         ARG(del).count=1;
@@ -119,20 +119,20 @@ int main( int argc, char *argv[] )
             opname="Encrypting";
         }
 
-	if( EXISTS(metaenc) ) {
+	if( EXISTS(nameenc) ) {
 	    if( encrypt ) {
-		dstnameop=metadata::namecat_encrypt;
+		dstnameop=filemap::namecat_encrypt;
 		keynameop=dstnameop;
 	    } else {
 		if( EXISTS(recurse) || EXISTS(filelist) ) {
 		    // First decrypt the encrypted file list
-		    file_decrypt(autofd::combine_paths(FILENAME(src), FILELISTNAME).c_str(), FILENAME(metaenc),
-			    autofd::combine_paths(FILENAME(key), FILELISTNAME).c_str(), rsa_key );
+		    file_decrypt(autofd::combine_paths(FILENAME(src), FILEMAPNAME).c_str(), FILENAME(nameenc),
+			    autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
 		}
 
-		dstnameop=metadata::namecat_decrypt;
+		dstnameop=filemap::namecat_decrypt;
 	    }
-	    metadata::fill_map(FILENAME(metaenc), encrypt);
+	    filemap::fill_map(FILENAME(nameenc), encrypt);
 	}
 
         if( EXISTS(recurse) || EXISTS(filelist) ) {
@@ -142,12 +142,12 @@ int main( int argc, char *argv[] )
 		filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, srcnameop,
 			dstnameop, keynameop);
 
-	    if( encrypt && EXISTS(metaenc) ) {
+	    if( encrypt && EXISTS(nameenc) ) {
 		// Write the (possibly changed) filelist back to the file
-		metadata::write_map(FILENAME(metaenc));
+		filemap::write_map(FILENAME(nameenc));
 		// Encrypt the filelist file itself
-		file_encrypt(FILENAME(metaenc), autofd::combine_paths(FILENAME(dst), FILELISTNAME).c_str(),
-			autofd::combine_paths(FILENAME(key), FILELISTNAME).c_str(), rsa_key );
+		file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).c_str(),
+			autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
 	    }
         } else {
             op(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key);
