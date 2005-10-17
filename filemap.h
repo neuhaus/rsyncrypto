@@ -5,26 +5,14 @@
 #include "file.h"
 #endif
 
-class metadata {
+class filemap {
     std::string plainname;
     std::string ciphername;
 
     char dirsep;
-#ifdef __unix
-    uid_t uid;
-    gid_t gid;
-    mode_t mode; 
-#endif
 
-    static size_t readchunk( const autommap &map, size_t offset, bool encrypt );
-
-    bool metadata::readblock( const autommap &map, size_t offset, size_t *block_size,
-            std::set<uint16_t> &blocks );
 public:
-    metadata() : dirsep('\0')
-#ifdef __unix
-                 ,uid(~(0u)), gid(~(0u)), mode(0)
-#endif
+    filemap() : dirsep('\0')
     {
     }
     static void fill_map( const char *list_filename, bool encrypt );
@@ -39,12 +27,12 @@ private:
     static void nest_name( std::string &name );
 };
 
-typedef std::map<std::string, metadata> filelistmaptype;
-extern filelistmaptype filelist;
-typedef std::map<std::string, std::string> revlistmap;
-extern revlistmap reversemap; // Cypher->plain mapping for encryption usage
+typedef std::map<std::string, filemap> filemaptype;
+extern filemaptype filelist;
+typedef std::map<std::string, std::string> revfilemap;
+extern revfilemap reversemap; // Cypher->plain mapping for encryption usage
 
 // The file name by which the file list is stored inside the encrypted directory
-static const char FILELISTNAME[]="filelist";
+static const char FILEMAPNAME[]="filemap";
 
 #endif

@@ -33,7 +33,7 @@
 #include "file.h"
 #include "autodir.h"
 #include "crypto.h"
-#include "filelist.h"
+#include "filemap.h"
 
 static void copy_metadata( const char *destfilename, const struct stat *data )
 {
