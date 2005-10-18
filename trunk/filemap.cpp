@@ -229,8 +229,8 @@ void filemap::fill_map( const char *list_filename, bool encrypt )
 
 	    replace_dir_sep( entry.plainname, entry.dirsep );
 
-	    // Hashing direction (encoded->unencoded file names or vice versa) depends on whether we are encrypting or
-	    // decrypting
+	    // Hashing direction (encoded->unencoded file names or vice versa) depends on whether we are
+	    // encrypting or decrypting
 	    std::string key;
 	    if( encrypt ) {
 		key=entry.plainname;
@@ -258,6 +258,10 @@ std::string filemap::namecat_encrypt( const char *left, const char *right, mode_
     case S_IFREG:
 	{
 	    std::string c_name; // Crypted name of file
+
+	    // Remove leading dirseps
+	    while( *right==DIRSEP_C )
+		right++;
 
 	    // Find out whether we already have an encoding for this file
 	    filemaptype::const_iterator iter=namemap.find(right);
