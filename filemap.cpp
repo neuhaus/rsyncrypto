@@ -223,10 +223,9 @@ void filemap::fill_map( const char *list_filename, bool encrypt )
 		;
 	    if( ch!='\0' )
 		throw rscerror("Corrupt filemap - file is not NULL terminated");
+	    entry.plainname=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
 
 	    offset+=i+1;
-
-	    entry.plainname=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
 
 	    replace_dir_sep( entry.plainname, entry.dirsep );
 
