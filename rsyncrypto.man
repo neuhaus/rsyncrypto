@@ -110,14 +110,21 @@ files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
 during the encryption (and thus decryption) operation.
 .TP
-.B \-m, \-\-meta\-encrypt=translation_file
-Encrypt the meta information. If this option is specified, this means that file
-names, as well as other data (currently, file permission in Unix) are encrypted
-as well. This is done by changing the name of the encrypted file to a random
-string of characters, and storing the translation in the file given as parameter.
+.B \-n, \-\-name\-encrypt=translation_file
+Encrypt the file name. If this option is specified, this means that file
+names are encrypted as well. This is done by changing the name of the encrypted
+file to a random string of characters, and storing the translation in the file
+given as parameter.
 If working in recursive mode, this file is automatically also included in the
-encryption, and is given the fixed name "filelist". This is done so that
+encryption, and is given the fixed name "filemap". This is done so that
 decryption of the file names is possible when the symmetric keys are lost.
+.TP
+.B \-\-ne\-nesting=<n>
+When the \-\-name\-encrypt option is used, by default all mangled file names
+are stored in a single directory. When encrypting large directory trees, this
+can result in rather big directories. Using "\-\-ne\-nesting" will split the
+files to subdirectories, according to random bits that are part of the
+encrypted file name. "n" is the number of directories to nest.
 .TP
 .BR \-\-trim =num
 Determine how many directory levels to trim from the beginning of the \fIsrcdir\fP
