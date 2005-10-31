@@ -128,6 +128,19 @@ void filemap::fill_map( const char *list_filename, bool encrypt )
     }
 }
 
+static std::string bin2hex( const unsigned char *data, size_t length )
+{
+    std::string ret;
+
+    for( unsigned int i=0; i<length; ++i ) {
+	static const char convertable[]="0123456789ABCDEF";
+	ret+=convertable[data[i]>>4];
+	ret+=convertable[data[i]&0x0f];
+    }
+
+    return ret;
+}
+
 std::string filemap::namecat_encrypt( const char *left, const char *right, mode_t mode )
 {
     switch( mode&S_IFMT ) {
@@ -143,7 +156,7 @@ std::string filemap::namecat_encrypt( const char *left, const char *right, mode_
 	    filemaptype::const_iterator iter=namemap.find(right);
 	    if( iter==namemap.end() ) {
 		int i=0;
-		char encodedfile[CODED_FILE_ENTROPY/8*2+4]; // Allocate enough room for file name + base64 expansion
+		std::string encodedfile;
 
 		// Make sure we have no encoded name collisions
 		do {
@@ -156,45 +169,7 @@ std::string filemap::namecat_encrypt( const char *left, const char *right, mode_
 			throw rscerror("No random entropy for file name", 0, left);
 		    }
 
-		    // Keeping non destructor protected memory around. Must not throw exceptions
-		    // Base64 encode the random sequence
-		    BIO *mem=BIO_new(BIO_s_mem());
-		    BIO *b64=BIO_new(BIO_f_base64());
-		    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL );
-		    mem=BIO_push(b64, mem);
-		    BIO_write(mem, buffer, sizeof(buffer) );
-		    BIO_flush(mem);
-
-		    const char *biomem;
-		    unsigned long encoded_size=BIO_get_mem_data(mem, &biomem);
-
-		    // This should never happen, but make sure, at least for debug builds
-		    assert(encoded_size<sizeof(encodedfile) );
-
-		    // Base64 uses "/", which is not a good character for file names.
-		    unsigned int i, diff=0;
-		    for( i=0; i<encoded_size; ++i ) {
-			switch( biomem[i] ) {
-			    case '/':
-				// Change / into underscore '_'
-				encodedfile[i-diff]='_';
-				break;
-			    case '+':
-				// Not really problematic, but to simplify regexp, change '+' into '-'
-				encodedfile[i-diff]='-';
-				break;
-			    case '=':
-				// Ignore the Base64 pad character altogether.
-				diff++;
-				break;
-			    default:
-				encodedfile[i-diff]=biomem[i];
-			}
-		    }
-		    encodedfile[encoded_size-diff]='\0';
-
-		    BIO_free_all(mem);
-		    // Freed memory. Can throw exceptions again
+		    encodedfile=bin2hex( buffer, sizeof(buffer) );
 		} while( reversemap.find(encodedfile)!=reversemap.end() && // Found a unique encoding
 			(++i)<5 ); // Tried too many times.
 
