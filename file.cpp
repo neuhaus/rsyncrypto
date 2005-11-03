@@ -255,13 +255,22 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname, dstname, keyname );
 
     if( EXISTS(del) ) {
-        std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
-        std::string dst_src_name(dst_dir);
-        int dst_src_offset=dst_src_name.length();
-        dst_src_name=autofd::combine_paths(dst_src_name.c_str(), src_dir+src_offset);
-        
-        recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
-                dst_src_offset, true, NULL, dstname, keyname );
+	// "Scanning the encrypted files" takes whole different meaning based on whether we are encrypting
+	// file names or not
+	if( !EXISTS(nameenc) ) {
+	    std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
+	    std::string dst_src_name(dst_dir);
+	    int dst_src_offset=dst_src_name.length();
+	    dst_src_name=autofd::combine_paths(dst_src_name.c_str(), src_dir+src_offset);
+
+	    recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
+		    dst_src_offset, true, NULL, dstname, keyname );
+	} else {
+	    // Scan the translation map rather than the encryption directory
+	    std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
+	    virt_recurse_dir_enc( dst_dir, src_dst_name.c_str(), key_dir, rsa_key,
+		    filemap::enc_file_delete, src_dir+src_offset );
+	}
     }
 }
 

@@ -128,7 +128,7 @@ void filemap::fill_map( const char *list_filename, bool encrypt )
     }
 }
 
-static std::string bin2hex( const unsigned char *data, size_t length )
+static std::string bin2hex( const uint8_t *data, size_t length )
 {
     std::string ret;
 
@@ -248,7 +248,7 @@ void filemap::nest_name( std::string &name )
 // Create the file name mapping file
 void filemap::write_map( const char *map_filename )
 {
-    autofd file(map_filename, O_WRONLY|O_CREAT, 0777 );
+    autofd file(map_filename, O_WRONLY|O_CREAT|O_TRUNC, 0777 );
 
     for( revfilemap::const_iterator i=reversemap.begin(); i!=reversemap.end(); ++i ) {
 	const filemap *data=&namemap[i->second];
@@ -258,5 +258,74 @@ void filemap::write_map( const char *map_filename )
 	file.write( " ", 1 );
 	file.write( data->plainname.c_str(), data->plainname.length() );
 	file.write( "", 1 );
+    }
+}
+
+void virt_recurse_dir_enc( const char *encdir, const char *plaindir, const char *keydir,
+	RSA *rsa_key, encopfunc op, const char *dir_sig_part )
+{
+    // We scan the translation map around the "dir_sig_part" area
+    std::string basedirname(dir_sig_part);
+    filemaptype::iterator begin, end;
+
+    {
+	// First, make sure there is exactly one DIRSEP_C at the end of the string.
+	std::string::size_type i;
+	for( i=basedirname.length(); i>0 && basedirname[i-1]==DIRSEP_C; --i )
+	    ;
+
+	basedirname.resize(i);
+
+	basedirname+=DIRSEP_C;
+    }
+    
+    if( basedirname.length()==1 ) {
+	// The significant part is, for all intent and purposes, empty. Scan entire map
+	begin=namemap.begin();
+	end=namemap.end();
+    } else {
+	// Find the first file belonging to our work group
+	begin=namemap.lower_bound(basedirname);
+	// And one past the last one
+	basedirname[basedirname.length()-1]=basedirname[basedirname.length()-1]+1;
+	end=namemap.lower_bound(basedirname);
+    }
+
+    filemaptype::iterator next;
+    for( filemaptype::iterator i=begin; i!=end; i=next ) {
+	next=i;
+	++next;
+	op( encdir, plaindir, keydir, i, rsa_key );
+    }
+}
+
+void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, const char *key_dir,
+	filemaptype::iterator &item, RSA *rsa_key )
+{
+    struct stat status;
+    const std::string &plainname=item->second.plainname, &ciphername=item->second.ciphername;
+    const std::string dst_file(autofd::combine_paths( dst_dir, plainname.c_str() ) );
+    const std::string src_file(autofd::combine_paths( source_dir, ciphername.c_str() ));
+    const std::string key_file(autofd::combine_paths( key_dir, ciphername.c_str() ));
+
+    if( lstat( dst_file.c_str(), &status )!=0 ) {
+	if( errno==ENOENT ) {
+	    // Need to erase file
+
+	    if( VERBOSE(1) )
+		std::cout<<"Delete "<<ciphername<<" ("<<plainname<<")"<<std::endl;
+	    if( unlink( src_file.c_str() )!=0 && errno!=ENOENT )
+		throw rscerror("Erasing file", errno, src_file.c_str());
+	    if( EXISTS(delkey) ) {
+		if( VERBOSE(1) )
+		    std::cout<<"Delete key "<<ciphername<<" ("<<plainname<<")"<<std::endl;
+		if( unlink( key_file.c_str() )!=0 && errno!=ENOENT )
+		    throw rscerror("Erasing key file", errno, key_file.c_str());
+		reversemap.erase( ciphername );
+		namemap.erase( item );
+	    }
+	} else {
+            throw rscerror("Stat failed", errno, dst_file.c_str());
+	}
     }
 }
