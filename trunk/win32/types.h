@@ -5,6 +5,8 @@
 #ifndef WIN32_TYPES_H
 #define WIN32_TYPES_H
 
+int Error2errno( DWORD Error );
+
 typedef unsigned char uint8_t;
 typedef UINT32 uint32_t;
 typedef unsigned short uint16_t;
