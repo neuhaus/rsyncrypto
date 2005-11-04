@@ -5,3 +5,13 @@ flag is a patch written by Rusty Russell. This patch is available in the
 As of version 0.10, rsyncrypto is officially in a "beta" state. This means
 mainly that functionality and interface is not expected to significantly
 change until the program can be declared "stable".
+
+Items currently on the todo list:
+1. Treat filename mapping on Windows as case insensitive
+2. Sign the encrypted files to allow a third party to verify their integrity.
+3. Store meta-information, such as the plaintext file name and other file
+   attributes inside the encrypted file.
+
+Items already done:
+1. Create a native Windows version (done as of 0.14).
+2. Encrypt the file names (done as of 0.16).
