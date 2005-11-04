@@ -127,6 +127,10 @@ SOURCE=.\win32\rsyncrypto.rc
 SOURCE=.\win32\stdafx.cpp
 # ADD CPP /Yc"../rsyncrypto.h"
 # End Source File
+# Begin Source File
+
+SOURCE=.\win32\win32glue.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
