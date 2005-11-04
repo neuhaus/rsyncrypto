@@ -103,6 +103,10 @@ SOURCE=.\file.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\filemap.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
@@ -174,6 +178,10 @@ SOURCE=.\crypto.h
 # Begin Source File
 
 SOURCE=.\file.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\filemap.h
 # End Source File
 # Begin Source File
 

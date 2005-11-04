@@ -179,7 +179,7 @@ public:
         ret.st_dev=0; // For a device - handle. Otherwise 0
         //ret.st_mode; // unix mode
         ret.st_mtime=ft2ut(info.ftLastWriteTime);
-        ret.st_nlink=info.nNumberOfLinks; // nlink
+        ret.st_nlink=static_cast<short>(info.nNumberOfLinks); // nlink
         ret.st_rdev=0; // same as dev
         ret.st_size=info.nFileSizeLow;
 
