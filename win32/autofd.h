@@ -265,7 +265,7 @@ public:
                 }
             }
 
-            if( CreateDirectory( path, NULL )!=0 && GetLastError()!=ERROR_ALREADY_EXISTS )
+            if( !CreateDirectory( path, NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS )
                 throw rscerror("mkdir failed", Error2errno(GetLastError()), path );
         }
     }

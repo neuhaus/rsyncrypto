@@ -88,67 +88,67 @@ int main( int argc, char *argv[] )
     int ret=0;
     
     ERR_load_crypto_strings();
-
+	
     try {
         parse_cmdline( argc, argv );
-
-	if( EXISTS(version) ) {
-	    version();
-	    exit(0);
-	}
-	
+		
+		if( EXISTS(version) ) {
+			version();
+			exit(0);
+		}
+		
         if( EXISTS(help) )
             usage();
-
+		
         RSA *rsa_key=extract_private_key(FILENAME(master));
         if( rsa_key==NULL ) {
             rsa_key=extract_public_key(FILENAME(master));
         }
-
+		
         const char *opname=NULL;
         encryptfunc op;
-	namefunc srcnameop=name_concat, dstnameop=name_concat, keynameop=name_concat;
-	bool encrypt=true;
-
+		namefunc srcnameop=name_concat, dstnameop=name_concat, keynameop=name_concat;
+		bool encrypt=true;
+		
         if( EXISTS(decrypt) ) {
             op=file_decrypt;
             opname="Decrypting";
-	    encrypt=false;
+			encrypt=false;
         } else {
             op=file_encrypt;
             opname="Encrypting";
         }
-
-	if( EXISTS(nameenc) ) {
-	    if( encrypt ) {
-		dstnameop=filemap::namecat_encrypt;
-		keynameop=dstnameop;
-	    } else {
-		if( EXISTS(recurse) || EXISTS(filelist) ) {
-		    // First decrypt the encrypted file list
-		    file_decrypt(autofd::combine_paths(FILENAME(src), FILEMAPNAME).c_str(), FILENAME(nameenc),
-			    autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
+		
+		if( EXISTS(nameenc) ) {
+			if( encrypt ) {
+				dstnameop=filemap::namecat_encrypt;
+				keynameop=dstnameop;
+			} else {
+				if( EXISTS(recurse) || EXISTS(filelist) ) {
+					// First decrypt the encrypted file list
+					file_decrypt(autofd::combine_paths(FILENAME(src), FILEMAPNAME).c_str(), FILENAME(nameenc),
+						autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
+				}
+				
+				dstnameop=filemap::namecat_decrypt;
+			}
+			filemap::fill_map(FILENAME(nameenc), encrypt);
 		}
-
-		dstnameop=filemap::namecat_decrypt;
-	    }
-	    filemap::fill_map(FILENAME(nameenc), encrypt);
-	}
-
+		
         if( EXISTS(recurse) || EXISTS(filelist) ) {
-	    if( EXISTS(recurse) )
-		dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, dstnameop, keynameop);
-	    else
-		filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, srcnameop,
-			dstnameop, keynameop);
-
-	    if( encrypt && EXISTS(nameenc) ) {
-		// Write the (possibly changed) filelist back to the file
-		filemap::write_map(FILENAME(nameenc));
-		// Encrypt the filelist file itself
-		file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).c_str(),
-			autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
-	    }
+			if( EXISTS(recurse) )
+				dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, dstnameop, keynameop);
+			else
+				filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname, srcnameop,
+				dstnameop, keynameop);
+			
+			if( encrypt && EXISTS(nameenc) ) {
+				// Write the (possibly changed) filelist back to the file
+				filemap::write_map(FILENAME(nameenc));
+				// Encrypt the filelist file itself
+				file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).c_str(),
+					autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
+			}
         } else {
             op(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key);
         }
@@ -156,6 +156,6 @@ int main( int argc, char *argv[] )
         std::cerr<<err.error()<<std::endl;
         ret=1;
     }
-
+	
     return ret;
 }
