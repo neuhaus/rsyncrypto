@@ -96,7 +96,7 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
     } else
     {
         // CreateProcess failed
-        throw rscerror("Child process not created", GetLastError() );
+        throw rscerror("Child process not created", Error2errno(GetLastError()) );
     }
 }
 
@@ -106,7 +106,7 @@ int process_ctl::wait() const
     WaitForSingleObject(hProcess, INFINITE);
     DWORD exitcode=-1;
     if( !GetExitCodeProcess( hProcess, &exitcode ) )
-        throw rscerror("Couldn't get child process return code",GetLastError());
+        throw rscerror("Couldn't get child process return code", Error2errno(GetLastError()));
     ODS("Process %08x quit with error code %d\n", static_cast<HANDLE>(hProcess), exitcode );
 
     return exitcode;

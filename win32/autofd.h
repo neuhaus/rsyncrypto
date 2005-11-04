@@ -103,7 +103,7 @@ public:
             NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL ));
 
         if( *this==INVALID_HANDLE_VALUE )
-            throw EXCEPT_CLASS("file open failed", GetLastError() );
+            throw EXCEPT_CLASS("file open failed", Error2errno(GetLastError()) );
     }
 #endif
     // Default copy constructor and operator= do exactly what we want.
@@ -127,7 +127,7 @@ public:
     {
         DWORD ures;
         if( !ReadFile( fd, buf, count, &ures, NULL ) && GetLastError()!=ERROR_BROKEN_PIPE )
-            throw rscerror("read failed", GetLastError());
+            throw rscerror("read failed", Error2errno(GetLastError()));
 
         ODS("Read %d bytes from %08x\n", ures, fd);
         return ures;
@@ -146,7 +146,7 @@ public:
         DWORD written;
         ODS("Going to write %d bytes to %08x\n", count, fd );
         if( !WriteFile( fd, buf, count, &written, NULL ) )
-            throw rscerror("write failed", GetLastError());
+            throw rscerror("write failed", Error2errno(GetLastError()));
 
         ODS("Wrote %d bytes to %08x\n", written, fd);
         return written;
@@ -171,7 +171,7 @@ public:
         BY_HANDLE_FILE_INFORMATION info;
 
         if( !GetFileInformationByHandle(*this, &info ) )
-            throw rscerror("stat failed", GetLastError());
+            throw rscerror("stat failed", Error2errno(GetLastError()));
 
         ZeroMemory(&ret, sizeof(ret));
         ret.st_atime=ft2ut(info.ftLastAccessTime);
@@ -201,7 +201,7 @@ public:
             dwMoveMethod=FILE_END;
             break;
         default:
-            throw rscerror("Invalid whence given");
+            throw rscerror("Invalid whence given", EINVAL);
         }
 
         return SetFilePointer( file, offset, NULL, dwMoveMethod );
@@ -230,7 +230,7 @@ public:
             DWORD error=GetLastError();
 
             if( error!=ERROR_FILE_NOT_FOUND && error!=ERROR_PATH_NOT_FOUND )
-                throw rscerror("Error removing directory", error, pathname);
+                throw rscerror("Error removing directory", Error2errno(error), pathname);
         }
     }
     // Nonstandard file io
@@ -261,12 +261,12 @@ public:
                     std::string subpath(path, sublen);
                     if( !CreateDirectory( subpath.c_str(), NULL ) &&
                         GetLastError()!=ERROR_ALREADY_EXISTS )
-                        throw rscerror("mkdir failed", GetLastError(), subpath.c_str() );
+                        throw rscerror("mkdir failed", Error2errno(GetLastError()), subpath.c_str() );
                 }
             }
 
             if( CreateDirectory( path, NULL )!=0 && GetLastError()!=ERROR_ALREADY_EXISTS )
-                throw rscerror("mkdir failed", GetLastError(), path );
+                throw rscerror("mkdir failed", Error2errno(GetLastError()), path );
         }
     }
 

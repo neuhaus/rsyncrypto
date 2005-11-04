@@ -144,7 +144,7 @@ struct startup_options {
         argtable[i++]=rollmin=arg_int0( NULL, "roll-min", "<n>",
                 "Minimal number of guaranteed non-rolled bytes. Default 8192");
         argtable[i++]=rollsens=arg_int0( NULL, "roll-sensitivity", "<n>",
-                "How sensitive are we to cutting a block. Default is \"roll-wine\"");
+                "How sensitive are we to cutting a block. Default is \"roll-win\"");
         argtable[i++]=end=arg_end(2);
 
 	// If this assert fails, you forgot to fix the size of the "Argtable" array.

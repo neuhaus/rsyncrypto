@@ -26,7 +26,7 @@ public:
         h_dirscan=FindFirstFile((std::string(dirname)+"\\*").c_str(), &finddata );
 #if defined(EXCEPT_CLASS)
         if( h_dirscan==INVALID_HANDLE_VALUE )
-            throw rscerror("opendir failed", GetLastError(), dirname);
+            throw rscerror("opendir failed", Error2errno(GetLastError()), dirname);
 #endif
     }
     ~autodir()
@@ -51,7 +51,7 @@ public:
                 eof=true;
                 DWORD error=GetLastError();
                 if( error!=ERROR_NO_MORE_FILES ) {
-                    throw rscerror("Error getting directory listing", error);
+                    throw rscerror("Error getting directory listing", Error2errno(error));
                 }
             }
             return &posixdir;
