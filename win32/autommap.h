@@ -37,6 +37,7 @@
 class autommap {
     HANDLE mapping;
     void *ptr;
+    size_t size;
 
     // Disable default copy constructor
     autommap( const autommap & );
@@ -63,6 +64,12 @@ class autommap {
 #endif
         }
 
+        if( length==0 ) {
+            DWORD highsize;
+            length=GetFileSize( fd, &highsize );
+            if( highsize!=0 )
+                throw EXCEPT_CLASS("File too big to be mapped", ERROR_NOT_ENOUGH_MEMORY );
+        }
         mapping=CreateFileMapping( fd, NULL, flProtect, 0, 0, NULL );
         if( mapping==NULL )
             throw EXCEPT_CLASS("CreateFileMapping failed", GetLastError() );
@@ -75,18 +82,20 @@ class autommap {
             throw EXCEPT_CLASS("mmap failed", errno);
 #endif
         }
+
+        size=length;
     }
 public:
-    autommap() : ptr(NULL), mapping(NULL)
+    autommap() : ptr(NULL), mapping(NULL), size(0)
     {
     }
     autommap(void *start, size_t length, int prot, int flags, file_t fd, off_t offset ) : 
-                mapping(NULL), ptr(NULL)
+                mapping(NULL), ptr(NULL), size(0)
     {
         mapfile(start, length, prot, flags, fd, offset);
     }
     // Map an entire file into memory
-    autommap(file_t fd, int prot) : mapping(NULL), ptr(NULL)
+    autommap(file_t fd, int prot) : mapping(NULL), ptr(NULL), size(0)
     {
         mapfile(NULL, 0, prot, 0, fd, 0);
     }
@@ -121,6 +130,9 @@ public:
         }
         ptr=NULL;
         mapping=NULL;
+    }
+    size_t getsize() const {
+        return size;
     }
 };
 

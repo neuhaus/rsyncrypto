@@ -5,8 +5,11 @@
 #ifndef WIN32_TYPES_H
 #define WIN32_TYPES_H
 
+typedef unsigned char uint8_t;
 typedef UINT32 uint32_t;
 typedef unsigned short uint16_t;
+
+#define S_ISREG(m)      (((m) & S_IFMT) == S_IFREG)
 
 static inline void bzero( void *dest, size_t count )
 {

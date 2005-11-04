@@ -89,9 +89,6 @@ public:
   _Tp& operator*() const __STL_NOTHROW {
     return *_M_ptr;
   }
-  _Tp* operator->() const __STL_NOTHROW {
-    return _M_ptr;
-  }
   _Tp& operator[](size_t index) __STL_NOTHROW {
       return _M_ptr[index];
   }

@@ -44,6 +44,7 @@ CLEAN :
 	-@erase "$(INTDIR)\crypt_key.obj"
 	-@erase "$(INTDIR)\crypto.obj"
 	-@erase "$(INTDIR)\file.obj"
+	-@erase "$(INTDIR)\filemap.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\process.obj"
 	-@erase "$(INTDIR)\redir.obj"
@@ -73,7 +74,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\process.obj" \
 	"$(INTDIR)\redir.obj" \
 	"$(INTDIR)\stdafx.obj" \
-	"$(INTDIR)\rsyncrypto.res"
+	"$(INTDIR)\rsyncrypto.res" \
+	"$(INTDIR)\filemap.obj"
 
 "$(OUTDIR)\rsyncrypto.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -100,6 +102,8 @@ CLEAN :
 	-@erase "$(INTDIR)\crypto.sbr"
 	-@erase "$(INTDIR)\file.obj"
 	-@erase "$(INTDIR)\file.sbr"
+	-@erase "$(INTDIR)\filemap.obj"
+	-@erase "$(INTDIR)\filemap.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\process.obj"
@@ -132,7 +136,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\main.sbr" \
 	"$(INTDIR)\process.sbr" \
 	"$(INTDIR)\redir.sbr" \
-	"$(INTDIR)\stdafx.sbr"
+	"$(INTDIR)\stdafx.sbr" \
+	"$(INTDIR)\filemap.sbr"
 
 "$(OUTDIR)\rsyncrypto.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -150,7 +155,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\process.obj" \
 	"$(INTDIR)\redir.obj" \
 	"$(INTDIR)\stdafx.obj" \
-	"$(INTDIR)\rsyncrypto.res"
+	"$(INTDIR)\rsyncrypto.res" \
+	"$(INTDIR)\filemap.obj"
 
 "$(OUTDIR)\rsyncrypto.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -260,6 +266,22 @@ SOURCE=.\file.cpp
 
 
 "$(INTDIR)\file.obj"	"$(INTDIR)\file.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\rsyncrypto.pch"
+
+
+!ENDIF 
+
+SOURCE=.\filemap.cpp
+
+!IF  "$(CFG)" == "rsyncrypto - Win32 Release"
+
+
+"$(INTDIR)\filemap.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\rsyncrypto.pch"
+
+
+!ELSEIF  "$(CFG)" == "rsyncrypto - Win32 Debug"
+
+
+"$(INTDIR)\filemap.obj"	"$(INTDIR)\filemap.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\rsyncrypto.pch"
 
 
 !ENDIF 
