@@ -45,6 +45,7 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
+CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -53,6 +54,7 @@ DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -105,8 +107,10 @@ bin_PROGRAMS = rsyncrypto
 noinst_PROGRAMS = blocksizes
 man1_MANS = rsyncrypto.man
 
-rsyncrypto_SOURCES = main.cc crypto.cc crypt_key.cc aes_crypt.cc file.cc
-blocksizes_SOURCES = crypt_key.cc aes_crypt.cc blocksizes.cc
+rsyncrypto_SOURCES = main.cpp crypto.cpp crypt_key.cpp aes_crypt.cpp file.cpp process.cpp \
+	redir.cpp filemap.cpp
+
+blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -123,7 +127,8 @@ blocksizes_LDADD = $(LDADD)
 blocksizes_DEPENDENCIES =
 blocksizes_LDFLAGS =
 am_rsyncrypto_OBJECTS = main.$(OBJEXT) crypto.$(OBJEXT) \
-	crypt_key.$(OBJEXT) aes_crypt.$(OBJEXT) file.$(OBJEXT)
+	crypt_key.$(OBJEXT) aes_crypt.$(OBJEXT) file.$(OBJEXT) \
+	process.$(OBJEXT) redir.$(OBJEXT) filemap.$(OBJEXT)
 rsyncrypto_OBJECTS = $(am_rsyncrypto_OBJECTS)
 rsyncrypto_LDADD = $(LDADD)
 rsyncrypto_DEPENDENCIES =
@@ -135,7 +140,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/aes_crypt.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/blocksizes.Po ./$(DEPDIR)/crypt_key.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/crypto.Po ./$(DEPDIR)/file.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main.Po
+@AMDEP_TRUE@	./$(DEPDIR)/filemap.Po ./$(DEPDIR)/main.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/process.Po ./$(DEPDIR)/redir.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -155,7 +161,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .cc .o .obj
+.SUFFIXES: .cpp .o .obj
 
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno
@@ -234,9 +240,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypt_key.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filemap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/process.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/redir.Po@am__quote@
 
-.cc.o:
+.cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
 @am__fastdepCXX_TRUE@	  -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; \
@@ -247,7 +256,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
-.cc.obj:
+.cpp.obj:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
 @am__fastdepCXX_TRUE@	  -c -o $@ `if test -f '$<'; then $(CYGPATH_W) '$<'; else $(CYGPATH_W) '$(srcdir)/$<'; fi`; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; \

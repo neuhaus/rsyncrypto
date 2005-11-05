@@ -9,3 +9,9 @@ Makefile
 rsyncrypto
 blocksizes
 stamp-h1
+Debug
+Release
+*.dep
+*.ncb
+*.opt
+*.plg

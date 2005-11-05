@@ -1,3 +1,33 @@
+Version 0.16
+2005-11-04 Shachar Shemesh
+	* Implement filename encryption.
+	* --meta-encrypt is now called "--name-encrypt"
+	* Added "--ne-nesting" to allow smaller loads of files on each directory.
+
+2005-07-29 Shachar Shemesh
+	* Use argtable to print the argument list
+	* Add the "--meta-encrypt" option
+
+Version 0.15
+2005-05-19 Shachar Shemesh
+	* Properly handle CR+LF in text files on Windows
+	* Forgot to initialize key size when not explicitly specified.
+
+Version 0.14
+2005-05-18 Shachar Shemesh
+	* A couple of fixes in the Win32 version resource
+
+2005-05-17 Shachar Shemesh
+	* Merge Win32 port into HEAD
+
+2005-05-03 Shachar Shemesh
+	* Move from using "getopt_long" for processing command options to
+	  using argtable.
+	* Fix bugs in the configure script, where if --with-argtable2= was
+	  used, then you couldn't override LDFLAGS.
+	* Add missing include for "strings.h".
+	* rsyncrypto now compiles on Solaris.
+
 Version 0.13
 2005-04-23 Shachar Shemesh
 	* Update the license to explain author's position that the OpenSSL

@@ -2,8 +2,8 @@ Source: rsyncrypto
 Section: utils
 Priority: optional
 Maintainer: Shachar Shemesh <debianpkg@shemesh.biz>
-Build-Depends: debhelper (>= 4.0.0), libssl-dev (>= 0.9.7-1)
-Standards-Version: 3.6.1
+Build-Depends: debhelper (>= 4.0.0), libssl-dev (>= 0.9.7-1), libargtable2-dev
+Standards-Version: 3.6.2
 
 Package: rsyncrypto
 Architecture: any

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([rsyncrypt],[0.13])
+AC_INIT([rsyncrypto],[0.16])
 AM_INIT_AUTOMAKE
 AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
@@ -11,10 +11,57 @@ AC_PROG_CXX
 AC_LANG(C++)
 
 # Checks for libraries.
+dnl Checks for openssl
+AC_ARG_WITH([openssl],AC_HELP_STRING([--with-openssl=DIR],[use openssl install directory]),
+[AC_MSG_CHECKING(for openssl path override)
+case "$withval" in
+  yes|no)
+    AC_MSG_RESULT(no)
+    ;;
+  *)
+    AC_MSG_RESULT($withval)
+    if test -f $withval/include/openssl/aes.h -a -f $withval/lib/libcrypto.so; then
+       owd=`pwd`
+       if cd $withval; then withval=`pwd`; cd $owd; fi
+       CPPFLAGS="$CPPFLAGS -I$withval/include"
+       LDFLAGS="$LDFLAGS -L$withval/lib"
+    else
+       AC_ERROR(aes.h or libcrypto.so not found under $withval)
+    fi
+    ;;
+  esac])
 AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl not found])])
-        
+
+dnl Checks for libargtable2
+AC_ARG_WITH([argtable2],AC_HELP_STRING([--with-argtable2=DIR],[use argtable2 build directory]),
+[AC_MSG_CHECKING(for argtable2 path override)
+case "$withval" in
+  yes|no)
+    AC_MSG_RESULT(no)
+    ;;
+  *)
+    AC_MSG_RESULT($withval)
+    if test -f $withval/argtable2.h -a -f $withval/libargtable2.so; then
+       owd=`pwd`
+       if cd $withval; then withval=`pwd`; cd $owd; fi
+       CPPFLAGS="$CPPFLAGS -I$withval"
+       LDFLAGS="$LDFLAGS -L$withval"
+    else
+       AC_ERROR(argtable2.h or libargtable2.so not found in $withval)
+    fi
+    ;;
+  esac])
+AC_CHECK_LIB(argtable2, arg_parse,,[AC_MSG_FAILURE([argtable2 not found])])
+
+AC_MSG_CHECKING([whether platform supports lstat])
+AC_LINK_IFELSE([AC_LANG_FUNC_LINK_TRY([lstat])],
+        [AC_MSG_RESULT(yes)
+        AC_DEFINE([HAVE_LSTAT],1,[Define to 1 if your platform has the "lstat" function call])],
+        [AC_MSG_RESULT(no)])
+
 # Checks for header files.
 AC_SYS_LARGEFILE
+AC_CHECK_HEADERS([argtable2.h] [ext/hash_map])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_MSG_CHECKING([for O_NOATIME support in open])

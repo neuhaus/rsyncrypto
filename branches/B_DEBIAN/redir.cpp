@@ -27,43 +27,50 @@
  *
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
+
+#ifdef _WIN32
+#error Win32 code is at win32/redir.cpp
+#else
 #include "rsyncrypto.h"
-#include "crypt_key.h"
+#include "redir.h"
 
-startup_options options;
-
-int main( int argc, char *argv[] )
+void redir_pipe::child_redirect( int redir_type, void *plat_opaq )
 {
-    if( argc<4 ) {
-        std::cout<<"Usage: blocksizes winsize minsize modulo <times>"<<std::endl;
-        exit(0);
+    autofd *redirected;
+
+    if( redir_type==STDIN_FILENO ) {
+        redirected=&get_read();
+    } else {
+        redirected=&get_write();
     }
 
-    size_t times=0;
-
-    options.rollwin=strtoul(argv[1], NULL, 10);
-    options.rollmin=strtoul(argv[2], NULL, 10);
-    options.rollsens=strtoul(argv[3], NULL, 10);
-
-    if( argc>4 )
-        times=strtoul(argv[4], NULL, 10);
-
-    options.verbosity=3;
-
-    autofd random(open("/dev/urandom", O_RDONLY));
-    std::auto_ptr<key> testkey(key::new_key( key::CYPHER_AES, 0, options.rollwin, options.rollmin,
-                options.rollsens ));
-
-    bool border=true;
-    do {
-        if( border ) {
-            testkey->init_encrypt();
-            --times;
-        }
-
-        unsigned char buff;
-        random.read( &buff, 1 );
-
-        border=testkey->calc_boundry( buff );
-    } while( times>0 );
+    dup2( redirected->get(), redir_type );
+    clear();
 }
+void redir_pipe::parent_redirect( int redir_type, void *plat_opaq )
+{
+    if( redir_type==STDIN_FILENO ) {
+        clear_read();
+    } else {
+        clear_write();
+    }
+}
+
+void redir_fd::child_redirect( int redir_type, void *plat_opaq )
+{
+    dup2( get(), redir_type );
+    clear();
+}
+void redir_fd::parent_redirect( int redir_type, void *plat_opaq )
+{
+    clear();
+}
+
+void redir_null::child_redirect( int redir_type, void *plat_opaq )
+{
+}
+void redir_null::parent_redirect( int redir_type, void *plat_opaq )
+{
+}
+
+#endif
