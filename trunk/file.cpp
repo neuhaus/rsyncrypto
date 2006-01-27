@@ -371,5 +371,5 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
 
 std::string name_concat( const char *left, const char *right, mode_t mode )
 {
-    return autofd::combine_paths( left, right );
+    return *left!='\0' ? autofd::combine_paths( left, right ) : right;
 }
