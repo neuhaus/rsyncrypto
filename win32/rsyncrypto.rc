@@ -45,7 +45,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "This software licensed under the terms of the GNU General Public License (GPL)\0"
-            VALUE "CompanyName", "Free Software\0"
+            VALUE "CompanyName", "Lingnu Open Source Consulting Ltd.\0"
             VALUE "FileDescription", "rsyncrypto\0"
             VALUE "FileVersion", "0, 0, 0, 17\0"
             VALUE "InternalName", "rsyncrypto\0"
