@@ -12,3 +12,5 @@ stamp-h*
 *.ncb
 *.opt
 *.plg
+Debug
+Release
