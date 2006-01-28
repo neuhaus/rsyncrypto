@@ -1,3 +1,6 @@
+2006-01-28 Shachar Shemesh
+	* Add a tutorial section to the man page.
+
 2006-01-27 Shachar Shemesh
 	* Fix a bug with using --filelist and --trim=0 and having an absolute
 	  path in the file list
