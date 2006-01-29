@@ -242,6 +242,10 @@ SOURCE=.\INSTALL
 # End Source File
 # Begin Source File
 
+SOURCE=.\INSTALL.win
+# End Source File
+# Begin Source File
+
 SOURCE=.\NEWS
 # End Source File
 # Begin Source File
