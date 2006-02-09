@@ -1,3 +1,8 @@
+2006-02-09 Shachar Shemesh
+	* Add installation instructions for Windows
+	* Unhandled file types are now skipped with a message, rather than
+	  abort the whole process. (Fix bug #1426850)
+
 2006-01-28 Shachar Shemesh
 	* Add a tutorial section to the man page.
 
