@@ -129,7 +129,7 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                 }
                 break;
             default:
-                throw rscerror("Unsupported file type");
+		std::cerr<<"Unsupported file type. Skipping "<<src<<std::endl;
                 break;
             }
         } catch( const rscerror &err ) {
@@ -185,14 +185,9 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
 		    }
 		}
 		break;
-#if defined S_IFLNK
-	    case S_IFLNK:
-		// Symbolic link
-		break;
-#endif
 	    default:
 		// Unhandled type
-		throw rscerror("Unhandled file type");
+		std::cerr<<"Skipping unhandled file type: "<<src_filename<<std::endl;
 		break;
 	    }
 	}
