@@ -64,3 +64,8 @@ They are a result of difference of signness of "off_t" between posix platforms,
 where it is unsigned, and Windows, where it is signed. If someone can come up
 with a platform independent solution, they will receive official "thanks" in
 the Authors file.
+
+If you compile rsyncrypto using Visual Studio 6, but a fairly recent Platform
+SDK, you may get error inside the STLPort code. These errors state that certain
+C Linkage functions were redefined in an incompatible way. If that happens, add
+"_STLP_NEW_PLATFORM_SDK" to the list of predefined preprocessor names.

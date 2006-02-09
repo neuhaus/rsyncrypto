@@ -1,3 +1,7 @@
+2006-02-09 Shachar Shemesh
+	* Added a required DEFINE to make sure STLPort compiles on newer Platform
+	  SDKs than what comes builtin with Visual Studio 6.
+
 Version 0.17
 2006-02-09 Shachar Shemesh
 	* Add compilation instructions for Windows
