@@ -1,0 +1,12 @@
+rsyncrypto for Debian
+---------------------
+
+You can find the tests folder, with regression tests, a sample key, and the
+NULL gzip utility, under /usr/share/doc/rsyncrypto/examples/tests
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>, Thu, 22 Feb 2005 08:44:29 +0200
+
+The examples directory has been moved to a different package by upstream, and
+is therefor temporarily unavailable, except from CVS.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>, Sat, 5 Nov 2005 18:16:23 +0200
