@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "February 20, 2005" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "January 27, 2006" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -87,7 +87,7 @@ Show summary of options.
 Print out the current version number.
 .TP
 .B \-d
-Decrypt \fIsrc\fP into \fIdst\fP. The default behavior is to encrypt \fIsrc\fP
+Decrypt \fIsrc\fP into \fIdst\fP. The default behaviour is to encrypt \fIsrc\fP
 into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
 .TP
 .B \-r
@@ -171,22 +171,6 @@ Increase verbosity level. Specify several time to be more verbose.
 If \fIsrcfile\fP is given as `-', the plain text data will be read fro stdin.
 This does not yet work for decompression (see \fBBUGS\fP).
 .P
-.BR \-\-meta\-encrypt
-.P
-The meta encrypt option allows encryption of file names, as well as other meta
-data. This is not so much "encryption", as it is table replacement. File names
-are replaced by a random string of characters, and the translation table is
-stored in a special file, that is given as a parameter to the "meta-encrypt"
-argument.
-.P
-If the "\-r" option is used, this file is automatically encrypted too. To
-allow cold decryption (i.e. - decryption using only the assymetric private key)
-this file's name is not encrypted itself, and it will always be called
-"filelist".
-.P
-The filelist file format is a binary representation of the meta data for the
-files. The format is documented seperately.
-.P
 .BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
 .P
 These values affect some of the inner workings of \fBrsyncrypto\fP's decision
@@ -232,10 +216,123 @@ for every 8KB, in the worst case. These values, we hope, will be considered
 secure enough for most usages. However, if your country's fate is at stake, use
 a non-rsync optimized encryption, such as the one provided by
 .BR openssl (1).
-.SH EXAMPLES
-Soon.
+.SH "EXAMPLES AND TUTORIAL"
+.P
+Before starting to use rsyncrypto you will need a public key in X509
+certificate format. The quickest way to generate one of these is using the
+openssl(1) package. To generate a new 1536 bit RSA key as "backup.key", and
+store the corresponding unencrypted public key in "backup.crt", use the
+following command:
+.PP
+.RS
+\f(CWopenssl req \-nodes \-newkey rsa:1536 \-x509 \-keyout backup.key \-out backup.crt\fP
+.RE
+.PP
+It does not matter what you answer for the certificate details, or when you set
+it to expire. Rsyncrypto ignores everything in the certificate but the actual
+key.
+.PP
+To encrypt file "data" into "data.enc", storing the file's specific key at "data.key", run:
+.PP
+.RS
+\f(CWrsyncrypto data data.enc data.key backup.crt\fP
+.RE
+.PP
+Anywhere in these examples that "backup.crt" is used, "backup.key" can be used
+as well. The above could also have "backup.key" as the last argument. If these
+examples list "backup.key" specifically, then it means that "backup.crt"
+.B cannot
+be used instead.
+.P
+"data.enc" will be created. If "data.key" exists from a previous run, then the
+newly created "data.enc" will have the same symmetric key and other attributes,
+thus maintaining the rsync friendliness of the encryption. It is therefor
+important to provide any previous key file for the data if one is available.
+.P
+The command line to decrypt the file depends on whether you have the key file
+used when the file was encrypted. If you do, then decryption can take place
+using only the public key, with the following command:
+.P
+.RS
+\f(CWrsyncrypto \-d data.enc data.dec data.key backup.crt\fP
+.RE
+.PP
+If the key file was lost, the private key must be used to recover it from the
+encrypted file using the following command:
+.P
+.RS
+\f(CWrsyncrypto \-d data.enc data.dec data.key backup.key\fP
+.RE
+.P
+"data.key" will be created by the above command, as well as "data.dec".
+.PP
+Use of rsyncrypto to encrypt whole directories is similar, with directory names
+replacing file names in the above example. To encrypt the content of a
+directory called "data" to a directory called "enc", storing the symmetric keys
+in a directory called "keys", run the following command:
+.P
+.RS
+\f(CWrsyncrypto \-r data enc keys backup.crt\fP
+.RE
+.P
+As before the directories "enc" and "keys" will be created if they do not
+already exist. The directory structure under "plain" will be duplicated under 
+"enc" and under "keys". That is, if there is a file called "foo" under "data",
+an encrypted files called "foo" will be created under "enc", and a key file
+named "foo" will be created under "keys". In other words, the first part of the
+path to "data/foo" (the part that says "data") is eliminated from the path, and
+this determines the name of the files under "enc" and "keys".
+.P
+If a different trimming is required, the \-\-trim option can be used. To have
+rsyncrypto create "enc/data/foo" instead of the above, use the following
+command:
+.P
+.RS
+\f(CWrsyncrypto \-r \-\-trim=0 data enc keys backup.crt\fP
+.RE
+.P
+Instead of taking all files from a single directory, it is possible to supply
+rsyncrypto with a list of files and directories which to encrypt. This is done
+using the \-\-filelist option, like so:
+.P
+.RS
+\f(CWrsyncrypto \-\-filelist \-\-trim=0 list enc keys backup.crt\fP
+.RE
+.P
+"enc" and "keys" retain the same meaning as before. "list" is a text file with
+a list, one per line, of files to encrypt. The \-\-trim=0 option says that if
+list contains a line saying "/home/foo/bar" which states the name of a file,
+then an encrypted file called "enc/home/foo/bar" will be created. Without it,
+the file will be called "enc/foo/bar". Likewise, with \-\-trim=2, the file
+would be created as "enc/bar".
+.P
+It is often a problem that the file names are not encrypted. If that is the
+case, we can ask rsyncrypto to encrypt the file names, as well as the actual
+files. Rsyncrypto does not actually encrypt the file names. Instead, it
+replaces the actual file name with a random series of characters. The mapping
+between the actual file name and the garbled name is stored in a mapping file.
+.P
+.RS
+\f(CWrsyncrypto \-\-name\-encrypt=map --trim=0 -r plain enc keys backup.crt\fP
+.RE
+.P
+This will encrypt the "plain" directory structure into enc, exactly as before.
+Unlike before, all files will be directly under the "enc" directory, and will
+be named as a meaningless garble. A file called "map" will be created under the
+current directory that contains a map between the gabled and the real name of
+the file. In addition, two files, called "enc/filemap" and "keys/filemap", will
+also be created. These are the encrypted and key file corresponding to the "map"
+file mentioned above. During decryption, if "map" does not exist, it will be
+created by decrypting "enc/filemap".
+.P
+.B "Important note:"
+When performing filename encryption, it is vitally important to give the correct
+\-\-trim values, both during encryption and during decryption. Failing to do so
+will cause rsyncrypto to search for non-existing file names, and to fail to
+locate the files to decrypt.
 .SH BUGS
-Not providing a correct key file may result in segmentation fault.
+Not providing a correct key file may result in segmentation fault. The same also
+holds when running rsyncrypto without any parameter at all.
 .P
 It is not yet possible to decrypt using password protected private key.
 .P

@@ -28,8 +28,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,0,16
- PRODUCTVERSION 0,0,0,16
+ FILEVERSION 0,0,0,17
+ PRODUCTVERSION 0,0,0,17
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -45,16 +45,16 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "This software licensed under the terms of the GNU General Public License (GPL)\0"
-            VALUE "CompanyName", "Free Software\0"
+            VALUE "CompanyName", "Lingnu Open Source Consulting Ltd.\0"
             VALUE "FileDescription", "rsyncrypto\0"
-            VALUE "FileVersion", "0, 0, 0, 16\0"
+            VALUE "FileVersion", "0, 0, 0, 17\0"
             VALUE "InternalName", "rsyncrypto\0"
             VALUE "LegalCopyright", "Copyright © 2005 Shachar Shemesh for Lingnu Open Source Consulting\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "rsyncrypto.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "  rsyncrypto\0"
-            VALUE "ProductVersion", "0, 0, 0, 16\0"
+            VALUE "ProductVersion", "0, 0, 0, 17\0"
             VALUE "SpecialBuild", "\0"
         END
     END

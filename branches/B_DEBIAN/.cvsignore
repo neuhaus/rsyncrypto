@@ -8,10 +8,10 @@ Makefile
 .deps
 rsyncrypto
 blocksizes
-stamp-h1
-Debug
-Release
+stamp-h*
 *.dep
 *.ncb
 *.opt
 *.plg
+Debug
+Release

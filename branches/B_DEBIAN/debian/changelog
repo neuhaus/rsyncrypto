@@ -1,3 +1,12 @@
+rsyncrypto (0.17-1) unstable; urgency=low
+
+  * New upstream version.
+  * Upstream added "examples" to the man page.
+  * Regenerate autotools related makefiles to conform to tighter dependency
+    tracking.
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Sat, 11 Feb 2006 16:17:09 +0000
+
 rsyncrypto (0.16-1) unstable; urgency=low
 
   * New upstream version.

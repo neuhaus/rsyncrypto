@@ -1,3 +1,20 @@
+2006-02-09 Shachar Shemesh
+	* Added a required DEFINE to make sure STLPort compiles on newer Platform
+	  SDKs than what comes builtin with Visual Studio 6.
+
+Version 0.17
+2006-02-09 Shachar Shemesh
+	* Add compilation instructions for Windows
+	* Unhandled file types are now skipped with a message, rather than
+	  abort the whole process. (Fix bug #1426850)
+
+2006-01-28 Shachar Shemesh
+	* Add a tutorial section to the man page.
+
+2006-01-27 Shachar Shemesh
+	* Fix a bug with using --filelist and --trim=0 and having an absolute
+	  path in the file list
+
 Version 0.16
 2005-11-04 Shachar Shemesh
 	* Implement filename encryption.
