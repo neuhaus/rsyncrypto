@@ -54,8 +54,11 @@ startup_options options;
 
 void parse_cmdline( int argc, char *argv[] )
 {
-    // XXX int nerrors=
-    arg_parse( argc, argv, options.argtable );
+    int nerrors=arg_parse( argc, argv, options.argtable );
+    if( nerrors!=0 ) {
+	std::cerr<<"Incorrect arguments"<<std::endl;
+	usage();
+    }
 
     if( EXISTS(trim) && !EXISTS(recurse) && !EXISTS(filelist) )
         throw rscerror("Cannot trim names when not doing directory recursion or filelist");
