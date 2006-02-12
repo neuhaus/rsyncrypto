@@ -1,3 +1,9 @@
+rsyncrypto (0.17-2) unstable; urgency=low
+
+  * Closes: #343753: segfaults when run without options - upstream patch
+
+ -- Shachar Shemesh <debianpkg@shemesh.biz>  Sun, 12 Feb 2006 17:52:14 +0200
+
 rsyncrypto (0.17-1) unstable; urgency=low
 
   * New upstream version.
