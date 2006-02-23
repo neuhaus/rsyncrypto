@@ -1,3 +1,7 @@
+2006-02-23 Shachar Shemesh
+	* Fixed incorrect permissions when creating the plain text "filemap"
+	  file.
+
 2006-02-09 Shachar Shemesh
 	* Added a required DEFINE to make sure STLPort compiles on newer Platform
 	  SDKs than what comes builtin with Visual Studio 6.
