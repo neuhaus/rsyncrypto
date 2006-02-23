@@ -248,7 +248,7 @@ void filemap::nest_name( std::string &name )
 // Create the file name mapping file
 void filemap::write_map( const char *map_filename )
 {
-    autofd file(map_filename, O_WRONLY|O_CREAT|O_TRUNC, 0777 );
+    autofd file(map_filename, O_WRONLY|O_CREAT|O_TRUNC, 0600 );
 
     for( revfilemap::const_iterator i=reversemap.begin(); i!=reversemap.end(); ++i ) {
 	const filemap *data=&namemap[i->second];
