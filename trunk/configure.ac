@@ -4,6 +4,7 @@
 AC_PREREQ(2.57)
 AC_INIT([rsyncrypto],[0.17])
 AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE
 AC_COPYRIGHT([Copyright (C) 2005 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
 # Checks for programs.
