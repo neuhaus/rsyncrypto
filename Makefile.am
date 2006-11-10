@@ -5,3 +5,7 @@ man1_MANS = rsyncrypto.man
 rsyncrypto_SOURCES = main.cpp crypto.cpp crypt_key.cpp aes_crypt.cpp file.cpp process.cpp \
 	redir.cpp filemap.cpp
 blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
+
+.PHONY: test
+test:
+	cd tests && ./regtest ../rsyncrypto v
