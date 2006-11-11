@@ -123,6 +123,7 @@ public:
     }
 
     // Standard io operations
+private:
     static ssize_t read( file_t fd, void *buf, size_t count )
     {
         DWORD ures;
@@ -132,6 +133,7 @@ public:
         ODS("Read %d bytes from %08x\n", ures, fd);
         return ures;
     }
+public:
     ssize_t read( void *buf, size_t count ) const
     {
         ssize_t num=read( *static_cast<const autohandle *>(this), buf, count );
@@ -141,6 +143,7 @@ public:
 
         return num;
     }
+private:
     static ssize_t write( file_t fd, const void *buf, size_t count )
     {
         DWORD written;
@@ -151,6 +154,7 @@ public:
         ODS("Wrote %d bytes to %08x\n", written, fd);
         return written;
     }
+public:
     ssize_t write( const void *buf, size_t count )
     {
         return write( *static_cast<const autohandle *>(this), buf, count );
