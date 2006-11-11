@@ -185,7 +185,7 @@ void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
         i+=numread;
         if( i>=block_size || new_block ) {
             header->encrypt_block( buffer.get(), i );
-            autofd::write( tofd, buffer.get(), block_size );
+            tofd.write( buffer.get(), block_size );
 
             i=0;
         }
@@ -194,7 +194,7 @@ void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
     if( i>0 ) {
         // Still some leftover bytes to encrypt
         header->encrypt_block( buffer.get(), i );
-        autofd::write( tofd, buffer.get(), block_size );
+        tofd.write( buffer.get(), block_size );
     }
 
     // Report how many bytes of last block are relevant.
@@ -202,7 +202,7 @@ void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
     buffer[0]=i;
     header->init_encrypt();
     header->encrypt_block( buffer.get(), 1 );
-    autofd::write( tofd, buffer.get(), block_size );
+    tofd.write( buffer.get(), block_size );
 
     // Wait for gzip to return, and check whether it succeeded
     int childstatus=gzip_process.wait();
