@@ -251,7 +251,7 @@ key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd )
     bool new_block=true;
 
     /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
-    while( !done && (numread=autofd::read(fromfd, buffer.get(), block_size))!=0 ) {
+    while( !done && (numread=fromfd.read( buffer.get(), block_size))!=0 ) {
         currpos+=numread;
         if( numread>0 && numread<block_size )
             throw rscerror("Unexpected file end");
@@ -286,7 +286,7 @@ key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd )
     
     // The next block will tell us how many bytes of the last block should be written.
     auto_array<unsigned char> buffer2(new unsigned char [block_size]);
-    if( autofd::read(fromfd, buffer2.get(), block_size)!=static_cast<ssize_t>(block_size) )
+    if( fromfd.read( buffer2.get(), block_size)!=static_cast<ssize_t>(block_size) )
         throw rscerror("Unexcpeted end of file past sanity checks");
 
     header->init_encrypt();
