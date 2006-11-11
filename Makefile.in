@@ -60,7 +60,8 @@ blocksizes_OBJECTS = $(am_blocksizes_OBJECTS)
 blocksizes_LDADD = $(LDADD)
 am_rsyncrypto_OBJECTS = main.$(OBJEXT) crypto.$(OBJEXT) \
 	crypt_key.$(OBJEXT) aes_crypt.$(OBJEXT) file.$(OBJEXT) \
-	process.$(OBJEXT) redir.$(OBJEXT) filemap.$(OBJEXT)
+	process.$(OBJEXT) redir.$(OBJEXT) filemap.$(OBJEXT) \
+	bufferfd.$(OBJEXT)
 rsyncrypto_OBJECTS = $(am_rsyncrypto_OBJECTS)
 rsyncrypto_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -172,7 +173,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 man1_MANS = rsyncrypto.man
 rsyncrypto_SOURCES = main.cpp crypto.cpp crypt_key.cpp aes_crypt.cpp file.cpp process.cpp \
-	redir.cpp filemap.cpp
+	redir.cpp filemap.cpp bufferfd.cpp
 
 blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
 all: config.h
@@ -271,6 +272,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aes_crypt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blocksizes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bufferfd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypt_key.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file.Po@am__quote@
