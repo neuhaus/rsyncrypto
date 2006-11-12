@@ -31,7 +31,9 @@
 #include "rsyncrypto.h"
 #include "bufferfd.h"
 
+#ifndef min
 static inline size_t min( size_t a, size_t b ) { return a<b?a:b; }
+#endif
 
 ssize_t read_bufferfd::buffer_copy( void *buf, size_t offset, size_t count ) const
 {
