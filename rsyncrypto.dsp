@@ -91,6 +91,10 @@ SOURCE=.\aes_crypt.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bufferfd.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\crypt_key.cpp
 # End Source File
 # Begin Source File
@@ -170,6 +174,10 @@ SOURCE=.\autopipe.h
 # Begin Source File
 
 SOURCE=.\win32\autopipe.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\bufferfd.h
 # End Source File
 # Begin Source File
 
