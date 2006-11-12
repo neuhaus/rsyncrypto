@@ -2,7 +2,7 @@
 #define BUFFERFD_H
 
 class read_bufferfd : public autofd {
-    static const size_t DEFAULT_BUF_SIZE=8192;
+    static const size_t DEFAULT_BUF_SIZE;
     const size_t buf_size;
     auto_array<char> buffer;
     mutable int startpos, endpos;
@@ -22,5 +22,7 @@ public:
 
     ssize_t read( void *buf, size_t count ) const;
 };
+
+const size_t read_bufferfd::DEFAULT_BUF_SIZE=8192;
 
 #endif // BUFFERFD_H
