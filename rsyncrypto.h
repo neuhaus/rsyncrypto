@@ -124,7 +124,7 @@ struct startup_options {
                 "<src> <dst> and <keys> are directory names, and are processed recursively");
         argtable[i++]=changed=arg_lit0( "c", "changed", "Only encrypt changed files. Requires -r");
         argtable[i++]=nameenc=arg_file0( "n", "name-encrypt", "translation_file", "Encrypt file names");
-	argtable[i++]=nenest=arg_int0( NULL, "ne-nesting", "<n>", "set the hash directory tree depth when encrypting file names" );
+        argtable[i++]=nenest=arg_int0( NULL, "ne-nesting", "<n>", "set the hash directory tree depth when encrypting file names" );
         argtable[i++]=trim=arg_int0( NULL, "trim", "<n>",
                 "Number of directory entries to trim from the begining of the path. Default 1");
         argtable[i++]=del=arg_lit0( NULL, "delete", "Delete files under <dst> not under <src>. Requires -r");
@@ -139,7 +139,7 @@ struct startup_options {
         argtable[i++]=noarch=arg_lit0( NULL, "no-archive-mode", "Do not try to preserve timestamps");
         argtable[i++]=gzip=arg_file0( NULL, "gzip", "<file>",
                 "Path to gzip-like program to use. Must accept a --rsyncable command option");
-	argtable[i++]=rem1=arg_rem( "Advanced options:", "" );
+        argtable[i++]=rem1=arg_rem( "Advanced options:", "" );
         argtable[i++]=rollwin=arg_int0( NULL, "roll-win", "<n>", "Rollover window size. Default is 8192 byte");
         argtable[i++]=rollmin=arg_int0( NULL, "roll-min", "<n>",
                 "Minimal number of guaranteed non-rolled bytes. Default 8192");
@@ -147,7 +147,7 @@ struct startup_options {
                 "How sensitive are we to cutting a block. Default is \"roll-win\"");
         argtable[i++]=end=arg_end(2);
 
-	// If this assert fails, you forgot to fix the size of the "Argtable" array.
+        // If this assert fails, you forgot to fix the size of the "Argtable" array.
         assert(i==sizeof(argtable)/sizeof(argtable[0])); 
 
         if( arg_nullcheck(argtable)==0 ) {
@@ -181,8 +181,10 @@ extern std::ostream *report0, *report1, *report2, *report3;
 #include "autofd.h"
 #include "autommap.h"
 #elif defined(_WIN32)
+
 static inline ODS(const char *format, ... )
 {
+#ifdef DEBUG
     char buffer[500];
 
     va_list args;
@@ -190,6 +192,7 @@ static inline ODS(const char *format, ... )
 
     _vsnprintf(buffer, sizeof(buffer), format, args );
     OutputDebugString(buffer);
+#endif
 }
 
 #include "win32/types.h"

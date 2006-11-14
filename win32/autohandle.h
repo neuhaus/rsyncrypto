@@ -92,7 +92,7 @@ public:
 #if defined(_DEBUG)
             ODS("Duplicate %08x->%08x\n", handle, hNewHandle );
 #endif
-        return hNewHandle;
+        return autohandle(hNewHandle);
     }
 };
 
