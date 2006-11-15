@@ -618,8 +618,8 @@ uninstall-man: uninstall-man1
 
 
 .PHONY: test
-test:
-	cd tests && ./regtest ../rsyncrypto v
+test: rsyncrypto
+	TRGTDIR=`pwd` ; echo $$TRGTDIR ; cd $(top_srcdir)/tests && ./regtest $$TRGTDIR/rsyncrypto v
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
