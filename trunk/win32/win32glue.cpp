@@ -38,7 +38,6 @@ int Error2errno( DWORD Error ) {
 	case ERROR_PATH_NOT_FOUND:
 		return ENOENT;
 	default:
-		ODS("Leaving as is Error %08x\n", Error);
 		return Error;
 	}
 }

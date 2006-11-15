@@ -97,7 +97,6 @@ public:
             break;
         }
 
-        ODS("CreateFile %s\n", pathname);
         static_cast<autohandle &>(*this)=autohandle(CreateFile(pathname, access,
             FILE_SHARE_READ|FILE_SHARE_WRITE, // We are a unix program at heart
             NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL ));
@@ -130,7 +129,6 @@ private:
         if( !ReadFile( fd, buf, count, &ures, NULL ) && GetLastError()!=ERROR_BROKEN_PIPE )
             throw rscerror("read failed", Error2errno(GetLastError()));
 
-        ODS("Read %d bytes from %08x\n", ures, fd);
         return ures;
     }
 public:
@@ -147,11 +145,9 @@ private:
     static ssize_t write( file_t fd, const void *buf, size_t count )
     {
         DWORD written;
-        ODS("Going to write %d bytes to %08x\n", count, fd );
         if( !WriteFile( fd, buf, count, &written, NULL ) )
             throw rscerror("write failed", Error2errno(GetLastError()));
 
-        ODS("Wrote %d bytes to %08x\n", written, fd);
         return written;
     }
 public:
