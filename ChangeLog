@@ -1,3 +1,11 @@
+Version 0.18
+2006-11-15 Shachar Shemesh
+	* Fix bug 1476034 - Make sure that -c works with file lists.
+	* Fix bug 1476040 - Uninitialized nesting level caused crashes.
+
+2006-11-14 Shachar Shemesh
+	* Remove ODS calls from Windows code - 10 times speedup
+
 2006-02-23 Shachar Shemesh
 	* Fixed incorrect permissions when creating the plain text "filemap"
 	  file.
