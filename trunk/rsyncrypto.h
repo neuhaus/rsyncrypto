@@ -157,6 +157,7 @@ struct startup_options {
             rollwin->ival[0]=8192;
             rollmin->ival[0]=8192;
             gzip->filename[0]="gzip";
+            nenest->ival[0]=0;
         }
     }
 
@@ -182,7 +183,7 @@ extern std::ostream *report0, *report1, *report2, *report3;
 #include "autommap.h"
 #elif defined(_WIN32)
 
-static inline ODS(const char *format, ... )
+static inline void ODS(const char *format, ... )
 {
 #ifdef DEBUG
     char buffer[500];
