@@ -7,5 +7,5 @@ rsyncrypto_SOURCES = main.cpp crypto.cpp crypt_key.cpp aes_crypt.cpp file.cpp pr
 blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
 
 .PHONY: test
-test:
-	cd tests && ./regtest ../rsyncrypto v
+test: rsyncrypto
+	TRGTDIR=`pwd` ; echo $$TRGTDIR ; cd $(top_srcdir)/tests && ./regtest $$TRGTDIR/rsyncrypto v
