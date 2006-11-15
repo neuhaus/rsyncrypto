@@ -107,13 +107,19 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
             switch( filestat.st_mode&S_IFMT ) {
             case S_IFREG:
                 {
-                    if( VERBOSE(1) )
-                        std::cerr<<opname<<" file: "<<srcname<<std::endl;
-
                     std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
                     std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
 
-                    op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key );
+		    struct stat dststat;
+		    if( !EXISTS(changed) || lstat( dstfile.c_str(), &dststat )!=0 ||
+			    dststat.st_mtime!=filestat.st_mtime ) {
+			if( VERBOSE(1) )
+			    std::cerr<<opname<<" file: "<<srcname<<std::endl;
+
+			op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key );
+		    } else if( VERBOSE(1) ) {
+                        std::cerr<<opname<<": skipped unchanged file: "<<srcname<<std::endl;
+		    }
                 }
                 break;
             case S_IFDIR:
