@@ -15,7 +15,6 @@ public:
         HANDLE hReadPipe, hWritePipe;
 
         if( CreatePipe(&hReadPipe, &hWritePipe, NULL, pipe_size ) ) {
-            ODS("CreatePipe Read: %08x, Write %08x\n", hReadPipe, hWritePipe );
             input=autofd(hReadPipe);
             output=autofd(hWritePipe);
         } else {
