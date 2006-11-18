@@ -14,15 +14,24 @@ public:
     {
     }
 
-    explicit read_bufferfd( autofd &rhs, size_t bufsize=DEFAULT_BUF_SIZE ) : autofd(rhs),
+    read_bufferfd( const autofd &rhs, size_t bufsize=DEFAULT_BUF_SIZE ) : autofd(rhs),
 	buf_size(bufsize), buffer(new char [bufsize]), startpos(0), endpos(0)
     {
     }
-    // We're actually ok with both default copy constructor AND operator= !!!
+    // We're actually ok with default copy constructor
+
+    // We would be ok with default operator=, except that it needs to change some read-only vars
+    read_bufferfd &operator=( const read_bufferfd &rhs ) {
+	*static_cast<autofd *>(this)=rhs;
+	const_cast<size_t &>(buf_size)=rhs.buf_size;
+	buffer=const_cast<auto_array<char> &>(rhs.buffer);
+	startpos=rhs.startpos;
+	endpos=rhs.endpos;
+
+	return *this;
+    }
 
     ssize_t read( void *buf, size_t count ) const;
 };
-
-const size_t read_bufferfd::DEFAULT_BUF_SIZE=8192;
 
 #endif // BUFFERFD_H

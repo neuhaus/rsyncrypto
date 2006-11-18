@@ -312,7 +312,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 #endif
     bool archive=!EXISTS(noarch);
 
-    autofd infd;
+    read_bufferfd infd;
     if( strcmp(source_file, "-")!=0 )
         infd=autofd(source_file, open_flags);
     else {

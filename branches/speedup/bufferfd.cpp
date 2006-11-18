@@ -31,6 +31,8 @@
 #include "rsyncrypto.h"
 #include "bufferfd.h"
 
+const size_t read_bufferfd::DEFAULT_BUF_SIZE=8192;
+
 #ifndef min
 static inline size_t min( size_t a, size_t b ) { return a<b?a:b; }
 #endif
