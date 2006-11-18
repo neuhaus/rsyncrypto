@@ -26,3 +26,30 @@ sys     0m0.078s
 E/D Ratio: 4.425855513307984791
 
 W/L Ratio: 4.67157190635451505
+
+BASELINE 16M
+Linux
+E
+real    0m14.851s
+user    0m3.948s
+sys     0m10.509s
+
+Windows
+E
+real    1m37.453s
+user    0m0.031s
+sys     0m0.250s
+
+BUFFERED READ
+Linux
+E
+real    0m14.545s
+user    0m4.040s
+sys     0m10.189s
+
+Windows
+E
+real    1m37.640s
+user    0m0.015s
+sys     0m0.218s
+
