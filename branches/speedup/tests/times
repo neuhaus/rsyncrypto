@@ -1,0 +1,10 @@
+BASELiNE
+Linux, optimized
+real    0m1.495s
+user    0m0.428s
+sys     0m1.020s
+
+Windows, release
+real    0m6.984s
+user    0m0.030s
+sys     0m0.062s
