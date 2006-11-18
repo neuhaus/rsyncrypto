@@ -1,10 +1,28 @@
 BASELiNE
 Linux, optimized
+E
 real    0m1.495s
 user    0m0.428s
 sys     0m1.020s
 
+D
+real    0m0.449s
+user    0m0.232s
+sys     0m0.172s
+
+E/D Ratio: 3.329621380846325167
+
 Windows, release
+E
 real    0m6.984s
 user    0m0.030s
 sys     0m0.062s
+
+D
+real    0m1.578s
+user    0m0.015s
+sys     0m0.078s
+
+E/D Ratio: 4.425855513307984791
+
+W/L Ratio: 4.67157190635451505
