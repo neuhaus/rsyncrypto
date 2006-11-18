@@ -35,45 +35,32 @@
 static inline size_t min( size_t a, size_t b ) { return a<b?a:b; }
 #endif
 
-ssize_t read_bufferfd::buffer_copy( void *buf, size_t offset, size_t count ) const
+ssize_t read_bufferfd::buffer_copy( void *buf, size_t count ) const
 {
-    ssize_t filled=0;
+    ssize_t copysize=min(endpos-startpos, count);
 
-    // Is there data already in the buffer?
-    if( endpos-startpos>0 ) {
-	size_t copysize=min(endpos-startpos, count);
+    memcpy( buf, buffer.get()+startpos, copysize );
 
-	memcpy( reinterpret_cast<char *>(buf)+offset, buffer.get()+startpos, copysize );
+    startpos+=copysize;
 
-	filled+=copysize;
-	startpos+=copysize;
-    }
-
-    // We may wish to reset the position to the begining of the buffer
-    if( endpos<=startpos ) {
-	endpos=0;
-	startpos=0;
-    }
-
-    return filled;
+    return copysize;
 }
 
 ssize_t read_bufferfd::read( void *buf, size_t count ) const
 {
-    size_t filled=buffer_copy( buf, 0, count );
-    count-=filled;
-
-    // if we still have anything we need to read in
-    if( count>0 ) {
+    if( endpos>startpos )
+	// If there is anything in the buffer, return that
+	return buffer_copy( buf, count );
+    else {
+	endpos=0;
+	startpos=0;
 	ssize_t numread=autofd::read( buffer.get(), buf_size );
 	if( numread>0 ) {
 	    endpos+=numread;
-	    filled+=buffer_copy( buf, filled, count );
-	} else if( numread<0 ) {
+	    return buffer_copy( buf, count );
+	} else {
 	    // We have an error
 	    return numread;
 	}
     }
-
-    return filled;
 }

@@ -7,7 +7,7 @@ class read_bufferfd : public autofd {
     auto_array<char> buffer;
     mutable int startpos, endpos;
 
-    ssize_t buffer_copy( void *buf, size_t offset, size_t count ) const;
+    ssize_t buffer_copy( void *buf, size_t count ) const;
 public:
     explicit read_bufferfd( size_t bufsize=DEFAULT_BUF_SIZE ) : buf_size(bufsize),
 	buffer(new char [bufsize]), startpos(0), endpos(0)
