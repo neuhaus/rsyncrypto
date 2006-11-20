@@ -1,3 +1,7 @@
+2006-11-20 Shachar Shemesh
+	* Implement proper read buffering while encrypting. X2 speed up on
+	  linux and on Windows.
+
 Version 0.18
 2006-11-15 Shachar Shemesh
 	* Fix bug 1476034 - Make sure that -c works with file lists.

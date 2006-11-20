@@ -43,20 +43,16 @@ sys     0m0.250s
 BUFFERED READ
 Linux
 E
-real    0m14.545s
-user    0m4.040s
-sys     0m10.189s
+real    0m8.751s
+user    0m4.488s
+sys     0m3.840s
 
 Windows
 E
-real    1m37.640s
-user    0m0.015s
-sys     0m0.218s
+real    0m38.953s
+user    0m0.030s
+sys     0m0.937s
 
 BUFFERED READ+WRITE
 Linux
 E
-real    0m12.161s
-user    0m4.476s
-sys     0m7.308s
-
