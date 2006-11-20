@@ -175,7 +175,8 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
     int numread=1;
     bool new_block=true;
 
-    while( (numread=ipipe.get_read().read(buffer.get()+i, 1))!=0 ) {
+    read_bufferfd *readfd=new read_bufferfd(ipipe.get_read());
+    while( (numread=readfd->read(buffer.get()+i, 1))!=0 ) {
         if( new_block ) {
             header->init_encrypt();
             new_block=false;
@@ -191,6 +192,8 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
         }
     }
     
+    delete readfd;
+
     if( i>0 ) {
         // Still some leftover bytes to encrypt
         header->encrypt_block( buffer.get(), i );
