@@ -157,7 +157,7 @@ key *decrypt_header( file_t fromfd, RSA *prv )
 }
 
 // "encrypt_file" will also close the from and to file handles.
-void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd &tofd )
+void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, autofd &tofd )
 {
     const size_t key_size=RSA_size(rsa);
 
