@@ -50,8 +50,17 @@ public:
     }
     // We're ok with the default copy constructor
 
+    ~write_bufferfd()
+    {
+	flush();
+    }
+
     ssize_t write( void *buf, size_t count );
     void flush();
+    void clear() {
+	flush();
+	autofd::clear();
+    }
 };
 
 #endif // BUFFERFD_H
