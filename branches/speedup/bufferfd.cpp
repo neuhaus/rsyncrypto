@@ -32,6 +32,7 @@
 #include "bufferfd.h"
 
 const size_t read_bufferfd::DEFAULT_BUF_SIZE=8192;
+const size_t write_bufferfd::DEFAULT_BUF_SIZE=8192;
 
 #ifndef min
 static inline size_t min( size_t a, size_t b ) { return a<b?a:b; }
@@ -64,5 +65,38 @@ ssize_t read_bufferfd::read( void *buf, size_t count ) const
 	    // We have an error
 	    return numread;
 	}
+    }
+}
+
+//ssize_t write_bufferfd::buffer_copy( void *buf, size_t count ) const
+ssize_t write_bufferfd::write( void *buf, size_t count )
+{
+    size_t buffree=buf_size-buffill;
+    if( count>(buffree+buf_size) ) {
+	// No point in trying to cache this one.
+	flush();
+	return autofd::write(buf, count);
+    }
+
+    // Fill in the buffer with data
+    size_t fill=min(buffree, count);
+    memcpy( buffer.get()+buffill, buf, fill );
+    count-=fill;
+    buffill+=fill;
+
+    if( count>0 ) {
+	flush();
+	memcpy( buffer.get(), static_cast<const char *>(buf)+fill, count );
+    }
+
+    return count;
+}
+
+void write_bufferfd::flush()
+{
+    if( buffill>0 ) {
+	autofd::write( buffer.get(), buffill );
+
+	buffill=0;
     }
 }

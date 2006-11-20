@@ -34,4 +34,24 @@ public:
     ssize_t read( void *buf, size_t count ) const;
 };
 
+class write_bufferfd : public autofd {
+    static const size_t DEFAULT_BUF_SIZE;
+    const size_t buf_size;
+    auto_array<char> buffer;
+    mutable int buffill;
+public:
+    write_bufferfd( size_t bufsize=DEFAULT_BUF_SIZE ) : buf_size(bufsize),
+	buffer(new char [bufsize]), buffill(0)
+    {
+    }
+    write_bufferfd( const autofd &rhs, size_t bufsize=DEFAULT_BUF_SIZE ) : autofd(rhs),
+	buf_size(bufsize), buffer(new char [bufsize]), buffill(0)
+    {
+    }
+    // We're ok with the default copy constructor
+
+    ssize_t write( void *buf, size_t count );
+    void flush();
+};
+
 #endif // BUFFERFD_H
