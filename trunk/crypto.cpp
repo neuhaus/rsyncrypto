@@ -157,7 +157,7 @@ key *decrypt_header( file_t fromfd, RSA *prv )
 }
 
 // "encrypt_file" will also close the from and to file handles.
-void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
+void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd &tofd )
 {
     const size_t key_size=RSA_size(rsa);
 
@@ -175,7 +175,8 @@ void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
     int numread=1;
     bool new_block=true;
 
-    while( (numread=ipipe.get_read().read(buffer.get()+i, 1))!=0 ) {
+    read_bufferfd *readfd=new read_bufferfd(ipipe.get_read());
+    while( (numread=readfd->read(buffer.get()+i, 1))!=0 ) {
         if( new_block ) {
             header->init_encrypt();
             new_block=false;
@@ -191,6 +192,8 @@ void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
         }
     }
     
+    delete readfd;
+
     if( i>0 ) {
         // Still some leftover bytes to encrypt
         header->encrypt_block( buffer.get(), i );
@@ -203,6 +206,8 @@ void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd )
     header->init_encrypt();
     header->encrypt_block( buffer.get(), 1 );
     tofd.write( buffer.get(), block_size );
+
+    tofd.flush();
 
     // Wait for gzip to return, and check whether it succeeded
     int childstatus=gzip_process.wait();

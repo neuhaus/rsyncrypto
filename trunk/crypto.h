@@ -32,6 +32,7 @@
 #define CRYPTO_H
 #include <openssl/rsa.h>
 #include "crypt_key.h"
+#include "bufferfd.h"
 
 enum CYPHER_TYPE { CYPHER_AES };
 
@@ -44,7 +45,7 @@ size_t header_size( const RSA *rsa );
 void encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *to );
 RSA *extract_public_key( const char *pem_filename );
 RSA *extract_private_key( const char *key_filename );
-void encrypt_file( key *header, RSA *rsa, autofd &fromfd, autofd &tofd );
+void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd &tofd );
 key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd );
 
 #endif /* CRYPTO_H */
