@@ -224,7 +224,7 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
 }
 
 // "decrypt_file" will also close the from and to file handles.
-key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd )
+key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd &tofd )
 {
     std::auto_ptr<key> new_header;
     if( header==NULL ) {
@@ -254,6 +254,7 @@ key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd )
     auto_array<unsigned char> buffer(new unsigned char [block_size]);
     bool done=false;
     bool new_block=true;
+    write_bufferfd *writefd=new write_bufferfd(opipe.get_write());
 
     /* Read the file one AES_BLOCK_SIZE at a time, decrypt and write to the pipe */
     while( !done && (numread=fromfd.read( buffer.get(), block_size))!=0 ) {
@@ -280,7 +281,7 @@ key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd )
             if( currpos>filestat.st_size-block_size )
                 throw rscerror("Uneven file end");
         } else {
-            opipe.get_write().write( buffer.get(), i );
+            writefd->write( buffer.get(), i );
         }
 
         // If this was not a full block, the remaining bytes should be zero
@@ -305,7 +306,9 @@ key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd )
     if( buffer2[0]==0 )
         buffer2[0]=block_size;
     
-    opipe.get_write().write( buffer.get(), buffer2[0] );
+    writefd->write( buffer.get(), buffer2[0] );
+    writefd->flush();
+    delete writefd;
     opipe.clear();
 
     int child_status=gzip_process.wait();
