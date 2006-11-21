@@ -358,11 +358,11 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
         headfd.clear();
     }
 
-    autofd infd(src_file, O_RDONLY);
+    read_bufferfd infd(autofd(src_file, O_RDONLY));
     status=infd.fstat();
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777);
-    autofd outfd(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666);
+    write_bufferfd outfd(autofd(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666));
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
     if( !headeread ) {
         write_header( key_file, head.get());

@@ -46,6 +46,6 @@ void encrypt_header( const struct key_header *header, RSA *rsa, unsigned char *t
 RSA *extract_public_key( const char *pem_filename );
 RSA *extract_private_key( const char *key_filename );
 void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd &tofd );
-key *decrypt_file( key *header, RSA *prv, autofd &fromfd, autofd &tofd );
+key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd &tofd );
 
 #endif /* CRYPTO_H */

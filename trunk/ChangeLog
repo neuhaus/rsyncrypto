@@ -1,5 +1,6 @@
 2006-11-21 Shachar Shemesh
 	* Implement proper write buffering while encrypting.
+	* Implement buffering (read and write) while decrypting.
 
 2006-11-20 Shachar Shemesh
 	* Implement proper read buffering while encrypting. X2 speed up on
