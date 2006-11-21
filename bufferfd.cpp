@@ -31,49 +31,73 @@
 #include "rsyncrypto.h"
 #include "bufferfd.h"
 
+const size_t read_bufferfd::DEFAULT_BUF_SIZE=8192;
+const size_t write_bufferfd::DEFAULT_BUF_SIZE=8192;
+
 #ifndef min
 static inline size_t min( size_t a, size_t b ) { return a<b?a:b; }
 #endif
 
-ssize_t read_bufferfd::buffer_copy( void *buf, size_t offset, size_t count ) const
+ssize_t read_bufferfd::buffer_copy( void *buf, size_t count ) const
 {
-    ssize_t filled=0;
+    ssize_t copysize=min(endpos-startpos, count);
 
-    // Is there data already in the buffer?
-    if( endpos-startpos>0 ) {
-	size_t copysize=min(endpos-startpos, count);
+    memcpy( buf, buffer.get()+startpos, copysize );
 
-	memcpy( reinterpret_cast<char *>(buf)+offset, buffer.get()+startpos, copysize );
+    startpos+=copysize;
 
-	filled+=copysize;
-	startpos+=copysize;
-    }
-
-    // We may wish to reset the position to the begining of the buffer
-    if( endpos<=startpos ) {
-	endpos=0;
-	startpos=0;
-    }
-
-    return filled;
+    return copysize;
 }
 
 ssize_t read_bufferfd::read( void *buf, size_t count ) const
 {
-    size_t filled=buffer_copy( buf, 0, count );
-    count-=filled;
-
-    // if we still have anything we need to read in
-    if( count>0 ) {
+    if( endpos>startpos )
+	// If there is anything in the buffer, return that
+	return buffer_copy( buf, count );
+    else {
+	endpos=0;
+	startpos=0;
 	ssize_t numread=autofd::read( buffer.get(), buf_size );
 	if( numread>0 ) {
 	    endpos+=numread;
-	    filled+=buffer_copy( buf, filled, count );
-	} else if( numread<0 ) {
+	    return buffer_copy( buf, count );
+	} else {
 	    // We have an error
 	    return numread;
 	}
     }
+}
 
-    return filled;
+//ssize_t write_bufferfd::buffer_copy( void *buf, size_t count ) const
+ssize_t write_bufferfd::write( void *buf, size_t count )
+{
+    size_t buffree=buf_size-buffill;
+    if( count>(buffree+buf_size) ) {
+	// No point in trying to cache this one.
+	flush();
+	return autofd::write(buf, count);
+    }
+
+    // Fill in the buffer with data
+    size_t fill=min(buffree, count);
+    memcpy( buffer.get()+buffill, buf, fill );
+    count-=fill;
+    buffill+=fill;
+
+    if( count>0 ) {
+	flush();
+	memcpy( buffer.get(), static_cast<const char *>(buf)+fill, count );
+	buffill=count;
+    }
+
+    return count;
+}
+
+void write_bufferfd::flush()
+{
+    if( buffill>0 ) {
+	autofd::write( buffer.get(), buffill );
+
+	buffill=0;
+    }
 }

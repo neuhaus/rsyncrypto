@@ -312,7 +312,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 #endif
     bool archive=!EXISTS(noarch);
 
-    autofd infd;
+    read_bufferfd infd;
     if( strcmp(source_file, "-")!=0 )
         infd=autofd(source_file, open_flags);
     else {
@@ -322,7 +322,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     }
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777 );
-    autofd outfd(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666);
+    write_bufferfd outfd(autofd(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666));
     encrypt_file( head.get(), rsa_key, infd, outfd );
     if( !headfd.valid() ) {
         write_header( key_file, head.get() );
