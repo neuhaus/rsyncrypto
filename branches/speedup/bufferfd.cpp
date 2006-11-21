@@ -87,6 +87,7 @@ ssize_t write_bufferfd::write( void *buf, size_t count )
     if( count>0 ) {
 	flush();
 	memcpy( buffer.get(), static_cast<const char *>(buf)+fill, count );
+	buffill=count;
     }
 
     return count;
