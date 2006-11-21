@@ -1,6 +1,7 @@
 - Make sure that the ChangeLog file is up to date
 - Make sure that the README, NEWS, INSTALL and INSTALL.win are up to date
 - Make sure that the version number is correct in configure.ac, configure and the Windows resource files.
+- Make sure that rsyncrypto.h has the correct version number for Win32
 - Tag the release
 - Export the release from the tag name
 - Package the release as tar.gz on Linux from clean export.
