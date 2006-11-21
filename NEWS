@@ -1,3 +1,6 @@
+New to version 0.19:
+Rsyncrypto has undergone major performance improvements, both on Linux and on Windows.
+
 New to version 0.16:
 rsyncrypto now supports encrypting of the file names. This is done by choosing random names for new files, and storing the translation between the real name and the encrypted names in a file called "filemap", which is also encrypted.
 
