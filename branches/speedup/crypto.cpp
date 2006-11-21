@@ -207,6 +207,8 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
     header->encrypt_block( buffer.get(), 1 );
     tofd.write( buffer.get(), block_size );
 
+    tofd.flush();
+
     // Wait for gzip to return, and check whether it succeeded
     int childstatus=gzip_process.wait();
 
