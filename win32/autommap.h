@@ -74,7 +74,8 @@ class autommap {
         if( mapping==NULL )
             throw EXCEPT_CLASS("CreateFileMapping failed", GetLastError() );
 
-        ptr=MapViewOfFileEx( mapping, dwDesiredAccess, 0, offset, length, start );
+        ptr=MapViewOfFileEx( mapping, dwDesiredAccess, static_cast<DWORD>(offset>>32),
+            static_cast<DWORD>(offset), length, start );
         if( ptr==NULL ) {
             CloseHandle( mapping );
             mapping=NULL;

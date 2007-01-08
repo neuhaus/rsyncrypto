@@ -11,6 +11,11 @@
 #define DIRSEP_C '\\'
 #define DIRSEP_S "\\"
 #pragma warning ( disable : 4786 )
+
+typedef __int64 _off_t;
+typedef _off_t off_t;
+#define _OFF_T_DEFINED
+
 #endif
 
 #include <sys/types.h>

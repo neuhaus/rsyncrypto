@@ -181,7 +181,9 @@ public:
         ret.st_mtime=ft2ut(info.ftLastWriteTime);
         ret.st_nlink=static_cast<short>(info.nNumberOfLinks); // nlink
         ret.st_rdev=0; // same as dev
-        ret.st_size=info.nFileSizeLow;
+        ret.st_size=info.nFileSizeHigh;
+        ret.st_size<<=32;
+        ret.st_size|=info.nFileSizeLow;
 
         return ret;
     }
@@ -204,7 +206,16 @@ public:
             throw rscerror("Invalid whence given", EINVAL);
         }
 
-        return SetFilePointer( file, offset, NULL, dwMoveMethod );
+        LONG offsethigh, offsetlow;
+        offsetlow=static_cast<LONG>(offset);
+        offsethigh=static_cast<LONG>(offset>>32);
+        offsetlow=SetFilePointer( file, offsetlow, &offsethigh, dwMoveMethod );
+
+        offset=offsethigh;
+        offset<<=32;
+        offset|=offsetlow;
+
+        return offset;
     }
     off_t lseek( off_t offset, int whence ) const
     {
