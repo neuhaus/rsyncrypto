@@ -100,7 +100,8 @@ void write_header( const char *filename, const key *head )
             newhead.write( filename, 1 )!=1 )
         throw rscerror("write failed", errno, filename );
 
-    autommap headfilemap( NULL, headsize, PROT_WRITE|PROT_READ, MAP_SHARED, newhead, 0 );
+    autommap headfilemap( NULL, static_cast<size_t>(headsize), PROT_WRITE|PROT_READ, MAP_SHARED,
+        newhead, 0 );
     head->export_key( headfilemap.get() );
 }
 

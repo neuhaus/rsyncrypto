@@ -18,4 +18,5 @@ static inline void bzero( void *dest, size_t count )
     memset( dest, 0, count);
 }
 
+
 #endif // WIN32_TYPES_H
