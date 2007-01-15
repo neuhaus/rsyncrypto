@@ -308,8 +308,10 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
     const std::string src_file(autofd::combine_paths( source_dir, ciphername.c_str() ));
     const std::string key_file(autofd::combine_paths( key_dir, ciphername.c_str() ));
 
-    if( lstat( dst_file.c_str(), &status )!=0 ) {
-	if( errno==ENOENT ) {
+    try {
+	status=autofd::lstat(dst_file.c_str());
+    } catch( const rscerror &err ) {
+	if( err.errornum()==ENOENT ) {
 	    // Need to erase file
 
 	    if( VERBOSE(1) )
@@ -325,7 +327,7 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
 		namemap.erase( item );
 	    }
 	} else {
-            throw rscerror("Stat failed", errno, dst_file.c_str());
+            throw;
 	}
     }
 }
