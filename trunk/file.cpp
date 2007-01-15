@@ -115,7 +115,7 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                 
                 try {
                     dststat=autofd::lstat( dstfile.c_str() );
-                } catch( const rscerror &error ) {
+                } catch( const rscerror & ) {
                     found=false;
                 }
                 if( !EXISTS(changed) || !found || dststat.st_mtime!=filestat.st_mtime ) {
@@ -173,7 +173,7 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                     bool statsuccess=true;
                     try {
                         dststat=autofd::lstat( dst_filename.c_str() );
-                    } catch( const rscerror &err ) {
+                    } catch( const rscerror & ) {
                         statsuccess=false;
                     }
                     if( !EXISTS(changed) || !statsuccess || dststat.st_mtime!=status.st_mtime ) {

@@ -156,14 +156,16 @@ public:
         return write( *static_cast<const autohandle *>(this), buf, count );
     }
 
+    static struct stat lstat( const char *file_name )
+    {
+        return autofd::stat( file_name );
+    }
     static struct stat stat( const char *file_name )
     {
-        struct stat ret;
+        // Cannot use the "stat" function, and no suitable information functions by file name
+        autofd statfile(file_name, 0 ); // Cannot open without access, but can try
 
-        if( ::stat( file_name, &ret )!=0 )
-            throw rscerror("stat failed", errno, file_name );
-
-        return ret;
+        return statfile.fstat();
     }
     struct stat fstat() const
     {
