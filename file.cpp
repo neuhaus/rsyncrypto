@@ -111,8 +111,14 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                     std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
 
 		    struct stat dststat;
-		    if( !EXISTS(changed) || lstat( dstfile.c_str(), &dststat )!=0 ||
-			    dststat.st_mtime!=filestat.st_mtime ) {
+		    bool found=true;
+		    
+		    try {
+			dststat=autofd::lstat( dstfile.c_str() );
+		    } catch( const rscerror &error ) {
+			found=false;
+		    }
+		    if( !EXISTS(changed) || !found || dststat.st_mtime!=filestat.st_mtime ) {
 			if( VERBOSE(1) )
 			    std::cerr<<opname<<" file: "<<srcname<<std::endl;
 
@@ -155,7 +161,7 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
         std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
         
         struct stat status, dststat;
-        lstat( src_filename.c_str(), &status );
+        status=autofd::lstat( src_filename.c_str() );
         std::string dst_filename(dstname(dst_dir, src_filename.c_str()+src_offset, status.st_mode));
         std::string key_filename(keyname(key_dir, src_filename.c_str()+src_offset, status.st_mode));
 
@@ -164,8 +170,13 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
 	    case S_IFREG:
 		// Regular file
 		{
-		    if( !EXISTS(changed) || lstat( dst_filename.c_str(), &dststat )!=0 ||
-			    dststat.st_mtime!=status.st_mtime ) {
+		    bool statsuccess=true;
+		    try {
+			dststat=autofd::lstat( dst_filename.c_str() );
+		    } catch( const rscerror &err ) {
+			statsuccess=false;
+		    }
+		    if( !EXISTS(changed) || !statsuccess || dststat.st_mtime!=status.st_mtime ) {
 			if( VERBOSE(1) && opname!=NULL )
 			    std::cerr<<opname<<" "<<src_filename<<std::endl;
 			try {
@@ -204,42 +215,48 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
 {
     struct stat status;
 
-    if( lstat( dst_file, &status )!=0 ) {
-	if( errno==ENOENT ) {
+    try {
+	status=autofd::lstat( dst_file );
+    } catch( const rscerror &err ) {
+	if( err.errornum()==ENOENT ) {
 	    // Need to erase file
-	    if( lstat( source_file, &status )==0  ) {
-		switch( status.st_mode & S_IFMT ) {
-		case S_IFDIR:
-		    // Need to erase directory
-		    if( VERBOSE(1) )
-			std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
-		    autofd::rmdir( source_file );
-		    autofd::rmdir( key_file );
-		    break;
-		case S_IFREG:
+	    try {
+		status=autofd::lstat( source_file );
+	    } catch( const rscerror &err ) {
+		if( err.errornum()==ENOENT )
+		    throw rscerror("Internal error", errno, source_file );
+		else
+		    throw rscerror("Can't stat file to delete", errno, source_file );
+	    }
+
+	    switch( status.st_mode & S_IFMT ) {
+	    case S_IFDIR:
+		// Need to erase directory
+		if( VERBOSE(1) )
+		    std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
+		autofd::rmdir( source_file );
+		autofd::rmdir( key_file );
+		break;
+	    case S_IFREG:
 #if defined S_IFLNK
-		case S_IFLNK:
+	    case S_IFLNK:
 #endif
+		if( VERBOSE(1) )
+		    std::cout<<"Delete "<<source_file<<std::endl;
+		if( unlink( source_file )!=0 )
+		    throw rscerror("Erasing file", errno, source_file );
+		if( EXISTS(delkey) ) {
 		    if( VERBOSE(1) )
-			std::cout<<"Delete "<<source_file<<std::endl;
-		    if( unlink( source_file )!=0 )
-			throw rscerror("Erasing file", errno, source_file );
-		    if( EXISTS(delkey) ) {
-			if( VERBOSE(1) )
-			    std::cout<<"Delete "<<key_file<<std::endl;
-			if( unlink( key_file )!=0 && errno!=ENOENT )
-			    throw rscerror("Erasing file", errno, key_file );
-		    }
-                    break;
-                default:
-                    throw rscerror("Unhandled file type", 0, source_file );
-                }
-            } else if( errno!=ENOENT )
-                throw rscerror("Can't stat file to delete", errno, source_file );
-            else
-                throw rscerror("Internal error", errno, source_file );
+			std::cout<<"Delete "<<key_file<<std::endl;
+		    if( unlink( key_file )!=0 && errno!=ENOENT )
+			throw rscerror("Erasing file", errno, key_file );
+		}
+		break;
+	    default:
+		throw rscerror("Unhandled file type", 0, source_file );
+	    }
         } else
-            throw rscerror("Stat failed", errno, dst_file);
+            throw ;
     }
 }
 
@@ -332,7 +349,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     if( archive ) {
         struct stat status;
 
-        stat(source_file, &status);
+        status=autofd::stat(source_file);
         copy_metadata( dst_file, &status );
     }
 }
