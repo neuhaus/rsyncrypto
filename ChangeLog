@@ -1,3 +1,9 @@
+Version 1.01
+2007-01-17 Shachar Shemesh
+    * Implement the autofd::stat function properly (win32)
+    * Fix the implementation of autofd::fstat (win32) to report the file type
+    * Make sure that all *stat functions go through the wrappers
+
 Version 1.00
 2007-01-12 Shachar Shemesh
     * Modify the "off_t" type on Windows to 64 bit to allow files greater than 4GB
