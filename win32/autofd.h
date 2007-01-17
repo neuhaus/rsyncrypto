@@ -162,10 +162,34 @@ public:
     }
     static struct stat stat( const char *file_name )
     {
-        // Cannot use the "stat" function, and no suitable information functions by file name
-        autofd statfile(file_name, 0 ); // Cannot open without access, but can try
+        struct stat ret;
+        WIN32_FIND_DATA data;
+        HANDLE hFileFind=FindFirstFile( file_name, &data );
 
-        return statfile.fstat();
+        if( hFileFind==INVALID_HANDLE_VALUE )
+            throw rscerror("stat failed", Error2errno(GetLastError()));
+
+        FindClose(hFileFind);
+
+        ZeroMemory( &ret, sizeof(ret) );
+        ret.st_atime=ft2ut(data.ftLastAccessTime);
+        ret.st_ctime=ft2ut(data.ftCreationTime);
+        ret.st_mtime=ft2ut(data.ftLastWriteTime);
+        ret.st_dev=0;
+        ret.st_rdev=0;
+        
+        if( data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY ) {
+            ret.st_mode=S_IFDIR;
+        } else {
+            ret.st_mode=S_IFREG;
+        }
+
+        ret.st_nlink=1;
+        ret.st_size=data.nFileSizeHigh;
+        ret.st_size<<=32;
+        ret.st_size|=data.nFileSizeLow;
+
+        return ret;
     }
     struct stat fstat() const
     {
@@ -179,7 +203,7 @@ public:
         ret.st_atime=ft2ut(info.ftLastAccessTime);
         ret.st_ctime=ft2ut(info.ftCreationTime);
         ret.st_dev=0; // For a device - handle. Otherwise 0
-        //ret.st_mode; // unix mode
+        ret.st_mode=S_IFREG; // unix mode
         ret.st_mtime=ft2ut(info.ftLastWriteTime);
         ret.st_nlink=static_cast<short>(info.nNumberOfLinks); // nlink
         ret.st_rdev=0; // same as dev
