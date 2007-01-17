@@ -139,16 +139,6 @@ public:
         return write( fd, buf, count );
     }
 
-    static struct stat lstat( const char *file_name )
-    {
-	struct stat ret;
-
-	if( ::lstat( file_name, &ret )!=0 )
-	    throw rscerror("lstat failed", errno, file_name );
-
-	return ret;
-    }
-
     static struct stat stat( const char *file_name )
     {
         struct stat ret;

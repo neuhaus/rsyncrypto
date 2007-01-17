@@ -308,26 +308,24 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
     const std::string src_file(autofd::combine_paths( source_dir, ciphername.c_str() ));
     const std::string key_file(autofd::combine_paths( key_dir, ciphername.c_str() ));
 
-    try {
-        status=autofd::lstat(dst_file.c_str());
-    } catch( const rscerror &err ) {
-        if( err.errornum()==ENOENT ) {
-            // Need to erase file
-            
-            if( VERBOSE(1) )
-                std::cout<<"Delete "<<ciphername<<" ("<<plainname<<")"<<std::endl;
-            if( unlink( src_file.c_str() )!=0 && errno!=ENOENT )
-                throw rscerror("Erasing file", errno, src_file.c_str());
-            if( EXISTS(delkey) ) {
-                if( VERBOSE(1) )
-                    std::cout<<"Delete key "<<ciphername<<" ("<<plainname<<")"<<std::endl;
-                if( unlink( key_file.c_str() )!=0 && errno!=ENOENT )
-                    throw rscerror("Erasing key file", errno, key_file.c_str());
-                reversemap.erase( ciphername );
-                namemap.erase( item );
-            }
-        } else {
-            throw;
-        }
+    if( lstat( dst_file.c_str(), &status )!=0 ) {
+	if( errno==ENOENT ) {
+	    // Need to erase file
+
+	    if( VERBOSE(1) )
+		std::cout<<"Delete "<<ciphername<<" ("<<plainname<<")"<<std::endl;
+	    if( unlink( src_file.c_str() )!=0 && errno!=ENOENT )
+		throw rscerror("Erasing file", errno, src_file.c_str());
+	    if( EXISTS(delkey) ) {
+		if( VERBOSE(1) )
+		    std::cout<<"Delete key "<<ciphername<<" ("<<plainname<<")"<<std::endl;
+		if( unlink( key_file.c_str() )!=0 && errno!=ENOENT )
+		    throw rscerror("Erasing key file", errno, key_file.c_str());
+		reversemap.erase( ciphername );
+		namemap.erase( item );
+	    }
+	} else {
+            throw rscerror("Stat failed", errno, dst_file.c_str());
+	}
     }
 }
