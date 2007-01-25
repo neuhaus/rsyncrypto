@@ -1,3 +1,6 @@
+2007-01-25
+    * Fix the stat function (on Windows) to use GetFileAttributesEx insead of FindFirstFile
+
 Version 1.01
 2007-01-17 Shachar Shemesh
     * Implement the autofd::stat function properly (win32)

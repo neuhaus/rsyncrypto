@@ -163,13 +163,9 @@ public:
     static struct stat stat( const char *file_name )
     {
         struct stat ret;
-        WIN32_FIND_DATA data;
-        HANDLE hFileFind=FindFirstFile( file_name, &data );
-
-        if( hFileFind==INVALID_HANDLE_VALUE )
-            throw rscerror("stat failed", Error2errno(GetLastError()));
-
-        FindClose(hFileFind);
+        WIN32_FILE_ATTRIBUTE_DATA data;
+        if( !GetFileAttributesEx( file_name, GetFileExInfoStandard, &data ) )
+            throw rscerror("stat failed", Error2errno(GetLastError()), file_name);
 
         ZeroMemory( &ret, sizeof(ret) );
         ret.st_atime=ft2ut(data.ftLastAccessTime);
