@@ -38,6 +38,22 @@ typedef HANDLE file_t;
 class autofd : public autohandle {
     mutable bool f_eof;
 
+    static FILETIME ut2ft( time_t unixtime )
+    {
+        ULARGE_INTEGER res;
+        static const ULONGLONG epoch_start=116444736000000000;
+
+        res.QuadPart=unixtime;
+        res.QuadPart*=10*1000*1000;
+        res.QuadPart+=epoch_start;
+
+        FILETIME ret;
+        
+        ret.dwHighDateTime=res.HighPart;
+        ret.dwLowDateTime=res.LowPart;
+
+        return ret;
+    }
     static time_t ft2ut( FILETIME ft )
     {
         // Converts FILETIME to time_t
@@ -245,10 +261,20 @@ public:
     }
     static int utimes( const char *filename, const struct timeval tv[2])
     {
-        struct utimbuf buf;
-        buf.actime=tv[0].tv_sec;
-        buf.modtime=tv[1].tv_sec;
-        return utime(filename, &buf);
+        FILETIME modtime, accesstime;
+
+        accesstime=ut2ft(tv[0].tv_sec);
+        modtime=ut2ft(tv[1].tv_sec);
+
+        // The only function in Windows that sets file modification/access times does so for
+        // open files only, so we have no choice but to open the file for write access
+        autofd file(filename, O_WRONLY);
+        if( SetFileTime(file, NULL, &accesstime, &modtime ) )
+            return 0;
+        else {
+            errno=Error2errno(GetLastError());
+            return -1;
+        }
     }
     static autofd dup( int filedes )
     {
