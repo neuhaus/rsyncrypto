@@ -157,9 +157,9 @@ int main( int argc, char *argv[] )
 	    op(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key);
 	}
     } catch( const rscerror &err ) {
-	std::cerr<<err.error()<<std::endl;
-	ret=1;
+        std::cerr<<err.error()<<std::endl;
+        ret=1;
     }
-
+    
     return ret;
 }
