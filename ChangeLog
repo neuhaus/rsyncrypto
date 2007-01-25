@@ -1,5 +1,8 @@
 2007-01-25
     * Fix the stat function (on Windows) to use GetFileAttributesEx insead of FindFirstFile
+    * Convert the utimes function (on Windows) to use "SetFileTime" instead of the posix utimes.
+      This solves a problem where files inside daylight saving periods had their timestamp copied
+      wrong. This is a serious anomality in FILETIME disregarding daylight saving.
 
 Version 1.01
 2007-01-17 Shachar Shemesh
