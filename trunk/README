@@ -2,7 +2,7 @@ Rsyncrypto requires gzip that supports the "rsyncable" flag. The gzip rsyncable
 flag is a patch written by Rusty Russell. This patch is available in the
 "contrib" directory, and nees to be applied against the *gzip* sources.
 
-Version 1.01 is released and ready for production use (fully stable).
+Version 1.02 is released and ready for production use (fully stable).
 
 Items currently on the todo list for version 2:
 1. Treat filename mapping on Windows as case insensitive

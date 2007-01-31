@@ -7,7 +7,7 @@
 #define DIRSEP_S "/"
 #else
 #define PACKAGE_NAME "rsyncrypto"
-#define PACKAGE_STRING "rsyncrypto 1.02testing2"
+#define PACKAGE_STRING "rsyncrypto 1.02"
 #define DIRSEP_C '\\'
 #define DIRSEP_S "\\"
 #pragma warning ( disable : 4786 )
