@@ -181,7 +181,7 @@ public:
     }
     static autofd dup( int filedes )
     {
-        return autofd( dup(filedes) );
+        return autofd( ::dup(filedes) );
     }
     static void rmdir( const char *pathname )
     {
