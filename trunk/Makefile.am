@@ -8,4 +8,7 @@ blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
 
 .PHONY: test
 test: rsyncrypto
-	TRGTDIR=`pwd` ; echo $$TRGTDIR ; cd $(top_srcdir)/tests && ./regtest $$TRGTDIR/rsyncrypto v
+	rm -rf ./tests
+	mkdir ./tests
+	TRGT="$$(pwd)" ; SRC="$$(cd "$(top_srcdir)/tests" ; pwd)" ; export SRC ; cd $${TRGT}/tests && \
+	"$$SRC/regtest" "$$TRGT/rsyncrypto" v
