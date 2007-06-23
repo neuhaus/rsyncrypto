@@ -212,9 +212,6 @@ std::string filemap::namecat_decrypt( const char *left, const char *right, mode_
     while( *right==DIRSEP_C )
 	++right;
 
-    if( *right=='\0' || strcmp(right, FILEMAPNAME)==0 )
-	return "";
-
     // Get just the file part of the path
     for( int skip=0; right[skip]!='\0'; ++skip ) {
 	if( right[skip]==DIRSEP_C ) {
@@ -222,6 +219,9 @@ std::string filemap::namecat_decrypt( const char *left, const char *right, mode_
 	    skip=0;
 	}
     }
+
+    if( *right=='\0' || strcmp(right, FILEMAPNAME)==0 )
+	return "";
 
     filemaptype::const_iterator iter=namemap.find(right);
     if( iter==namemap.end() )
