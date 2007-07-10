@@ -1,3 +1,8 @@
+Version 1.03
+2007-07-10
+    * Fix error when using stdin for filelist on Unix
+    * Improve running tests on out of tree builds
+
 Version 1.02
 2007-01-25
     * Fix the stat function (on Windows) to use GetFileAttributesEx insead of FindFirstFile
