@@ -1,0 +1,128 @@
+#!/bin/sh
+
+set -e
+
+RSC=$1
+options=$2
+
+if [ -n "$SRC" ] && !( echo "$SRC" | grep -q '/$' )
+then
+   SRC="$SRC/"
+fi
+
+if [ ! "$1" ]
+then
+    cat <<EOF
+Usage: $0 <path> <options>
+path - path to rsyncrypto to run regression tests on
+options - specify "v" for verbose output
+EOF
+    exit 1
+fi
+
+compare()
+{
+    echo -n "Comparing $1 to $2:"
+    if (diff $1 $2 >/dev/null)
+    then
+        echo " identical"
+    else
+        echo " diff failed"
+        exit 1
+    fi
+}
+
+runreg()
+{
+    cmdline=$1
+    testname=$2
+    shift 2
+    if [ "$options" = "v" ]
+    then
+        echo "Testing $testname: $cmdline"
+    else
+        echo "Testing $testname:"
+    fi
+    if /bin/sh -c "$cmdline"
+    then
+        while [ "$1" ]
+        do
+            compare $1 $2
+            shift 2
+        done
+        echo "$testname passed"
+    else
+        echo "rsyncrypto failed to run"
+        exit 1
+    fi
+}
+
+function dotest()
+{
+    echo "Running regressions on $1"
+    runreg "$RSC -d ${SRC}$1.enc $1.dec ${SRC}$1.key ${SRC}cert.crt" "decryption using symmetric key" ${SRC}$1 $1.dec
+    rm $1.dec
+    runreg "$RSC -d ${SRC}$1.enc $1.dec $1.key2 ${SRC}cert.key" "decryption using asymmetric key" ${SRC}$1 $1.dec ${SRC}$1.key $1.key2
+    rm $1.dec $1.key2
+    runreg "$RSC ${SRC}$1 $1.enc2 ${SRC}$1.key ${SRC}cert.key" "encryption using existing key"
+    runreg "$RSC -d $1.enc2 $1.dec ${SRC}$1.key ${SRC}cert.crt" "decryption of our own encryption - symmetric" ${SRC}$1 $1.dec
+    rm $1.dec
+    runreg "$RSC -d $1.enc2 $1.dec $1.key2 ${SRC}cert.key" "decryption of our own encryption - asymmetric" ${SRC}$1 $1.dec ${SRC}$1.key $1.key2
+    rm $1.dec $1.key2 $1.enc2
+    runreg "$RSC ${SRC}$1 $1.enc2 $1.key2 ${SRC}cert.key" "encryption using new key"
+    runreg "$RSC -d $1.enc2 $1.dec $1.key2 ${SRC}cert.crt" "decryption of our own encryption - symmetric" ${SRC}$1 $1.dec
+    rm $1.dec
+    runreg "$RSC -d $1.enc2 $1.dec $1.key3 ${SRC}cert.key" "decryption of our own encryption - asymmetric" ${SRC}$1 $1.dec $1.key3 $1.key2
+    rm $1.dec $1.key2 $1.key3 $1.enc2
+
+    # Let's test some command line options
+    runreg "$RSC -d --gzip=${SRC}./nullgzip ${SRC}$1.enc $1.dec.gz ${SRC}$1.key ${SRC}cert.crt && gunzip $1.dec.gz" "test seperate gunzip" ${SRC}$1 $1.dec
+    rm $1.dec
+
+    echo "All tests on $1 successful"
+    echo ""
+}
+
+rm -rf regtestdir.*
+mkdir regtestdir.orig
+mkdir regtestdir.orig/dummy
+mkdir regtestdir.key
+mkdir regtestdir.key/dummy
+mkdir regtestdir.enc
+mkdir regtestdir.enc/dummy
+shopt -s extglob
+
+pushd "$SRC"
+regs="$(echo reg+([0-9]))"
+popd
+
+for reg in $regs
+do
+    dotest $reg
+    ln ${SRC}$reg regtestdir.orig/dummy
+    ln ${SRC}$reg.key regtestdir.key/dummy/$reg
+    ln ${SRC}$reg.enc regtestdir.enc/dummy/$reg
+done
+
+runreg "$RSC -vv -r -d regtestdir.enc regtestdir.dec regtestdir.key ${SRC}cert.crt" "recursive decryption using symmetric"
+for reg in $regs
+do
+    compare regtestdir.orig/dummy/$reg regtestdir.dec/dummy/$reg
+done
+rm -rf regtestdir.dec
+runreg "$RSC -vv -r -d regtestdir.enc regtestdir.dec regtestdir.key2 ${SRC}cert.key" "recursive decryption using asymmetric"
+for reg in $regs
+do
+    compare regtestdir.orig/dummy/$reg regtestdir.dec/dummy/$reg
+    compare regtestdir.key/dummy/$reg regtestdir.key2/dummy/$reg
+done
+rm -rf regtestdir.dec
+rm -rf regtestdir.key2
+runreg "$RSC -vv -r --trim=2 regtestdir.orig/dummy regtestdir.enc2/dummy regtestdir.key/dummy ${SRC}cert.key" "recursive encryption using existing"
+runreg "$RSC -vv -r --trim=2 -d regtestdir.enc2/dummy regtestdir.dec/ regtestdir.key2 ${SRC}cert.key" "recursive decryption using asymmetric with trim"
+for reg in $regs
+do
+    compare regtestdir.orig/dummy/$reg regtestdir.dec/$reg
+    compare regtestdir.key/dummy/$reg regtestdir.key2/$reg
+done
+echo "All tests completed successfully"
