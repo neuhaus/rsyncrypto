@@ -125,4 +125,8 @@ do
     compare regtestdir.orig/dummy/$reg regtestdir.dec/$reg
     compare regtestdir.key/dummy/$reg regtestdir.key2/$reg
 done
+
+# Delete leftover files
+rm -rf regtestdir.*
+
 echo "All tests completed successfully"
