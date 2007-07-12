@@ -8,6 +8,6 @@ blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
 
 .PHONY: test
 test: rsyncrypto
-	[ "$$(cd "$(top_srcdir)" ; pwd)" == "$$(pwd)" ] || ( rm -rf ./tests && mkdir ./tests )
+	[ -d ./tests ] || mkdir ./tests
 	TRGT="$$(pwd)" ; SRC="$$(cd "$(top_srcdir)/tests" ; pwd)" ; export SRC ; cd $${TRGT}/tests && \
 	"$$SRC/regtest" "$$TRGT/rsyncrypto" v
