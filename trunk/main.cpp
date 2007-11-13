@@ -84,6 +84,8 @@ void parse_cmdline( int argc, char *argv[] )
     // Apply default values
     if( !EXISTS(rollsens) )
         VAL(rollsens)=VAL(rollmin);
+    if( !EXISTS(noatime) )
+        VAL(noatime)=1;
 }
 
 int main( int argc, char *argv[] )
@@ -94,15 +96,23 @@ int main( int argc, char *argv[] )
 	
     try {
         parse_cmdline( argc, argv );
-		
-		if( EXISTS(version) ) {
-			version();
-			exit(0);
-		}
-		
+
+        if( EXISTS(version) ) {
+            version();
+            exit(0);
+        }
+
         if( EXISTS(help) )
             usage();
-		
+
+#if HAVE_NOATIME
+        // Sometimes we can always use O_NOATIME without a problem
+        if( VAL(noatime)==1 && geteuid==0 ) {
+            // We are root - O_NOATIME will succeed anyways
+            VAL(noatime)=2;
+        }
+#endif
+
         RSA *rsa_key=extract_private_key(FILENAME(master));
         if( rsa_key==NULL ) {
             rsa_key=extract_public_key(FILENAME(master));

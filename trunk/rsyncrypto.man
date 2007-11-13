@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "January 27, 2006" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "November 11, 2007" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -7,7 +7,7 @@ rsyncrypto \- rsync friendly encryption
 .RI [ options ] " srcfile dstfile keyfile key"
 .br
 .B rsyncrypto
-.RI [ options ] " -r srcdir dstdir keysdir key"
+.RI [ options ] " \fB-r\fI srcdir dstdir keysdir key"
 .SH DESCRIPTION
 This manual page documents the \fBrsyncrypto\fP command.
 .PP
@@ -110,7 +110,7 @@ files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
 during the encryption (and thus decryption) operation.
 .TP
-.B \-n, \-\-name\-encrypt=translation_file
+.B \-n, \-\-name\-encrypt=\fItranslation_file\fP
 Encrypt the file name. If this option is specified, this means that file
 names are encrypted as well. This is done by changing the name of the encrypted
 file to a random string of characters, and storing the translation in the file
@@ -119,14 +119,14 @@ If working in recursive mode, this file is automatically also included in the
 encryption, and is given the fixed name "filemap". This is done so that
 decryption of the file names is possible when the symmetric keys are lost.
 .TP
-.B \-\-ne\-nesting=<n>
+.BI \-\-ne\-nesting= num
 When the \-\-name\-encrypt option is used, by default all mangled file names
 are stored in a single directory. When encrypting large directory trees, this
 can result in rather big directories. Using "\-\-ne\-nesting" will split the
 files to subdirectories, according to random bits that are part of the
 encrypted file name. "n" is the number of directories to nest.
 .TP
-.BR \-\-trim =num
+.BI \-\-trim= num
 Determine how many directory levels to trim from the beginning of the \fIsrcdir\fP
 path when creating directories under \fIdstdir\fP. The default value is 1. See
 .B "THE TRIM OPTION"
@@ -136,25 +136,39 @@ for more details.
 When in recursive mode, delete files and directories under \fIdstdir\fP that do
 not exist under \fIsrcdir\fP.
 .TP
-.BI \-b " num"
+.BI \-b num
 Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
 Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
 will only affect files for which no \fIkeyfile\fP exists.
 .TP
-.BI \-\-gzip =path
+.BI \-\-gzip= path
 By default, \fBrsyncrypto\fP will compress the plain text prior to encrypting
 it. In order not to become rsync unfriendly due to the compression,
 \fBrsyncrypto\fP will search the path for an instance of
 .BR gzip (1)
 that supports the \fI\-\-rsyncable\fP option. If the system's default gzip does
-not support this option (only Debian's does, at the time of this writing), use
+not support this option (all Debian and derivatives, as well as some others, support it), use
 this option to tell \fBrsyncrypto\fP to use a different instance of gzip. The
 tests directory of rsyncrypto's source has a file called "gzip", that does NULL
 compression by redirecting the input and output to
 .BR cat (1).
 .TP
-.BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
+.B \fB\-\-roll-win=\fInum\fP, \fB\-\-roll-min=\fInum\fP, \fB\-\-roll-sensitivity=\fInum
 Affects the rolling block algorithm. See \fBNOTES\fP.
+.TP
+.BI \-\-noatime= num
+(Only on some platforms, most notably Linux). The platform usually keeps track of when
+files were last being accessed. Since \fBrsyncrypto\fP is typically used for backup, it
+opens the files it encrypts with the O_NOATIME option, which is a Linux specific
+extension that tells the system not to update the file's access time. When opening a
+file where the opening process is not owned by the file owner, an attempt to open the
+file with O_NOATIME will cause the open to fail with "permission denied".
+ 
+\fInum\fP can be one of these options:
+\fB0\fP means do not use O_NOATIME at all.
+\fB1\fP (the default) means attempt to only use O_NOATIME if \fBrsyncrypto\fP thinks it
+will not cause a permission denied error.
+\fB2\fP means to use O_NOATIME always.
 .TP
 .BR \-\-fk ", " \-\-fr
 If command line, or a version with different defaults, dictate different
