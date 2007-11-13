@@ -122,7 +122,7 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                     if( VERBOSE(1) )
                         std::cerr<<opname<<" file: "<<srcname<<std::endl;
                     
-                    op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key );
+                    op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key, &filestat );
                 } else if( VERBOSE(1) ) {
                     std::cerr<<opname<<": skipped unchanged file: "<<srcname<<std::endl;
                 }
@@ -180,7 +180,8 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                         if( VERBOSE(1) && opname!=NULL )
                             std::cerr<<opname<<" "<<src_filename<<std::endl;
                         try {
-                            op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+                            op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(),
+                                rsa_key, &status );
                         } catch( const rscerror &err ) {
                             std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
                         }
@@ -193,12 +194,13 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                 // Directory
                 if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
                     if( !op_handle_dir ) {
-                        recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
-                            op_handle_dir, opname, dstname, keyname );
+                        recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op,
+                            src_offset, op_handle_dir, opname, dstname, keyname );
                     } else {
-                        recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op, src_offset,
-                            op_handle_dir, opname, dstname, keyname );
-                        op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(), rsa_key );
+                        recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op,
+                            src_offset, op_handle_dir, opname, dstname, keyname );
+                        op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(),
+                            rsa_key, &status );
                     }
                 }
                 break;
@@ -211,7 +213,8 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
     }
 }
 
-static void file_delete( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
+static void file_delete( const char *source_file, const char *dst_file, const char *key_file,
+        RSA *rsa_key, const struct stat *stat )
 {
     struct stat status;
 
@@ -281,8 +284,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
             int dst_src_offset=dst_src_name.length();
             dst_src_name=autofd::combine_paths(dst_src_name.c_str(), src_dir+src_offset);
             
-            recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key, file_delete,
-                dst_src_offset, true, NULL, dstname, keyname );
+            recurse_dir_enc( dst_src_name.c_str(), src_dst_name.c_str(), key_dir, rsa_key,
+                file_delete, dst_src_offset, true, NULL, dstname, keyname );
         } else {
             // Scan the translation map rather than the encryption directory
             std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
@@ -292,7 +295,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     }
 }
 
-void file_encrypt( const char *source_file, const char *dst_file, const char *key_file, RSA *rsa_key )
+void file_encrypt( const char *source_file, const char *dst_file, const char *key_file,
+        RSA *rsa_key, const struct stat *stat )
 {
     std::auto_ptr<key> head;
     autofd headfd;
@@ -325,7 +329,15 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     int open_flags=O_RDONLY;
 #ifdef HAVE_NOATIME
-    open_flags|=O_NOATIME;
+    switch( VAL(noatime) ) {
+    case 1:
+        if( stat->st_uid==geteuid() )
+            open_flags|=O_NOATIME;
+        break;
+    case 2:
+        open_flags|=O_NOATIME;
+        break;
+    }
 #endif
     bool archive=!EXISTS(noarch);
 
@@ -347,14 +359,12 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     // Set the times on the encrypted file to match the plaintext file
     if( archive ) {
-        struct stat status;
-
-        status=autofd::stat(source_file);
-        copy_metadata( dst_file, &status );
+        copy_metadata( dst_file, stat );
     }
 }
 
-void file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key)
+void file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key,
+    const struct stat *stat )
 {
     std::auto_ptr<key> head;
     // int infd, outfd, headfd;
