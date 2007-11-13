@@ -331,7 +331,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 #ifdef HAVE_NOATIME
     switch( VAL(noatime) ) {
     case 1:
-        if( stat->st_uid==geteuid() )
+        if( stat!=NULL && stat->st_uid==geteuid() )
             open_flags|=O_NOATIME;
         break;
     case 2:
