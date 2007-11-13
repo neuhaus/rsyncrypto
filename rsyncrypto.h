@@ -100,12 +100,17 @@ struct startup_options {
     struct arg_lit *help, *del, *delkey, *filelist, *fr, *fk, *noarch, *version;
     struct arg_lit *decrypt, *verbosity, *recurse, *changed;
     struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim, *nenest;
+    struct arg_int *noatime;
     struct arg_file *gzip;
     struct arg_file *src, *dst, *key, *master, *nameenc;
     struct arg_rem *rem1;
     struct arg_end *end;
 
-    void *argtable[26];
+    void *argtable[26
+#if HAVE_NOATIME
+        +1
+#endif
+        ];
 
     startup_options()
     {
@@ -131,6 +136,10 @@ struct startup_options {
         argtable[i++]=delkey=arg_lit0( NULL, "delete-keys", "Delete also the keys. Implies --delete");
         argtable[i++]=filelist=arg_lit0( NULL, "filelist",
                 "<src> is a list of file and directory names to process. \"-\" means read from stdin.");
+        noatime=arg_int0( NULL, "noatime", "<n>", "Level of O_NOATIME use" );
+#if HAVE_NOATIME
+        argtable[i++]=noatime;
+#endif
         argtable[i++]=keysize=arg_int0( "b", "keybits", "<n>", "Size of key to create. Encryption only");
         argtable[i++]=fr=arg_lit0( NULL, "fr",
                 "Force new rollover parameters, even if previous encryption used a different setting.");
