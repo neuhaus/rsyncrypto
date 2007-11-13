@@ -133,14 +133,15 @@ int main( int argc, char *argv[] )
 	}
 
 	if( EXISTS(nameenc) ) {
-	    if( encrypt ) {
+            if( encrypt ) {
 		dstnameop=filemap::namecat_encrypt;
 		keynameop=dstnameop;
 	    } else {
 		if( EXISTS(recurse) || EXISTS(filelist) ) {
 		    // First decrypt the encrypted file list
-		    file_decrypt(autofd::combine_paths(FILENAME(src), FILEMAPNAME).c_str(), FILENAME(nameenc),
-			    autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
+		    file_decrypt(autofd::combine_paths(FILENAME(src), FILEMAPNAME).c_str(),
+                        FILENAME(nameenc), autofd::combine_paths(FILENAME(key),
+                        FILEMAPNAME).c_str(), rsa_key, NULL );
 		}
 
 		dstnameop=filemap::namecat_decrypt;
@@ -160,11 +161,13 @@ int main( int argc, char *argv[] )
 		// Write the (possibly changed) filelist back to the file
 		filemap::write_map(FILENAME(nameenc));
 		// Encrypt the filelist file itself
-		file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).c_str(),
-			autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key );
+		file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).
+                    c_str(), autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key,
+                    NULL );
 	    }
 	} else {
-	    op(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key);
+            struct stat stat( autofd::stat(FILENAME(src)) );
+	    op( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, &stat );
 	}
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
