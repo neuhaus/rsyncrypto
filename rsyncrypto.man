@@ -362,6 +362,6 @@ Decrypting from stdin is not yet supported.
 rsyncrypto was written by Shachar Shemesh for Lingnu Open Source Consulting ltd.
 http://www.lingnu.com
 .PP
-This manual page was written by Shachar Shemesh <debianpkg@shemesh.biz>
+This manual page was written by Shachar Shemesh <shachar@debian.org>
 .SH PROJECT HOMEPAGE
 http://sourceforge.net/projects/rsyncrypto
