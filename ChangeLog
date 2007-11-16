@@ -1,3 +1,7 @@
+2007-11-16
+    * Add option --modify-window that mimics the rsync option of the same
+      name.
+
 2007-11-14
     * Add option governing use of O_NOATIME (where applicable).
     * By default, auto detect whether O_NOATIME will fail, and only use where

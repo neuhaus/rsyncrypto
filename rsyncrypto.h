@@ -100,13 +100,13 @@ struct startup_options {
     struct arg_lit *help, *del, *delkey, *filelist, *fr, *fk, *noarch, *version;
     struct arg_lit *decrypt, *verbosity, *recurse, *changed;
     struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim, *nenest;
-    struct arg_int *noatime;
+    struct arg_int *noatime, *mod_win;
     struct arg_file *gzip;
     struct arg_file *src, *dst, *key, *master, *nameenc;
     struct arg_rem *rem1;
     struct arg_end *end;
 
-    void *argtable[26
+    void *argtable[27
 #if HAVE_NOATIME
         +1
 #endif
@@ -128,6 +128,7 @@ struct startup_options {
         argtable[i++]=recurse=arg_lit0( "r", "recurse",
                 "<src> <dst> and <keys> are directory names, and are processed recursively");
         argtable[i++]=changed=arg_lit0( "c", "changed", "Only encrypt changed files. Requires -r");
+        argtable[i++]=mod_win=arg_int0( NULL, "modify-window", "<n>", "compare mod-times with reduced accuracy" );
         argtable[i++]=nameenc=arg_file0( "n", "name-encrypt", "translation_file", "Encrypt file names");
         argtable[i++]=nenest=arg_int0( NULL, "ne-nesting", "<n>", "set the hash directory tree depth when encrypting file names" );
         argtable[i++]=trim=arg_int0( NULL, "trim", "<n>",

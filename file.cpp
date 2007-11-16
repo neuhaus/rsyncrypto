@@ -118,7 +118,9 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                 } catch( const rscerror & ) {
                     found=false;
                 }
-                if( !EXISTS(changed) || !found || dststat.st_mtime!=filestat.st_mtime ) {
+                if( !EXISTS(changed) || !found ||
+                    abs(dststat.st_mtime-filestat.st_mtime)>VAL(mod_win) )
+                {
                     if( VERBOSE(1) )
                         std::cerr<<opname<<" file: "<<srcname<<std::endl;
                     
@@ -176,7 +178,7 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                     } catch( const rscerror & ) {
                         statsuccess=false;
                     }
-                    if( !EXISTS(changed) || !statsuccess || dststat.st_mtime!=status.st_mtime ) {
+                    if( !EXISTS(changed) || !statsuccess || abs(dststat.st_mtime-status.st_mtime)>VAL(mod_win) ) {
                         if( VERBOSE(1) && opname!=NULL )
                             std::cerr<<opname<<" "<<src_filename<<std::endl;
                         try {
