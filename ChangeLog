@@ -1,3 +1,8 @@
+2007-11-14
+    * Add option governing use of O_NOATIME (where applicable).
+    * By default, auto detect whether O_NOATIME will fail, and only use where
+      it will succeed.
+
 Version 1.04
 2007-07-20
     * Make sure that in tree build tests still works
