@@ -110,7 +110,17 @@ files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
 during the encryption (and thus decryption) operation.
 .TP
-.B \-n, \-\-name\-encrypt=\fItranslation_file\fP
+.BI \-\-modify\-window= num
+Only applicable when \fB\-c\fP is in effect. When comparing file modification times,
+treat as equal modification times that are \fInum\fP seconds apart. Default value is
+zero.
+
+This option is most useful when the encrypted file is stored on a FAT file system.
+FAT can only store modification time with a 2 seconds accuracy. This may result in
+the modification time changing between original and encrypted file. In such a case,
+\fB\-\-modify\-window=1\fP should be used.
+.TP
+.BI "\-n, \-\-name\-encrypt=" translation_file
 Encrypt the file name. If this option is specified, this means that file
 names are encrypted as well. This is done by changing the name of the encrypted
 file to a random string of characters, and storing the translation in the file
@@ -141,6 +151,20 @@ Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
 Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
 will only affect files for which no \fIkeyfile\fP exists.
 .TP
+.BI \-\-noatime= num
+(Only on some platforms, most notably Linux). The platform usually keeps track of when
+files were last being accessed. Since \fBrsyncrypto\fP is typically used for backup, it
+opens the files it encrypts with the O_NOATIME option, which is a Linux specific
+extension that tells the system not to update the file's access time. When opening a
+file where the opening process is not owned by the file owner, an attempt to open the
+file with O_NOATIME will cause the open to fail with "permission denied".
+ 
+\fInum\fP can be one of these options:
+\fB0\fP means do not use O_NOATIME at all.
+\fB1\fP (the default) means attempt to only use O_NOATIME if \fBrsyncrypto\fP thinks it
+will not cause a permission denied error.
+\fB2\fP means to use O_NOATIME always.
+.TP
 .BI \-\-gzip= path
 By default, \fBrsyncrypto\fP will compress the plain text prior to encrypting
 it. In order not to become rsync unfriendly due to the compression,
@@ -155,20 +179,6 @@ compression by redirecting the input and output to
 .TP
 .B \fB\-\-roll-win=\fInum\fP, \fB\-\-roll-min=\fInum\fP, \fB\-\-roll-sensitivity=\fInum
 Affects the rolling block algorithm. See \fBNOTES\fP.
-.TP
-.BI \-\-noatime= num
-(Only on some platforms, most notably Linux). The platform usually keeps track of when
-files were last being accessed. Since \fBrsyncrypto\fP is typically used for backup, it
-opens the files it encrypts with the O_NOATIME option, which is a Linux specific
-extension that tells the system not to update the file's access time. When opening a
-file where the opening process is not owned by the file owner, an attempt to open the
-file with O_NOATIME will cause the open to fail with "permission denied".
- 
-\fInum\fP can be one of these options:
-\fB0\fP means do not use O_NOATIME at all.
-\fB1\fP (the default) means attempt to only use O_NOATIME if \fBrsyncrypto\fP thinks it
-will not cause a permission denied error.
-\fB2\fP means to use O_NOATIME always.
 .TP
 .BR \-\-fk ", " \-\-fr
 If command line, or a version with different defaults, dictate different

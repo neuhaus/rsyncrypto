@@ -86,6 +86,8 @@ void parse_cmdline( int argc, char *argv[] )
         VAL(rollsens)=VAL(rollmin);
     if( !EXISTS(noatime) )
         VAL(noatime)=1;
+    if( !EXISTS(mod_win) )
+        VAL(mod_win)=0;
 }
 
 int main( int argc, char *argv[] )
