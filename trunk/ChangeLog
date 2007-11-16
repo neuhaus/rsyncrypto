@@ -1,3 +1,4 @@
+Version 1.05
 2007-11-16
     * Add option --modify-window that mimics the rsync option of the same
       name.
