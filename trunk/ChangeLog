@@ -1,5 +1,6 @@
 2007-11-21
     * Fix segmentation fault when given the wrong file as private/public key
+    * Fix regression - encrypting stdin stopped working in 1.05
 
 Version 1.05
 2007-11-16
