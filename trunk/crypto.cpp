@@ -51,10 +51,18 @@ RSA *extract_public_key( const char *pem_filename )
     
     /* We pull the public key out of the certificate. It's much like pulling teeth */
     /* First, get the certificate loaded into a stream */
-    in=BIO_new(BIO_s_file()); /* XXX NULL is error */
-    BIO_read_filename(in, pem_filename); /* XXX <=0 is error */
+    in=BIO_new(BIO_s_file()); /* NULL is error */
+    if( in==NULL )
+        throw rscerror( "Error allocating public key", ENOMEM );
+
+    if( BIO_read_filename(in, pem_filename)<=0 ) /* <=0 is error */
+        throw rscerror( "Error reading public key file", errno, pem_filename );
+
     /* Next, extract the X509 certificate from it */
     x509=PEM_read_bio_X509(in, NULL, NULL, NULL );
+    if( x509==NULL )
+        throw rscerror( "Error parsing certificate" );
+
     /* And the public key in generic format */
     pkey=X509_get_pubkey(x509);
     /* And finally, we get the actual RSA key */
@@ -74,8 +82,12 @@ RSA *extract_private_key( const char *key_filename )
     
     /* We pull the public key out of the certificate. It's much like pulling teeth */
     /* First, get the certificate loaded into a stream */
-    in=BIO_new(BIO_s_file()); /* XXX NULL is error */
-    BIO_read_filename(in, key_filename); /* XXX <=0 is error */
+    in=BIO_new(BIO_s_file()); /* NULL is error */
+    if( in==NULL )
+        throw rscerror( "Error allocating private key" );
+    if( BIO_read_filename(in, key_filename)<=0 ) /* <=0 is error */
+        throw rscerror( "Error reading private key file", errno, key_filename );
+    
     /* And finally, we get the actual RSA key */
     rsa=PEM_read_bio_RSAPrivateKey(in,NULL,NULL,NULL);
     /* Lastly, release all the resources we've allocated */
