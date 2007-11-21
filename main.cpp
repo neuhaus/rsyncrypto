@@ -172,8 +172,13 @@ int main( int argc, char *argv[] )
                     NULL );
 	    }
 	} else {
-            struct stat stat( autofd::stat(FILENAME(src)) );
-	    op( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, &stat );
+            struct stat status, *pstat=&status;
+            if( strcmp( FILENAME(src), "-" )!=0 ) {
+                status=autofd::stat(FILENAME(src));
+            } else
+                pstat=NULL;
+
+	    op( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, pstat );
 	}
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
