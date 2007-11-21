@@ -118,8 +118,12 @@ int main( int argc, char *argv[] )
         RSA *rsa_key=extract_private_key(FILENAME(master));
         if( rsa_key==NULL ) {
             rsa_key=extract_public_key(FILENAME(master));
+
+            if( rsa_key==NULL ) {
+                throw rscerror( "Couldn't parse RSA key", 0, FILENAME(master) );
+            }
         }
-		
+
         const char *opname=NULL;
 	encryptfunc op;
 	namefunc srcnameop=name_concat, dstnameop=name_concat, keynameop=name_concat;
