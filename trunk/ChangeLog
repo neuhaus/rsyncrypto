@@ -1,3 +1,4 @@
+Version 1.06
 2007-11-28
     * Fix regression - setting the filemap meta data would sometimes segfault
     * Clarified in program help that -c also works with --filelist. Closes 1759890
