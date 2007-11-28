@@ -127,7 +127,7 @@ struct startup_options {
         argtable[i++]=decrypt=arg_lit0( "d", "decrypt", "Decrypt");
         argtable[i++]=recurse=arg_lit0( "r", "recurse",
                 "<src> <dst> and <keys> are directory names, and are processed recursively");
-        argtable[i++]=changed=arg_lit0( "c", "changed", "Only encrypt changed files. Requires -r");
+        argtable[i++]=changed=arg_lit0( "c", "changed", "Only encrypt changed files. Requires -r or --filelist");
         argtable[i++]=mod_win=arg_int0( NULL, "modify-window", "<n>", "compare mod-times with reduced accuracy" );
         argtable[i++]=nameenc=arg_file0( "n", "name-encrypt", "translation_file", "Encrypt file names");
         argtable[i++]=nenest=arg_int0( NULL, "ne-nesting", "<n>", "set the hash directory tree depth when encrypting file names" );

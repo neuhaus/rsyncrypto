@@ -104,7 +104,7 @@ directory where the files are encrypted to. \-\-filelist and \-r are mutually
 exclusive.
 .TP
 .B \-c
-Check the src and destination modified time (in one second resolution) prior
+Check the src and destination modified time (see \-\-modify\-window) prior
 to performing the operation. If the modified time is the same, assume that the
 files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
