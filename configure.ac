@@ -13,25 +13,25 @@ AC_LANG(C++)
 
 # Checks for libraries.
 dnl Checks for openssl
-AC_ARG_WITH([openssl],AC_HELP_STRING([--with-openssl=DIR],[use openssl install directory]),
-[AC_MSG_CHECKING(for openssl path override)
-case "$withval" in
-  yes|no)
-    AC_MSG_RESULT(no)
-    ;;
-  *)
-    AC_MSG_RESULT($withval)
-    if test -f $withval/include/openssl/aes.h -a -f $withval/lib/libcrypto.so; then
-       owd=`pwd`
-       if cd $withval; then withval=`pwd`; cd $owd; fi
-       CPPFLAGS="$CPPFLAGS -I$withval/include"
-       LDFLAGS="$LDFLAGS -L$withval/lib"
-    else
-       AC_ERROR(aes.h or libcrypto.so not found under $withval)
-    fi
-    ;;
-  esac])
-AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl not found])])
+#AC_ARG_WITH([openssl],AC_HELP_STRING([--with-openssl=DIR],[use openssl install directory]),
+#[AC_MSG_CHECKING(for openssl path override)
+#case "$withval" in
+#  yes|no)
+#    AC_MSG_RESULT(no)
+#    ;;
+#  *)
+#    AC_MSG_RESULT($withval)
+#    if test -f $withval/include/openssl/aes.h -a -f $withval/lib/libcrypto.so; then
+#       owd=`pwd`
+#       if cd $withval; then withval=`pwd`; cd $owd; fi
+#       CPPFLAGS="$CPPFLAGS -I$withval/include"
+#       LDFLAGS="$LDFLAGS -L$withval/lib"
+#    else
+#       AC_ERROR(aes.h or libcrypto.so not found under $withval)
+#    fi
+#    ;;
+#  esac])
+#AC_CHECK_LIB(crypto, AES_encrypt,,[AC_MSG_FAILURE([AES implementation in openssl not found])])
 
 dnl Checks for libargtable2
 AC_ARG_WITH([argtable2],AC_HELP_STRING([--with-argtable2=DIR],[use argtable2 build directory]),
@@ -42,16 +42,23 @@ case "$withval" in
     ;;
   *)
     AC_MSG_RESULT($withval)
-    if test -f $withval/argtable2.h -a -f $withval/libargtable2.so; then
-       owd=`pwd`
-       if cd $withval; then withval=`pwd`; cd $owd; fi
-       CPPFLAGS="$CPPFLAGS -I$withval"
-       LDFLAGS="$LDFLAGS -L$withval"
-    else
-       AC_ERROR(argtable2.h or libargtable2.so not found in $withval)
-    fi
+
+    saved_CPPFLAGS="$CPPFLAGS"
+    saved_LDFLAGS="$LDFLAGS"
+    saved_LIBS="$LIBS"
+
+    CPPFLAGS="$CPPFLAGS -I$withval"
+    LDFLAGS="$LDFLAGS -L$withval"
+    LIBS="$LIBS -largtable2"
+
+    AC_MSG_CHECKING([whether $withval contains libargtable2])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <argtable2.h>]], [[arg_parse( 0, NULL, NULL ))]]),
+        [AC_MSG_RESULT([[yes]])], [
+        AC_ERROR(argtable2.h or libargtable2.so not found in $withval)
+        ])
     ;;
   esac])
+]
 AC_CHECK_LIB(argtable2, arg_parse,,[AC_MSG_FAILURE([argtable2 not found])])
 
 AC_MSG_CHECKING([whether platform supports lstat])
