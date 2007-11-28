@@ -9,3 +9,4 @@ Items currently on the todo list for version 2:
 2. Sign the encrypted files to allow a third party to verify their integrity.
 3. Store meta-information, such as the plaintext file name and other file
    attributes inside the encrypted file.
+4. Allow filter mode operation
