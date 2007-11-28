@@ -278,8 +278,8 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
     recurse_dir_enc( src_dir, dst_dir, key_dir, rsa_key, op, src_offset, false, opname, dstname, keyname );
     
     if( EXISTS(del) ) {
-        // "Scanning the encrypted files" takes whole different meaning based on whether we are encrypting
-        // file names or not
+        // "Scanning the encrypted files" takes whole different meaning based on whether we are
+        // encrypting file names or not
         if( !EXISTS(nameenc) ) {
             std::string src_dst_name(src_dir, src_offset); // The name of the source string when used as dst
             std::string dst_src_name(dst_dir);

@@ -3000,16 +3000,9 @@ echo "${ECHO_T}no" >&6; }
   *)
     { echo "$as_me:$LINENO: result: $withval" >&5
 echo "${ECHO_T}$withval" >&6; }
-    if test -f $withval/include/openssl/aes.h -a -f $withval/lib/libcrypto.so; then
-       owd=`pwd`
-       if cd $withval; then withval=`pwd`; cd $owd; fi
-       CPPFLAGS="$CPPFLAGS -I$withval/include"
-       LDFLAGS="$LDFLAGS -L$withval/lib"
-    else
-       { { echo "$as_me:$LINENO: error: aes.h or libcrypto.so not found under $withval" >&5
-echo "$as_me: error: aes.h or libcrypto.so not found under $withval" >&2;}
-   { (exit 1); exit 1; }; }
-    fi
+    CPPFLAGS="$CPPFLAGS -I$withval/include"
+
+    LDFLAGS="$LDFLAGS -L$withval/lib"
     ;;
   esac
 fi
@@ -3106,19 +3099,13 @@ echo "${ECHO_T}no" >&6; }
   *)
     { echo "$as_me:$LINENO: result: $withval" >&5
 echo "${ECHO_T}$withval" >&6; }
-    if test -f $withval/argtable2.h -a -f $withval/libargtable2.so; then
-       owd=`pwd`
-       if cd $withval; then withval=`pwd`; cd $owd; fi
-       CPPFLAGS="$CPPFLAGS -I$withval"
-       LDFLAGS="$LDFLAGS -L$withval"
-    else
-       { { echo "$as_me:$LINENO: error: argtable2.h or libargtable2.so not found in $withval" >&5
-echo "$as_me: error: argtable2.h or libargtable2.so not found in $withval" >&2;}
-   { (exit 1); exit 1; }; }
-    fi
-    ;;
+
+    CPPFLAGS="$CPPFLAGS -I$withval"
+    LDFLAGS="$LDFLAGS -L$withval/.libs"
+
   esac
 fi
+
 
 
 { echo "$as_me:$LINENO: checking for arg_parse in -largtable2" >&5

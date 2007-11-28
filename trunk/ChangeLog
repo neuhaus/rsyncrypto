@@ -1,6 +1,7 @@
 2007-11-28
     * Fix regression - setting the filemap meta data would sometimes segfault
     * Clarified in program help that -c also works with --filelist. Closes 1759890
+    * Make the library tests not depend on specific file extension. Closes 1717324
 
 2007-11-21
     * Fix segmentation fault when given the wrong file as private/public key
