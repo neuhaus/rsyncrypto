@@ -1,3 +1,6 @@
+2007-11-28
+    * Fix regression - setting the filemap meta data would sometimes segfault
+
 2007-11-21
     * Fix segmentation fault when given the wrong file as private/public key
     * Fix regression - encrypting stdin stopped working in 1.05

@@ -360,7 +360,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     }
 
     // Set the times on the encrypted file to match the plaintext file
-    if( archive ) {
+    if( archive && stat!=NULL ) {
         copy_metadata( dst_file, stat );
     }
 }
