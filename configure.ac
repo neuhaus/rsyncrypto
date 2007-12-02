@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([rsyncrypto],[1.06])
+AC_INIT([rsyncrypto],[2.00])
 AM_INIT_AUTOMAKE
 #AM_MAINTAINER_MODE
 AC_COPYRIGHT([Copyright (C) 2005-2007 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
