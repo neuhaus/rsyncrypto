@@ -1,0 +1,205 @@
+Version 1.06
+2007-11-28
+    * Fix regression - setting the filemap meta data would sometimes segfault
+    * Clarified in program help that -c also works with --filelist. Closes 1759890
+    * Make the library tests not depend on specific file extension. Closes 1717324
+
+2007-11-21
+    * Fix segmentation fault when given the wrong file as private/public key
+    * Fix regression - encrypting stdin stopped working in 1.05
+
+Version 1.05
+2007-11-16
+    * Add option --modify-window that mimics the rsync option of the same
+      name.
+
+2007-11-14
+    * Add option governing use of O_NOATIME (where applicable).
+    * By default, auto detect whether O_NOATIME will fail, and only use where
+      it will succeed.
+
+Version 1.04
+2007-07-20
+    * Make sure that in tree build tests still works
+
+Version 1.03
+2007-07-10
+    * Fix error when using stdin for filelist on Unix
+    * Improve running tests on out of tree builds
+
+Version 1.02
+2007-01-25
+    * Fix the stat function (on Windows) to use GetFileAttributesEx insead of FindFirstFile
+    * Convert the utimes function (on Windows) to use "SetFileTime" instead of the posix utimes.
+      This solves a problem where files inside daylight saving periods had their timestamp copied
+      wrong. This is a serious anomality in FILETIME disregarding daylight saving.
+
+Version 1.01
+2007-01-17 Shachar Shemesh
+    * Implement the autofd::stat function properly (win32)
+    * Fix the implementation of autofd::fstat (win32) to report the file type
+    * Make sure that all *stat functions go through the wrappers
+
+Version 1.00
+2007-01-12 Shachar Shemesh
+    * Modify the "off_t" type on Windows to 64 bit to allow files greater than 4GB
+
+Version 0.19
+2006-11-21 Shachar Shemesh
+	* Implement proper write buffering while encrypting.
+	* Implement buffering (read and write) while decrypting.
+
+2006-11-20 Shachar Shemesh
+	* Implement proper read buffering while encrypting. X2 speed up on
+	  linux and on Windows.
+
+Version 0.18
+2006-11-15 Shachar Shemesh
+	* Fix bug 1476034 - Make sure that -c works with file lists.
+	* Fix bug 1476040 - Uninitialized nesting level caused crashes.
+
+2006-11-14 Shachar Shemesh
+	* Remove ODS calls from Windows code - 10 times speedup
+
+2006-02-23 Shachar Shemesh
+	* Fixed incorrect permissions when creating the plain text "filemap"
+	  file.
+
+2006-02-09 Shachar Shemesh
+	* Added a required DEFINE to make sure STLPort compiles on newer Platform
+	  SDKs than what comes builtin with Visual Studio 6.
+
+Version 0.17
+2006-02-09 Shachar Shemesh
+	* Add compilation instructions for Windows
+	* Unhandled file types are now skipped with a message, rather than
+	  abort the whole process. (Fix bug #1426850)
+
+2006-01-28 Shachar Shemesh
+	* Add a tutorial section to the man page.
+
+2006-01-27 Shachar Shemesh
+	* Fix a bug with using --filelist and --trim=0 and having an absolute
+	  path in the file list
+
+Version 0.16
+2005-11-04 Shachar Shemesh
+	* Implement filename encryption.
+	* --meta-encrypt is now called "--name-encrypt"
+	* Added "--ne-nesting" to allow smaller loads of files on each directory.
+
+2005-07-29 Shachar Shemesh
+	* Use argtable to print the argument list
+	* Add the "--meta-encrypt" option
+
+Version 0.15
+2005-05-19 Shachar Shemesh
+	* Properly handle CR+LF in text files on Windows
+	* Forgot to initialize key size when not explicitly specified.
+
+Version 0.14
+2005-05-18 Shachar Shemesh
+	* A couple of fixes in the Win32 version resource
+
+2005-05-17 Shachar Shemesh
+	* Merge Win32 port into HEAD
+
+2005-05-03 Shachar Shemesh
+	* Move from using "getopt_long" for processing command options to
+	  using argtable.
+	* Fix bugs in the configure script, where if --with-argtable2= was
+	  used, then you couldn't override LDFLAGS.
+	* Add missing include for "strings.h".
+	* rsyncrypto now compiles on Solaris.
+
+Version 0.13
+2005-04-23 Shachar Shemesh
+	* Update the license to explain author's position that the OpenSSL
+	  exception is unnecessary.
+	* Add the "rsyncable" patch for gzip to the repository, and point to
+	  it from the README.
+	* Fix a mmap incorrect permission bug that affects OpenBSD.
+
+Version 0.12
+2005-03-27 Shachar Shemesh
+	* Change the license to explicitly allow linking with OpenSSL
+	* Make new file permissions adhere to umask rather than source
+	  file.
+	* Fix bug in mkpath when trying to create rooted path
+	* --delete no longer deletes the key, unless --delete-keys was
+	  specified
+
+Version 0.11
+2005-03-11 Shachar Shemesh
+	* Make sure encryption continues even if a file open fails with
+	  permissions denied.
+	* Fix incorrect rscerror parameter initialization
+	* Fix "Aborted" on entire program in case of error
+
+Version 0.10
+2005-02-28 Shachar Shemesh
+	* Fix accidental use of automake 1.4 to build the makefiles.
+	* Fix bug where you couldn't use --trim with --filelist
+	* Fix serious bug when --trim=0 and --delete where all encrypted files
+	  were deleted, always.
+	* Officially announce as "Beta"
+
+Version 0.09
+2005-02-27 Shachar Shemesh
+	* Make sure that directories for key and encrypted files are created
+	  when needed.
+	* Implement the "filelist" option
+
+2005-02-24 Shachar Shemesh
+	* Document no password protected private key decryption bug in the man
+	  page
+
+Version 0.08
+2005-02-22 Shachar Shemesh
+	* Fix case of sometimes returning non-zero value on success from main.
+
+Version 0.07
+2005-02-20 Shachar Shemesh
+	* Fix incorrect hyphens in manual page
+	* Change autofd's copying method - use mutable "owner" boolean
+	* Fix file descriptor leak in code
+	* Fix spelling mistakes in rsyncrypto.man
+
+Version 0.06
+2005-02-17 Shachar Shemesh
+	* Add an option for only encrypting modified files
+	* Fix error in deleted file reporting
+	* Fix a (mostly visual) error in file delete directory - extra / at
+	  end
+	* Change the verbosity level for deletion from 2 to 1
+	* Add a manual page for rsyncrypto
+
+2005-02-13 Shachar Shemesh
+	* Fix bug in procssing of the "gzip" option
+	* Add a "blocksize" utility for doing tests for optimal roll parameters
+
+Version 0.05
+2005-02-12 Shachar Shemesh
+	* Implement recursive decryption of directory structure
+
+2005-02-10 Shachar Shemesh
+	* Implement recursive encryption of directory structures
+	* Improve error reporting
+	* Add "trim" to trim the begining of the path
+
+2005-02-08 Shachar Shemesh
+	* Implement encrypting a file from stdin. Useful for piping tar into
+	  rsyncrytpo.
+
+Version 0.04
+2005-02-08 Shachar Shemesh
+	* Add a "no-archive-mode" switch, which means file permissions and
+	  timestamp are not copied.
+	* Add a verbosity 3 printout for block sizes used
+	* Change default roll-win to 8192, for higher standard deviation on
+	  window sizes
+
+Version 0.03
+2005-02-06 Shachar Shemesh
+	* Fix compilation problem on *BSD
+	* Add an autoconf test for large files access
