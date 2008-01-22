@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -57,7 +57,7 @@ runreg()
     fi
 }
 
-function dotest()
+dotest()
 {
     echo "Running regressions on $1"
     runreg "$RSC -d ${SRC}$1.enc $1.dec ${SRC}$1.key ${SRC}cert.crt" "decryption using symmetric key" ${SRC}$1 $1.dec
