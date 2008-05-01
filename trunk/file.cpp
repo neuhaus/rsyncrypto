@@ -60,8 +60,14 @@ int calc_trim( const char *path, int trim_count )
     if( path[0]=='\0' )
         throw rscerror("Cannot trim empty path");
 
-    if( trim_count==0 )
-	return 0;
+    if( trim_count==0 ) {
+        // Even if the trim is 0, we still want to seperate out the leading slashes
+        int i;
+        for( i=0; path[i]==DIRSEP_C; ++i )
+            ;
+
+	return i;
+    }
 
     do {
         if( (path[ret]==DIRSEP_C || path[ret]=='\0') && ret!=0 && path[ret-1]!=DIRSEP_C )
