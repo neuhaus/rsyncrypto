@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "November 11, 2007" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "May 5, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -145,6 +145,12 @@ for more details.
 .B \-\-delete
 When in recursive mode, delete files and directories under \fIdstdir\fP that do
 not exist under \fIsrcdir\fP.
+.TP
+.B \-\-delete\-keys
+When deleting files, also delete their symmetric key and file name mapping (if
+applicable). When only \fB\-\-delete\fP is used, the symmetric key and file
+mapping are kept, so that if the file is recreated, it will be rsyncable with
+the original file. This option implies \fB\-\-delete\fP.
 .TP
 .BI \-b num
 Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
