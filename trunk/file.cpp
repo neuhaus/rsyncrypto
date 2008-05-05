@@ -321,10 +321,10 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
             autommap headmap( headfd, PROT_READ );
             head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
 
-            if( EXISTS(fr) && ( head->get_sum_span()!=static_cast<uint32_t>(VAL(rollwin)) ||
+            if( ( EXISTS(fr) && ( head->get_sum_span()!=static_cast<uint32_t>(VAL(rollwin)) ||
                         head->get_sum_mod()!=static_cast<uint32_t>(VAL(rollsens)) ||
-                        head->get_sum_min_dist()!=static_cast<uint32_t>(VAL(rollmin))) ||
-                    EXISTS(fk) && head->get_key_size()!=static_cast<uint32_t>(VAL(keysize)) ) {
+                        head->get_sum_min_dist()!=static_cast<uint32_t>(VAL(rollmin))) ) ||
+                    ( EXISTS(fk) && head->get_key_size()!=static_cast<uint32_t>(VAL(keysize)) ) ) {
                 headfd.clear();
             }
                 
