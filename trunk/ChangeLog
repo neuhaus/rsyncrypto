@@ -1,3 +1,7 @@
+2008-05-11
+    * Fix bug - --trim=0 combined with --name-encrypt combined with --delete:
+      Would not detect deleted files on absolute names
+
 Version 1.06
 2007-11-28
     * Fix regression - setting the filemap meta data would sometimes segfault
