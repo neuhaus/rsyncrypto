@@ -15,4 +15,5 @@ test: rsyncrypto
 docs: rsyncrypto.html
 
 rsyncrypto.html: rsyncrypto.man
-	man2html "$(top_srcdir)/rsyncrypto.man" > rsyncrypto.html
+	man2html "$(top_srcdir)/rsyncrypto.man" > rsyncrypto.html.tmp
+	mv rsyncrypto.html.tmp rsyncrypto.html
