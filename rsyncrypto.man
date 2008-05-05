@@ -80,17 +80,17 @@ correct parameters.
 These programs follow the usual GNU command line syntax, with long options
 starting with two dashes (`-').
 .TP
-.B \-h, \-\-help
+.BR \-h ", " \-\-help
 Show summary of options.
 .TP
-.B \-V, \-\-version
+.BR \-V ", " \-\-version
 Print out the current version number.
 .TP
-.B \-d
+.BR \-d ", " \-\-decrypt
 Decrypt \fIsrc\fP into \fIdst\fP. The default behaviour is to encrypt \fIsrc\fP
 into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
 .TP
-.B \-r
+.BR \-r ", " \-\-recurse
 Recursively encrypt/decrypt an entire directory structure. All files under
 \fIsrcdir\fP will be encrypted to files of the same name and path (almost, see
 \fI\-\-trim\fP) under \fIdstdir\fP. If not already there, a key file will be
@@ -103,7 +103,7 @@ recursive mode, and any other name is a file name. The second argument is a
 directory where the files are encrypted to. \-\-filelist and \-r are mutually
 exclusive.
 .TP
-.B \-c
+.BR \-c ", " \-\-changed
 Check the src and destination modified time (see \-\-modify\-window) prior
 to performing the operation. If the modified time is the same, assume that the
 files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
@@ -120,7 +120,7 @@ FAT can only store modification time with a 2 seconds accuracy. This may result 
 the modification time changing between original and encrypted file. In such a case,
 \fB\-\-modify\-window=1\fP should be used.
 .TP
-.BI "\-n, \-\-name\-encrypt=" translation_file
+.BI "\-n\fP, \fB\-\-name\-encrypt=" translation_file
 Encrypt the file name. If this option is specified, this means that file
 names are encrypted as well. This is done by changing the name of the encrypted
 file to a random string of characters, and storing the translation in the file
@@ -152,7 +152,7 @@ applicable). When only \fB\-\-delete\fP is used, the symmetric key and file
 mapping are kept, so that if the file is recreated, it will be rsyncable with
 the original file. This option implies \fB\-\-delete\fP.
 .TP
-.BI \-b num
+.BI \-b num " \-\-keybits=" num
 Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
 Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
 will only affect files for which no \fIkeyfile\fP exists.
@@ -170,6 +170,9 @@ file with O_NOATIME will cause the open to fail with "permission denied".
 \fB1\fP (the default) means attempt to only use O_NOATIME if \fBrsyncrypto\fP thinks it
 will not cause a permission denied error.
 \fB2\fP means to use O_NOATIME always.
+.TP
+.B \-\-no\-archive\-mode
+Do not try to preserve timestamps. This option is incompatible with \fB\-c\fP.
 .TP
 .BI \-\-gzip= path
 By default, \fBrsyncrypto\fP will compress the plain text prior to encrypting
@@ -193,8 +196,8 @@ affect files for which \fIkeyfile\fP does not yet exist. specifying the
 \fI\-\-fk\fP or \fI\-\-fr\fP will recreate \fIkeyfile\fP if it has values different
 than those in the previous key file.
 .TP
-.B \-v
-Increase verbosity level. Specify several time to be more verbose.
+.BR \-v ", " \-\-verbose
+Increase verbosity level. Specify several times to be more verbose.
 .SH NOTES
 .B encrypting stdin
 .P
@@ -361,8 +364,7 @@ When performing filename encryption, it is vitally important to give the correct
 will cause rsyncrypto to search for non-existing file names, and to fail to
 locate the files to decrypt.
 .SH BUGS
-Not providing a correct key file may result in segmentation fault. The same also
-holds when running rsyncrypto without any parameter at all.
+Not providing a correct key file may result in segmentation fault.
 .P
 It is not yet possible to decrypt using password protected private key.
 .P
