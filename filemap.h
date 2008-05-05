@@ -7,8 +7,8 @@
 
 class filemap;
 
-typedef MAP_CLASS<std::string, filemap> filemaptype;
-typedef MAP_CLASS<std::string, std::string> revfilemap;
+typedef std::map<std::string, filemap> filemaptype;
+typedef std::map<std::string, std::string> revfilemap;
 
 class filemap {
     std::string plainname;
@@ -28,12 +28,11 @@ public:
     static std::string namecat_decrypt( const char *left, const char *right, mode_t mode );
     //static std::string create_combined_path( const char *left, const char *right );
 
+    static void enc_file_delete( const char *source_dir, const char *dst_dir, const char *key_dir,
+	    filemaptype::iterator &item, RSA *rsa_key );
 private:
     static void nest_name( std::string &name );
 };
-
-void enc_file_delete( const char *source_dir, const char *dst_dir, const char *key_dir,
-        filemaptype::iterator &item, RSA *rsa_key );
 
 extern filemaptype filelist;
 extern revfilemap reversemap; // Cypher->plain mapping for encryption usage
