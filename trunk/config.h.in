@@ -15,6 +15,9 @@
 /* Define to 1 if your platform has the "lstat" function call */
 #undef HAVE_LSTAT
 
+/* Define to 1 if you have the <map> header file. */
+#undef HAVE_MAP
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -44,12 +47,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* The type for the map class */
-#undef MAP_CLASS
-
-/* The file to include in order to get the map class */
-#undef MAP_INCLUDE
 
 /* Name of package */
 #undef PACKAGE
