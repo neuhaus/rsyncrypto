@@ -109,7 +109,7 @@ int main( int argc, char *argv[] )
 
 #if HAVE_NOATIME
         // Sometimes we can always use O_NOATIME without a problem
-        if( VAL(noatime)==1 && geteuid==0 ) {
+        if( VAL(noatime)==1 && geteuid()==0 ) {
             // We are root - O_NOATIME will succeed anyways
             VAL(noatime)=2;
         }
