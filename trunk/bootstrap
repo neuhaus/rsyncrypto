@@ -1,3 +1,4 @@
+#!/bin/sh -e
 aclocal
 autoheader
 automake -a

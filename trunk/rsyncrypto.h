@@ -58,12 +58,7 @@ typedef _off_t off_t;
 #include <string>
 #include <set>
 
-#if HAVE_EXT_HASH_MAP && 0
-#include <ext/hash_map>
-#define HASH_MAP 1
-#else
-#include <map>
-#endif
+#include MAP_INCLUDE
 
 #include <argtable2.h>
 
