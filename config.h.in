@@ -3,9 +3,6 @@
 /* Define to 1 if you have the <argtable2.h> header file. */
 #undef HAVE_ARGTABLE2_H
 
-/* Define to 1 if you have the <ext/hash_map> header file. */
-#undef HAVE_EXT_HASH_MAP
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -47,6 +44,12 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* The type for the map class */
+#undef MAP_CLASS
+
+/* The file to include in order to get the map class */
+#undef MAP_INCLUDE
 
 /* Name of package */
 #undef PACKAGE
