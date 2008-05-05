@@ -1,30 +1,55 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="9.00"
 	Name="rsyncrypto"
-	SccProjectName=""
-	SccLocalPath="">
+	ProjectGUID="{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}"
+	TargetFrameworkVersion="0"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\Debug/rsyncrypto.tlb"
+				HeaderFileName=""
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE;_STLP_NEW_PLATFORM_SDK"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="5"
-				UsePrecompiledHeader="3"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="rsyncrypto.h"
 				PrecompiledHeaderFile=".\Debug/rsyncrypto.pch"
 				AssemblerListingLocation=".\Debug/"
@@ -32,104 +57,148 @@
 				ProgramDataBaseFileName=".\Debug/"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1037"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib impargtable2.lib Ws2_32.lib odbc32.lib odbccp32.lib"
 				OutputFile=".\Debug/rsyncrypto.exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/rsyncrypto.pdb"
 				SubSystem="1"
-				TargetMachine="1"/>
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/rsyncrypto.tlb"
-				HeaderFileName=""/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Debug/rsyncrypto.bsc"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1037"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\Release/rsyncrypto.tlb"
+				HeaderFileName=""
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NDEBUG;WIN32;_CONSOLE;_STLP_NEW_PLATFORM_SDK"
-				StringPooling="TRUE"
-				RuntimeLibrary="4"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="NDEBUG;WIN32;_CONSOLE"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="rsyncrypto.h"
 				PrecompiledHeaderFile=".\Release/rsyncrypto.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
+				SuppressStartupBanner="true"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1037"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib libeay32.lib impargtable2.lib Ws2_32.lib"
 				OutputFile=".\Release/rsyncrypto.exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/rsyncrypto.pdb"
 				SubSystem="1"
-				TargetMachine="1"/>
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/rsyncrypto.tlb"
-				HeaderFileName=""/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Release/rsyncrypto.bsc"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1037"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -137,334 +206,404 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			>
 			<File
-				RelativePath="aes_crypt.cpp">
+				RelativePath="aes_crypt.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="bufferfd.cpp">
+				RelativePath="bufferfd.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="crypt_key.cpp">
+				RelativePath="crypt_key.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="crypto.cpp">
+				RelativePath="crypto.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="file.cpp">
+				RelativePath="file.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="filemap.cpp">
+				RelativePath="filemap.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="main.cpp">
+				RelativePath="main.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="win32\process.cpp">
+				RelativePath="win32\process.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
 						PrecompiledHeaderThrough="../rsyncrypto.h"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						PrecompiledHeaderThrough="../rsyncrypto.h"/>
+						PrecompiledHeaderThrough="../rsyncrypto.h"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="win32\redir.cpp">
+				RelativePath="win32\redir.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="win32\rsyncrypto.rc">
+				RelativePath="win32\rsyncrypto.rc"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
 						PreprocessorDefinitions=""
-						AdditionalIncludeDirectories="win32"/>
+						AdditionalIncludeDirectories="win32"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
 						PreprocessorDefinitions=""
-						AdditionalIncludeDirectories="win32"/>
+						AdditionalIncludeDirectories="win32"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="win32\stdafx.cpp">
+				RelativePath="win32\stdafx.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
 						UsePrecompiledHeader="1"
 						PrecompiledHeaderThrough="../rsyncrypto.h"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="../rsyncrypto.h"/>
+						PrecompiledHeaderThrough="../rsyncrypto.h"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="win32\win32glue.cpp">
+				RelativePath="win32\win32glue.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
+						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl">
+			Filter="h;hpp;hxx;hm;inl"
+			>
 			<File
-				RelativePath="aes_crypt.h">
+				RelativePath="aes_crypt.h"
+				>
 			</File>
 			<File
-				RelativePath="autoarray.h">
+				RelativePath="autoarray.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\autodir.h">
+				RelativePath="autodir.h"
+				>
 			</File>
 			<File
-				RelativePath="autodir.h">
+				RelativePath="win32\autodir.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\autofd.h">
+				RelativePath="win32\autofd.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\autohandle.h">
+				RelativePath="win32\autohandle.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\autommap.h">
+				RelativePath="win32\autommap.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\autopipe.h">
+				RelativePath="autopipe.h"
+				>
 			</File>
 			<File
-				RelativePath="autopipe.h">
+				RelativePath="win32\autopipe.h"
+				>
 			</File>
 			<File
-				RelativePath="bufferfd.h">
+				RelativePath="bufferfd.h"
+				>
 			</File>
 			<File
-				RelativePath="crypt_key.h">
+				RelativePath="crypt_key.h"
+				>
 			</File>
 			<File
-				RelativePath="crypto.h">
+				RelativePath="crypto.h"
+				>
 			</File>
 			<File
-				RelativePath="file.h">
+				RelativePath="file.h"
+				>
 			</File>
 			<File
-				RelativePath="filemap.h">
+				RelativePath="filemap.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\process.h">
+				RelativePath="process.h"
+				>
 			</File>
 			<File
-				RelativePath="process.h">
+				RelativePath="win32\process.h"
+				>
 			</File>
 			<File
-				RelativePath="random.h">
+				RelativePath="random.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\resource.h">
+				RelativePath="win32\resource.h"
+				>
 			</File>
 			<File
-				RelativePath="rsyncrypto.h">
+				RelativePath="rsyncrypto.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\types.h">
+				RelativePath="win32\types.h"
+				>
 			</File>
 			<File
-				RelativePath="win32\win32redir.h">
+				RelativePath="win32\win32redir.h"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			>
 		</Filter>
 		<File
-			RelativePath=".cvsignore">
+			RelativePath=".cvsignore"
+			>
 		</File>
 		<File
-			RelativePath="AUTHORS">
+			RelativePath="AUTHORS"
+			>
 		</File>
 		<File
-			RelativePath="ChangeLog">
+			RelativePath="ChangeLog"
+			>
 		</File>
 		<File
-			RelativePath="COPYING">
+			RelativePath="COPYING"
+			>
 		</File>
 		<File
-			RelativePath="INSTALL">
+			RelativePath="INSTALL"
+			>
 		</File>
 		<File
-			RelativePath="INSTALL.win">
+			RelativePath="INSTALL.win"
+			>
 		</File>
 		<File
-			RelativePath="NEWS">
+			RelativePath="NEWS"
+			>
 		</File>
 		<File
-			RelativePath="README">
+			RelativePath="README"
+			>
 		</File>
 	</Files>
 	<Globals>

@@ -7,6 +7,7 @@
 #define _AUTOFD_H
 
 #include "autohandle.h"
+#include "errno.h"
 
 typedef int ssize_t;
 typedef unsigned short mode_t;
