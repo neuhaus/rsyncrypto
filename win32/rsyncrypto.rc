@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -21,7 +21,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -44,18 +43,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "This software licensed under the terms of the GNU General Public License (GPL)\0"
-            VALUE "CompanyName", "Lingnu Open Source Consulting Ltd.\0"
-            VALUE "FileDescription", "rsyncrypto\0"
-            VALUE "FileVersion", "1, 0, 0, 6\0"
-            VALUE "InternalName", "rsyncrypto\0"
-            VALUE "LegalCopyright", "Copyright © 2005-2007 Shachar Shemesh for Lingnu Open Source Consulting\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "rsyncrypto.exe\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "  rsyncrypto\0"
-            VALUE "ProductVersion", "1, 0, 0, 6\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "Comments", "This software licensed under the terms of the GNU General Public License (GPL)"
+            VALUE "CompanyName", "Lingnu Open Source Consulting Ltd."
+            VALUE "FileDescription", "rsyncrypto"
+            VALUE "FileVersion", "1, 0, 0, 6"
+            VALUE "InternalName", "rsyncrypto"
+            VALUE "LegalCopyright", "Copyright © 2005-2008 Shachar Shemesh for Lingnu Open Source Consulting"
+            VALUE "OriginalFilename", "rsyncrypto.exe"
+            VALUE "ProductName", "  rsyncrypto"
+            VALUE "ProductVersion", "1, 0, 0, 6"
         END
     END
     BLOCK "VarFileInfo"
@@ -64,8 +60,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -73,18 +67,18 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"

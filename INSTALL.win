@@ -3,7 +3,6 @@ Windows Compile and Installation Instructions
 
 You will need Visual Studio, as well as several pre-requisits in order to
 compile rsyncrypto on Windows. The following libraries are needed:
-STLPort (http://www.stlport.org/)
 OpenSSL (http://www.openssl.org/)
 Argtable2 (http://argtable.sourceforge.net/)
 
@@ -17,23 +16,6 @@ The rsyncrypto sources contain a file called "rsyncrypto.dsw", which is a
 standard Visual Studio 6 workspace file. Rsyncrypto can be compiled using
 either the GUI or rsyncrypto.mak, but certain preliminary steps must be taken
 for all the libraries to be found.
-
-STLPort Installation
-====================
-Rsyncrypto only requires the short installation path for STL Port, the one that
-does not include iostream or compiling anything. You will still need ActivePerl
-installed on the machine, and will need to run "nmake -f vc6.mak prepare" in
-the stlport "src" directory and uncomment _STLP_NO_OWN_IOSTREAMS in
-stlport/stl_user_config.h. See the "install" file that comes with STLPort for
-more info.
-
-After you have done that, you will still need to add the "stlport" directory
-of the stlport sources into your compiler's include path, BEFORE the compiler's
-include directories. Under VC6, this is done by going to "Tools/Options",
-selecting the "Directories" tab, making sure that the scroller says "Show
-directories for include files". Then you add the relevant directory, and hit
-the up arrow until it is above all the lines that say
-"C:\Program Files\Microsoft Visual Studio"...
 
 OpenSSL Installation
 ====================
@@ -58,14 +40,14 @@ the "src" subdir for both include path and library path.
 
 Compiling Rsyncrypto
 ====================
-Just double click on the rsyncrypto.dsw file and press "compile". There are a
+Just double click on the rsyncrypto.sln file and press "compile". There are a
 couple of known warnings in crypto.cpp regarding signed/unsigned comparisons.
 They are a result of difference of signness of "off_t" between posix platforms,
 where it is unsigned, and Windows, where it is signed. If someone can come up
 with a platform independent solution, they will receive official "thanks" in
 the Authors file.
 
-If you compile rsyncrypto using Visual Studio 6, but a fairly recent Platform
-SDK, you may get error inside the STLPort code. These errors state that certain
-C Linkage functions were redefined in an incompatible way. If that happens, add
-"_STLP_NEW_PLATFORM_SDK" to the list of predefined preprocessor names.
+Historical Note
+===============
+Rsyncrypto used to demand STLPort for compilation. As part of the move from
+Visual Studio 6 to Visual Studio 2008 this requirement was removed.
