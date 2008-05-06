@@ -48,7 +48,7 @@
 				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="rsyncrypto.h"
 				PrecompiledHeaderFile=".\Debug/rsyncrypto.pch"
@@ -142,7 +142,7 @@
 				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="NDEBUG;WIN32;_CONSOLE"
 				StringPooling="true"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="rsyncrypto.h"
@@ -409,28 +409,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="win32\rsyncrypto.rc"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-						AdditionalIncludeDirectories="win32"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-						AdditionalIncludeDirectories="win32"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="win32\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -492,11 +470,11 @@
 				>
 			</File>
 			<File
-				RelativePath="autodir.h"
+				RelativePath="win32\autodir.h"
 				>
 			</File>
 			<File
-				RelativePath="win32\autodir.h"
+				RelativePath="autodir.h"
 				>
 			</File>
 			<File
@@ -512,11 +490,11 @@
 				>
 			</File>
 			<File
-				RelativePath="autopipe.h"
+				RelativePath="win32\autopipe.h"
 				>
 			</File>
 			<File
-				RelativePath="win32\autopipe.h"
+				RelativePath="autopipe.h"
 				>
 			</File>
 			<File
@@ -540,11 +518,11 @@
 				>
 			</File>
 			<File
-				RelativePath="process.h"
+				RelativePath="win32\process.h"
 				>
 			</File>
 			<File
-				RelativePath="win32\process.h"
+				RelativePath="process.h"
 				>
 			</File>
 			<File
@@ -572,11 +550,29 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
+			<File
+				RelativePath="win32\rsyncrypto.rc"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						PreprocessorDefinitions=""
+						AdditionalIncludeDirectories="win32"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						PreprocessorDefinitions=""
+						AdditionalIncludeDirectories="win32"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
-		<File
-			RelativePath=".cvsignore"
-			>
-		</File>
 		<File
 			RelativePath="AUTHORS"
 			>
