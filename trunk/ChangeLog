@@ -1,3 +1,8 @@
+    * Fix bug (Win32) - trying to work cross drive to a drive that is not C:
+      would fail the mkdir with an error (Access denied or similar)
+    * Move the project build to Visual C 9. Removed Visual Studio 6 project
+      files. Project now creates an MSI file as part of the build process.
+
 2008-05-11
     * Fix bug - --trim=0 combined with --name-encrypt combined with --delete:
       Would not detect deleted files on absolute names

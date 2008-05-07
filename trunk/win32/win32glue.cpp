@@ -37,6 +37,8 @@ int Error2errno( DWORD Error ) {
 	case ERROR_FILE_NOT_FOUND:
 	case ERROR_PATH_NOT_FOUND:
 		return ENOENT;
+	case ERROR_INVALID_DRIVE:
+		return ENODEV;
 	default:
 		return Error;
 	}
