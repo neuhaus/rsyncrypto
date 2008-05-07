@@ -1,7 +1,7 @@
 - Make sure that the ChangeLog file is up to date
 - Make sure that the README, NEWS, INSTALL, INSTALL.win and the man page are up to date
 - Regenerate the HTML man page, if applicable
-- Make sure that the version number is correct in configure.ac, configure and the Windows resource files.
+- Make sure that the version number is correct in configure.ac, configure, Windows resource files and the Setup project.
 - Make sure that rsyncrypto.h has the correct version number for Win32
 - Tag the release
 - Export the release from the tag name
