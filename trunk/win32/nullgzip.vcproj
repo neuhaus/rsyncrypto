@@ -16,7 +16,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
+			OutputDirectory="..\tests"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -29,9 +29,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying nullgzip to tests folder"
-				CommandLine="copy &quot;$(InputPath)&quot; &quot;$(SolutionDir)tests&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)tests\$(TargetName).exe"
+				Description=""
+				CommandLine=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -109,7 +109,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
+			OutputDirectory="..\tests"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -122,9 +122,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying nullgzip to tests folder"
-				CommandLine="copy &quot;$(InputPath)&quot; &quot;$(SolutionDir)tests&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)tests\$(TargetName).exe"
+				Description=""
+				CommandLine=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
