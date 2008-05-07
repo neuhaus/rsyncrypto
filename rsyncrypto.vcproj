@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="rsyncrypto"
 	ProjectGUID="{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}"
+	RootNamespace="rsyncrypto"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -73,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libeay32.lib impargtable2.lib Ws2_32.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="libeay32.lib Ws2_32.lib odbc32.lib odbccp32.lib"
 				OutputFile=".\Debug/rsyncrypto.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -470,11 +471,11 @@
 				>
 			</File>
 			<File
-				RelativePath="win32\autodir.h"
+				RelativePath="autodir.h"
 				>
 			</File>
 			<File
-				RelativePath="autodir.h"
+				RelativePath="win32\autodir.h"
 				>
 			</File>
 			<File
@@ -490,11 +491,11 @@
 				>
 			</File>
 			<File
-				RelativePath="win32\autopipe.h"
+				RelativePath="autopipe.h"
 				>
 			</File>
 			<File
-				RelativePath="autopipe.h"
+				RelativePath="win32\autopipe.h"
 				>
 			</File>
 			<File
@@ -518,11 +519,11 @@
 				>
 			</File>
 			<File
-				RelativePath="win32\process.h"
+				RelativePath="process.h"
 				>
 			</File>
 			<File
-				RelativePath="process.h"
+				RelativePath="win32\process.h"
 				>
 			</File>
 			<File
