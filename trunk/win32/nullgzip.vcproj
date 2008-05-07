@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="nullgzip"
 	ProjectGUID="{C7264078-E214-47C4-9014-544F814F6FE2}"
+	RootNamespace="nullgzip"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -73,7 +74,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Debug/nullgzip.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -165,7 +165,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Release/nullgzip.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/nullgzip.pdb"

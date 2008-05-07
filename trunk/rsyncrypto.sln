@@ -13,11 +13,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsyncrypto", "rsyncrypto.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "argtable2", "..\..\argtable2-9\src\argtable2.vcproj", "{62A9FFFB-4D8E-4D59-A072-56577DFF954B}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{B9DE3B5B-60EB-4199-9935-4F6465F3863E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C7264078-E214-47C4-9014-544F814F6FE2} = {C7264078-E214-47C4-9014-544F814F6FE2}
-		{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6} = {3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}
-	EndProjectSection
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "win32\Setup.vdproj", "{A64940EB-AD03-4222-A264-CDF83ED4C8F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,9 +33,9 @@ Global
 		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Debug|Win32.Build.0 = Debug|Win32
 		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Release|Win32.ActiveCfg = Release|Win32
 		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Release|Win32.Build.0 = Release|Win32
-		{B9DE3B5B-60EB-4199-9935-4F6465F3863E}.Debug|Win32.ActiveCfg = Debug
-		{B9DE3B5B-60EB-4199-9935-4F6465F3863E}.Release|Win32.ActiveCfg = Release
-		{B9DE3B5B-60EB-4199-9935-4F6465F3863E}.Release|Win32.Build.0 = Release
+		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Debug|Win32.ActiveCfg = Debug
+		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Release|Win32.ActiveCfg = Release
+		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Release|Win32.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
