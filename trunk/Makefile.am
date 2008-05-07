@@ -15,5 +15,5 @@ test: rsyncrypto
 docs: rsyncrypto.html
 
 rsyncrypto.html: rsyncrypto.man
-	man2html "$(top_srcdir)/rsyncrypto.man" > rsyncrypto.html.tmp
+	man2html "$(top_srcdir)/rsyncrypto.man" | tail -n +3 > rsyncrypto.html.tmp
 	mv rsyncrypto.html.tmp rsyncrypto.html
