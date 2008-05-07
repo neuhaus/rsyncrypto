@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsyncrypto", "rsyncrypto.vc
 		{62A9FFFB-4D8E-4D59-A072-56577DFF954B} = {62A9FFFB-4D8E-4D59-A072-56577DFF954B}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "argtable2", "..\..\argtable2-9\src\argtable2.vcproj", "{62A9FFFB-4D8E-4D59-A072-56577DFF954B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "argtable2", "contrib\argtable2.vcproj", "{62A9FFFB-4D8E-4D59-A072-56577DFF954B}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "win32\Setup.vdproj", "{A64940EB-AD03-4222-A264-CDF83ED4C8F9}"
 EndProject
