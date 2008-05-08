@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nullgzip", "win32\nullgzip.vcproj", "{C7264078-E214-47C4-9014-544F814F6FE2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6} = {3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsyncrypto", "rsyncrypto.vcproj", "{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{62A9FFFB-4D8E-4D59-A072-56577DFF954B} = {62A9FFFB-4D8E-4D59-A072-56577DFF954B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "argtable2", "contrib\argtable2.vcproj", "{62A9FFFB-4D8E-4D59-A072-56577DFF954B}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "win32\Setup.vdproj", "{A64940EB-AD03-4222-A264-CDF83ED4C8F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C7264078-E214-47C4-9014-544F814F6FE2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C7264078-E214-47C4-9014-544F814F6FE2}.Debug|Win32.Build.0 = Debug|Win32
+		{C7264078-E214-47C4-9014-544F814F6FE2}.Release|Win32.ActiveCfg = Release|Win32
+		{C7264078-E214-47C4-9014-544F814F6FE2}.Release|Win32.Build.0 = Release|Win32
+		{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}.Debug|Win32.Build.0 = Debug|Win32
+		{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}.Release|Win32.ActiveCfg = Release|Win32
+		{3627D2F4-E6ED-4DD1-A2FD-3B670FCD1BC6}.Release|Win32.Build.0 = Release|Win32
+		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Debug|Win32.Build.0 = Debug|Win32
+		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Release|Win32.ActiveCfg = Release|Win32
+		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Release|Win32.Build.0 = Release|Win32
+		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Debug|Win32.ActiveCfg = Debug
+		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Release|Win32.ActiveCfg = Release
+		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Release|Win32.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

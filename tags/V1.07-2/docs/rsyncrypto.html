@@ -1,0 +1,539 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of RSYNCRYPTO</TITLE>
+</HEAD><BODY>
+<H1>RSYNCRYPTO</H1>
+Section: Rsyncrypto User Manual (1)<BR>Updated: May 5, 2008<BR><A HREF="#index">Index</A>
+<A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+rsyncrypto - rsync friendly encryption
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>rsyncrypto</B>
+
+[<I>options</I>]<I> srcfile dstfile keyfile key</I>
+
+<BR>
+
+<B>rsyncrypto</B>
+
+[<I>options</I>]<I> </I><B>-r</B><I> srcdir dstdir keysdir key</I>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+This manual page documents the <B>rsyncrypto</B> command.
+<P>
+
+<B>rsyncrypto</B> is a utility that encrypts a file (or a directory structure)
+in a way that ensures that local changes to the plain text file will result in
+local changes to the cipher text file. This, in turn, ensures that doing
+<B>rsync</B> to synchronize the encrypted files to another machine will have
+only a small impact on <B>rsync</B>'s efficiency.
+<P>
+
+<B>rsyncrypto</B> will encrypt files using a symmetric block cipher (AES). Each
+file is encrypted using a unique key. The file key is stored in two locations.
+One is the &quot;<I>key</I>&quot; file, and the second is inside the encrypted file
+itself. The second copy is encrypted using a RSA public key, which can be
+shared for all encrypted files.
+<P>
+
+Decrypting the file can take place in one of two forms:
+<DL COMPACT>
+<DT><B>Warm Decryption</B>
+
+<DD>
+<I>keyfile</I> is used to decrypt <I>srcfile</I> into <I>dstfile</I>.
+<DT><B>Cold Decryption</B>
+
+<DD>
+If <I>keyfile</I> is lost and <I>key</I> is the <B>private</B> key for the RSA
+encryption, extract and create <I>keyfile</I> from the encrypted <I>srcfile</I>,
+and create both <I>keyfile</I> and <I>dstfile</I>.
+</DL>
+<P>
+
+If both <I>keyfile</I> and the private key are not available, decryption cannot
+take place. Typically, this means that you would either want to transfer the
+encrypted files in whatever way (secure or insecure, but probably <B>rsync</B>
+:), and keep the plain text file, as well as the key file, secure. As long as
+you saved the RSA private key, you can reconstruct them both.
+<A NAME="lbAE">&nbsp;</A>
+<H2>PARAMETERS</H2>
+
+The parameters meaning depend on the existence of the <I>-r</I> and <I>-d</I>
+flags.
+<DL COMPACT>
+<DT><I>srcfile</I> or <I>srcdir</I><DD>
+This is the source for the operation. This will be the plain text file for
+encryption, and the cipher text file for decryption. If the <I>-r</I> option is
+given, <I>srcdir</I> is the directory from which files are to be
+encrypted/decrypted. Otherwise, <I>srcfile</I> is the file to be
+encrypted/decrypted. In any case, <I>src</I> must exist prior to running
+<B>rsyncrypto</B>.
+<DT><I>dstfile</I> or <I>dstdir</I><DD>
+Similar to <I>src</I>, this is the destination of the operation. It will be
+the plain text to be created if <I>-d</I> was given, or the encrypted file
+otherwise.
+<DT><I>keyfile</I> or <I>keydir</I><DD>
+The file holding the symmetric key for the encryption, or a directory in which
+symmetric key files reside. If the later, the key files will have the same name
+as the plain text files.
+<DT><I>key</I><DD>
+This file can either be a X509 certificate holding a public key, or a PEM format
+private key. The private key is never needed unless a cold decryption is
+required. See the
+<B><A HREF="/cgi-bin/man/man2html?1+req">req</A></B>(1)
+
+or
+<B><A HREF="/cgi-bin/man/man2html?1+x509">x509</A></B>(1)
+
+manual pages for more info.
+</DL>
+<P>
+
+If <I>dst</I> does not exist, it will be created. The directory in which it
+is to be created must exist prior to running <B>rsyncrypto</B>.
+<P>
+
+If encrypting, and a symmetric key for the file is found, the same parameters
+will be used for the encryption unless the <I>--fr</I> or <I>--fk</I> options
+are used. If that's the case, the key file is going to be replaced with the
+correct parameters.
+<A NAME="lbAF">&nbsp;</A>
+<H2>OPTIONS</H2>
+
+These programs follow the usual GNU command line syntax, with long options
+starting with two dashes (`-').
+<DL COMPACT>
+<DT><B>-h</B>, <B>--help</B>
+
+<DD>
+Show summary of options.
+<DT><B>-V</B>, <B>--version</B>
+
+<DD>
+Print out the current version number.
+<DT><B>-d</B>, <B>--decrypt</B>
+
+<DD>
+Decrypt <I>src</I> into <I>dst</I>. The default behaviour is to encrypt <I>src</I>
+into <I>dst</I>, and create <I>keyfile</I> if it does not exist.
+<DT><B>-r</B>, <B>--recurse</B>
+
+<DD>
+Recursively encrypt/decrypt an entire directory structure. All files under
+<I>srcdir</I> will be encrypted to files of the same name and path (almost, see
+<I>--trim</I>) under <I>dstdir</I>. If not already there, a key file will be
+created for each file under <I>keydir</I>.
+<DT><B>--filelist</B>
+
+<DD>
+The first argument is a pointer to a file (or &quot;-&quot; for stdin) that has a list
+of files to process. Any name ending with a &quot;/&quot; is taken to be a directory in
+recursive mode, and any other name is a file name. The second argument is a
+directory where the files are encrypted to. --filelist and -r are mutually
+exclusive.
+<DT><B>-c</B>, <B>--changed</B>
+
+<DD>
+Check the src and destination modified time (see --modify-window) prior
+to performing the operation. If the modified time is the same, assume that the
+files are also the same, and skip the operation. Notice that unlike <B>rsync</B>,
+file sizes are not compared. This is because the file size is expected to change
+during the encryption (and thus decryption) operation.
+<DT><B>--modify-window=</B><I>num</I>
+
+<DD>
+Only applicable when <B>-c</B> is in effect. When comparing file modification times,
+treat as equal modification times that are <I>num</I> seconds apart. Default value is
+zero.
+<P>
+This option is most useful when the encrypted file is stored on a FAT file system.
+FAT can only store modification time with a 2 seconds accuracy. This may result in
+the modification time changing between original and encrypted file. In such a case,
+<B>--modify-window=1</B> should be used.
+<DT><B>-n</B>, <B>--name-encrypt=</B><I>translation_file</I>
+
+<DD>
+Encrypt the file name. If this option is specified, this means that file
+names are encrypted as well. This is done by changing the name of the encrypted
+file to a random string of characters, and storing the translation in the file
+given as parameter.
+If working in recursive mode, this file is automatically also included in the
+encryption, and is given the fixed name &quot;filemap&quot;. This is done so that
+decryption of the file names is possible when the symmetric keys are lost.
+<DT><B>--ne-nesting=</B><I>num</I>
+
+<DD>
+When the --name-encrypt option is used, by default all mangled file names
+are stored in a single directory. When encrypting large directory trees, this
+can result in rather big directories. Using &quot;--ne-nesting&quot; will split the
+files to subdirectories, according to random bits that are part of the
+encrypted file name. &quot;n&quot; is the number of directories to nest.
+<DT><B>--trim=</B><I>num</I>
+
+<DD>
+Determine how many directory levels to trim from the beginning of the <I>srcdir</I>
+path when creating directories under <I>dstdir</I>. The default value is 1. See
+<B>THE TRIM OPTION</B>
+
+for more details.
+<DT><B>--delete</B>
+
+<DD>
+When in recursive mode, delete files and directories under <I>dstdir</I> that do
+not exist under <I>srcdir</I>.
+<DT><B>--delete-keys</B>
+
+<DD>
+When deleting files, also delete their symmetric key and file name mapping (if
+applicable). When only <B>--delete</B> is used, the symmetric key and file
+mapping are kept, so that if the file is recreated, it will be rsyncable with
+the original file. This option implies <B>--delete</B>.
+<DT><B>-b</B><I>num</I><B> --keybits=</B><I>num</I>
+
+<DD>
+Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
+Note that unless the <I>--fr</I> or <I>--fkP options are also specified, this
+will only affect files for which no keyfile</I> exists.
+<DT><B>--noatime=</B><I>num</I>
+
+<DD>
+(Only on some platforms, most notably Linux). The platform usually keeps track of when
+files were last being accessed. Since <B>rsyncrypto</B> is typically used for backup, it
+opens the files it encrypts with the O_NOATIME option, which is a Linux specific
+extension that tells the system not to update the file's access time. When opening a
+file where the opening process is not owned by the file owner, an attempt to open the
+file with O_NOATIME will cause the open to fail with &quot;permission denied&quot;.
+<BR>&nbsp;
+<I>num</I> can be one of these options:
+<B>0</B> means do not use O_NOATIME at all.
+<B>1</B> (the default) means attempt to only use O_NOATIME if <B>rsyncrypto</B> thinks it
+will not cause a permission denied error.
+<B>2</B> means to use O_NOATIME always.
+<DT><B>--no-archive-mode</B>
+
+<DD>
+Do not try to preserve timestamps. This option is incompatible with <B>-c</B>.
+<DT><B>--gzip=</B><I>path</I>
+
+<DD>
+By default, <B>rsyncrypto</B> will compress the plain text prior to encrypting
+it. In order not to become rsync unfriendly due to the compression,
+<B>rsyncrypto</B> will search the path for an instance of
+<B><A HREF="/cgi-bin/man/man2html?1+gzip">gzip</A></B>(1)
+
+that supports the <I>--rsyncable</I> option. If the system's default gzip does
+not support this option (all Debian and derivatives, as well as some others, support it), use
+this option to tell <B>rsyncrypto</B> to use a different instance of gzip. The
+tests directory of rsyncrypto's source has a file called &quot;gzip&quot;, that does NULL
+compression by redirecting the input and output to
+<B><A HREF="/cgi-bin/man/man2html?1+cat">cat</A></B>(1).
+
+<DT><B>--roll-win=</B><I>num</I>, <B>--roll-min=</B><I>num</I>, <B>--roll-sensitivity=</B><I>num</I>
+
+<DD>
+Affects the rolling block algorithm. See <B>NOTES</B>.
+<DT><B>--fk</B>, <B>--fr</B>
+
+<DD>
+If command line, or a version with different defaults, dictate different
+values for the <I>--roll-*</I> options or the <I>-b</I> option, these will only
+affect files for which <I>keyfile</I> does not yet exist. specifying the
+<I>--fk</I> or <I>--fr</I> will recreate <I>keyfile</I> if it has values different
+than those in the previous key file.
+<DT><B>-v</B>, <B>--verbose</B>
+
+<DD>
+Increase verbosity level. Specify several times to be more verbose.
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>NOTES</H2>
+
+<B>encrypting stdin</B>
+
+<P>
+
+If <I>srcfile</I> is given as `-', the plain text data will be read fro stdin.
+This does not yet work for decompression (see <B>BUGS</B>).
+<P>
+
+<B>--roll-win</B>=num, <B>--roll-min</B>=num, <B>--roll-sensitivity</B>=num
+
+<P>
+
+These values affect some of the inner workings of <B>rsyncrypto</B>'s decision
+making.  In particular, these affect how <B>rsyncrypto</B> decides when to
+revert to the IV.
+<P>
+These options should not be played with unless you understand what you are
+doing. They are not dangerous, in that they will never cause data loss. Any
+value should still allow decryption of the file. They do have an affect on
+<B>rsync</B>'s efficiency.
+<P>
+
+These options are only there to allow quick response in case a security problem
+pops up with their default values. If that happens, an advisory may come out
+giving new values to fill in as a workaround. Until that happens, most users
+are advised to leave these options alone.
+<A NAME="lbAH">&nbsp;</A>
+<H2>THE TRIM OPTION</H2>
+
+When running <B>rsyncrypto</B> in recursive mode, the directory structure under
+<I>srcdir</I> is re-created under <I>dstdir</I>, with one directory stripped from
+the path. In other words, if we have a directory structure which has:
+<P>
+
+a/b/c/file
+<P>
+
+running <B>rsyncrypto</B> with <I>srcdir</I> of &quot;a/b&quot;, and <I>dstdir</I> of &quot;f&quot;
+will create &quot;f/b/c/file&quot;.
+<P>
+
+The <I>--trim</I> options lets the user say how many parts to trim from
+<I>srcdir</I> when creating directories under <I>dstdir</I> and <I>keydir</I>. If, in the
+above example, we said
+<I>--trim</I>=0
+
+then &quot;f/a/b/c/file&quot; would have been created. Likewise, if we said
+<I>--trim</I>=2
+
+then &quot;f/c/file&quot; would have been created.
+<P>
+
+It is an error to give a trim value which is higher than the number of
+directory parts actually in <I>srcdir</I>. In the above example,
+<I>--trim</I>=3
+
+would result in an error.
+<A NAME="lbAI">&nbsp;</A>
+<H2>SECURITY</H2>
+
+The roll values affect, to a not totally known degree, how much information
+is &quot;leaked&quot; between plain text and cipher text. The default values are supposed
+to leak less than 20 bits of aggregated information about the plain text file
+for every 8KB, in the worst case. These values, we hope, will be considered
+secure enough for most usages. However, if your country's fate is at stake, use
+a non-rsync optimized encryption, such as the one provided by
+<B><A HREF="/cgi-bin/man/man2html?1+openssl">openssl</A></B>(1).
+
+<A NAME="lbAJ">&nbsp;</A>
+<H2>EXAMPLES AND TUTORIAL</H2>
+
+<P>
+
+Before starting to use rsyncrypto you will need a public key in X509
+certificate format. The quickest way to generate one of these is using the
+<A HREF="/cgi-bin/man/man2html?1+openssl">openssl</A>(1) package. To generate a new 1536 bit RSA key as &quot;backup.key&quot;, and
+store the corresponding unencrypted public key in &quot;backup.crt&quot;, use the
+following command:
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>openssl req -nodes -newkey rsa:1536 -x509 -keyout backup.key -out backup.crt</TT>
+</DL>
+
+<P>
+
+It does not matter what you answer for the certificate details, or when you set
+it to expire. Rsyncrypto ignores everything in the certificate but the actual
+key.
+<P>
+
+To encrypt file &quot;data&quot; into &quot;data.enc&quot;, storing the file's specific key at &quot;data.key&quot;, run:
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>rsyncrypto data data.enc data.key backup.crt</TT>
+</DL>
+
+<P>
+
+Anywhere in these examples that &quot;backup.crt&quot; is used, &quot;backup.key&quot; can be used
+as well. The above could also have &quot;backup.key&quot; as the last argument. If these
+examples list &quot;backup.key&quot; specifically, then it means that &quot;backup.crt&quot;
+<B>cannot</B>
+
+be used instead.
+<P>
+
+&quot;data.enc&quot; will be created. If &quot;data.key&quot; exists from a previous run, then the
+newly created &quot;data.enc&quot; will have the same symmetric key and other attributes,
+thus maintaining the rsync friendliness of the encryption. It is therefor
+important to provide any previous key file for the data if one is available.
+<P>
+
+The command line to decrypt the file depends on whether you have the key file
+used when the file was encrypted. If you do, then decryption can take place
+using only the public key, with the following command:
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>rsyncrypto -d data.enc data.dec data.key backup.crt</TT>
+</DL>
+
+<P>
+
+If the key file was lost, the private key must be used to recover it from the
+encrypted file using the following command:
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>rsyncrypto -d data.enc data.dec data.key backup.key</TT>
+</DL>
+
+<P>
+
+&quot;data.key&quot; will be created by the above command, as well as &quot;data.dec&quot;.
+<P>
+
+Use of rsyncrypto to encrypt whole directories is similar, with directory names
+replacing file names in the above example. To encrypt the content of a
+directory called &quot;data&quot; to a directory called &quot;enc&quot;, storing the symmetric keys
+in a directory called &quot;keys&quot;, run the following command:
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>rsyncrypto -r data enc keys backup.crt</TT>
+</DL>
+
+<P>
+
+As before the directories &quot;enc&quot; and &quot;keys&quot; will be created if they do not
+already exist. The directory structure under &quot;plain&quot; will be duplicated under 
+&quot;enc&quot; and under &quot;keys&quot;. That is, if there is a file called &quot;foo&quot; under &quot;data&quot;,
+an encrypted files called &quot;foo&quot; will be created under &quot;enc&quot;, and a key file
+named &quot;foo&quot; will be created under &quot;keys&quot;. In other words, the first part of the
+path to &quot;data/foo&quot; (the part that says &quot;data&quot;) is eliminated from the path, and
+this determines the name of the files under &quot;enc&quot; and &quot;keys&quot;.
+<P>
+
+If a different trimming is required, the --trim option can be used. To have
+rsyncrypto create &quot;enc/data/foo&quot; instead of the above, use the following
+command:
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>rsyncrypto -r --trim=0 data enc keys backup.crt</TT>
+</DL>
+
+<P>
+
+Instead of taking all files from a single directory, it is possible to supply
+rsyncrypto with a list of files and directories which to encrypt. This is done
+using the --filelist option, like so:
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>rsyncrypto --filelist --trim=0 list enc keys backup.crt</TT>
+</DL>
+
+<P>
+
+&quot;enc&quot; and &quot;keys&quot; retain the same meaning as before. &quot;list&quot; is a text file with
+a list, one per line, of files to encrypt. The --trim=0 option says that if
+list contains a line saying &quot;/home/foo/bar&quot; which states the name of a file,
+then an encrypted file called &quot;enc/home/foo/bar&quot; will be created. Without it,
+the file will be called &quot;enc/foo/bar&quot;. Likewise, with --trim=2, the file
+would be created as &quot;enc/bar&quot;.
+<P>
+
+It is often a problem that the file names are not encrypted. If that is the
+case, we can ask rsyncrypto to encrypt the file names, as well as the actual
+files. Rsyncrypto does not actually encrypt the file names. Instead, it
+replaces the actual file name with a random series of characters. The mapping
+between the actual file name and the garbled name is stored in a mapping file.
+<P>
+
+<DL COMPACT><DT><DD>
+<TT>rsyncrypto --name-encrypt=map --trim=0 -r plain enc keys backup.crt</TT>
+</DL>
+
+<P>
+
+This will encrypt the &quot;plain&quot; directory structure into enc, exactly as before.
+Unlike before, all files will be directly under the &quot;enc&quot; directory, and will
+be named as a meaningless garble. A file called &quot;map&quot; will be created under the
+current directory that contains a map between the gabled and the real name of
+the file. In addition, two files, called &quot;enc/filemap&quot; and &quot;keys/filemap&quot;, will
+also be created. These are the encrypted and key file corresponding to the &quot;map&quot;
+file mentioned above. During decryption, if &quot;map&quot; does not exist, it will be
+created by decrypting &quot;enc/filemap&quot;.
+<P>
+
+<B>Important note:</B>
+
+When performing filename encryption, it is vitally important to give the correct
+--trim values, both during encryption and during decryption. Failing to do so
+will cause rsyncrypto to search for non-existing file names, and to fail to
+locate the files to decrypt.
+<A NAME="lbAK">&nbsp;</A>
+<H2>BUGS</H2>
+
+Not providing a correct key file may result in segmentation fault.
+<P>
+
+It is not yet possible to decrypt using password protected private key.
+<P>
+
+Decrypting from stdin is not yet supported.
+<A NAME="lbAL">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<B><A HREF="/cgi-bin/man/man2html?1+rsync">rsync</A></B>(1),
+
+<B><A HREF="/cgi-bin/man/man2html?1+gzip">gzip</A></B>(1),
+
+<B><A HREF="/cgi-bin/man/man2html?1+openssl">openssl</A></B>(1),
+
+<B><A HREF="/cgi-bin/man/man2html?1+x509">x509</A></B>(1),
+
+<B><A HREF="/cgi-bin/man/man2html?1+req">req</A></B>(1).
+
+<BR>
+
+<A NAME="lbAM">&nbsp;</A>
+<H2>AUTHOR</H2>
+
+rsyncrypto was written by Shachar Shemesh for Lingnu Open Source Consulting ltd.
+<A HREF="http://www.lingnu.com">http://www.lingnu.com</A>
+<P>
+
+This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debian.org">shachar@debian.org</A>&gt;
+<A NAME="lbAN">&nbsp;</A>
+<H2>PROJECT HOMEPAGE</H2>
+
+<A HREF="http://sourceforge.net/projects/rsyncrypto">http://sourceforge.net/projects/rsyncrypto</A>
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">PARAMETERS</A><DD>
+<DT><A HREF="#lbAF">OPTIONS</A><DD>
+<DT><A HREF="#lbAG">NOTES</A><DD>
+<DT><A HREF="#lbAH">THE TRIM OPTION</A><DD>
+<DT><A HREF="#lbAI">SECURITY</A><DD>
+<DT><A HREF="#lbAJ">EXAMPLES AND TUTORIAL</A><DD>
+<DT><A HREF="#lbAK">BUGS</A><DD>
+<DT><A HREF="#lbAL">SEE ALSO</A><DD>
+<DT><A HREF="#lbAM">AUTHOR</A><DD>
+<DT><A HREF="#lbAN">PROJECT HOMEPAGE</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 14:14:44 GMT, May 07, 2008
+</BODY>
+</HTML>
