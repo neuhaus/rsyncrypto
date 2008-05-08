@@ -21,14 +21,20 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_0C9EC9DDA1BB45E89A029F5721501238"
-        "OwnerKey" = "8:_721E3A2CB36E4427A92A55E97B64360A"
+        "MsmKey" = "8:_1324EF59B4134771B94B19F390A3421F"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_1324EF59B4134771B94B19F390A3421F"
-        "OwnerKey" = "8:_UNDEFINED"
+        "MsmKey" = "8:_17DC8799FBDD46C8AC3922B094A8F86C"
+        "OwnerKey" = "8:_AA6D4F5C08A34948A58B8DD3CA531D30"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_17DC8799FBDD46C8AC3922B094A8F86C"
+        "OwnerKey" = "8:_A305235D6DA24CC886ED177E432C79BB"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -63,14 +69,26 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_721E3A2CB36E4427A92A55E97B64360A"
-        "OwnerKey" = "8:_AA6D4F5C08A34948A58B8DD3CA531D30"
+        "MsmKey" = "8:_76581D2A2439445C81AFDE730B2F1126"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_76581D2A2439445C81AFDE730B2F1126"
+        "MsmKey" = "8:_81CBC50AC8E645E9B8D26F042FB0D20A"
+        "OwnerKey" = "8:_17DC8799FBDD46C8AC3922B094A8F86C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_A305235D6DA24CC886ED177E432C79BB"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_A3C53CDEE2F189B2A01CFF9860A42BBC"
+        "OwnerKey" = "8:_AA6D4F5C08A34948A58B8DD3CA531D30"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -89,12 +107,6 @@
         {
         "MsmKey" = "8:_BEE0DF610E3B4CAF8D02D39DB2F5236D"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C86FCF613E745BF304FA880B3FFC6396"
-        "OwnerKey" = "8:_AA6D4F5C08A34948A58B8DD3CA531D30"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -215,7 +227,7 @@
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
+            "Vital" = "11:FALSE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
@@ -255,7 +267,7 @@
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
+            "Vital" = "11:FALSE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
@@ -295,7 +307,7 @@
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
+            "Vital" = "11:FALSE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
@@ -335,7 +347,7 @@
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
+            "Vital" = "11:FALSE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
@@ -347,6 +359,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A3C53CDEE2F189B2A01CFF9860A42BBC"
+            {
+            "SourcePath" = "8:argtable2.dll"
+            "TargetName" = "8:argtable2.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AE921D89A3074422BC890DB369816100"
             {
             "SourcePath" = "8:..\\docs\\rsyncrypto.html"
@@ -355,7 +387,7 @@
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
+            "Vital" = "11:FALSE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
@@ -375,7 +407,7 @@
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
+            "Vital" = "11:FALSE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
@@ -385,26 +417,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C86FCF613E745BF304FA880B3FFC6396"
-            {
-            "SourcePath" = "8:argtable2.dll"
-            "TargetName" = "8:argtable2.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CAAEA83102D840E9B9CE48AA923A2EFE"
@@ -435,7 +447,7 @@
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
+            "Vital" = "11:FALSE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
@@ -534,21 +546,21 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Rsyncrypto"
-        "ProductCode" = "8:{7D6C266F-67FE-4DF7-BF64-2A55F432DCAD}"
-        "PackageCode" = "8:{460068C4-24BC-4287-AD98-423A81B8A22B}"
+        "ProductCode" = "8:{82AE45BE-8A08-4EB7-B37B-804F7D7BF239}"
+        "PackageCode" = "8:{1943D34A-67F6-4AFF-A811-96A0352AA891}"
         "UpgradeCode" = "8:{764176D3-A200-42EF-AECE-8BA0C3610502}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.6"
+        "ProductVersion" = "8:1.0.7"
         "Manufacturer" = "8:Lingnu Open Source Consulting Ltd."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:Setup"
-        "Subject" = "8:"
+        "Title" = "8:Rsyncrypto"
+        "Subject" = "8:Rsync Friendly File Encryption"
         "ARPCONTACT" = "8:Shachar Shemesh"
-        "Keywords" = "8:"
+        "Keywords" = "8:rsync, encryption, online backup, gpl"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:http://www.lingnu.com"
         "ARPPRODUCTICON" = "8:"
@@ -1144,11 +1156,11 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_0C9EC9DDA1BB45E89A029F5721501238"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_17DC8799FBDD46C8AC3922B094A8F86C"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:microsoft_vc90_debugcrt_x86.msm"
+            "SourcePath" = "8:policy_9_0_Microsoft_VC90_CRT_x86.msm"
                 "Properties"
                 {
                 }
@@ -1158,11 +1170,11 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_721E3A2CB36E4427A92A55E97B64360A"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_81CBC50AC8E645E9B8D26F042FB0D20A"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:policy_9_0_Microsoft_VC90_DebugCRT_x86.msm"
+            "SourcePath" = "8:microsoft_vc90_crt_x86.msm"
                 "Properties"
                 {
                 }
@@ -1203,9 +1215,37 @@
                 {
                 }
             }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A305235D6DA24CC886ED177E432C79BB"
+            {
+            "SourcePath" = "8:..\\Release\\argtable2.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{62A9FFFB-4D8E-4D59-A072-56577DFF954B}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_AA6D4F5C08A34948A58B8DD3CA531D30"
             {
-            "SourcePath" = "8:..\\Debug\\rsyncrypto.exe"
+            "SourcePath" = "8:..\\Release\\rsyncrypto.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
