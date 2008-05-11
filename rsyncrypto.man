@@ -346,7 +346,7 @@ replaces the actual file name with a random series of characters. The mapping
 between the actual file name and the garbled name is stored in a mapping file.
 .P
 .RS
-\f(CWrsyncrypto \-\-name\-encrypt=map \-\-trim=0 -r plain enc keys backup.crt\fP
+\f(CWrsyncrypto \-\-name\-encrypt=map \-\-trim=0 \-r plain enc keys backup.crt\fP
 .RE
 .P
 This will encrypt the "plain" directory structure into enc, exactly as before.
