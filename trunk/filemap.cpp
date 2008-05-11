@@ -303,7 +303,12 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
 	filemaptype::iterator &item, RSA *rsa_key )
 {
     struct stat status;
-    const std::string &plainname=item->second.plainname, &ciphername=item->second.ciphername;
+    const std::string &plainname=item->second.plainname;
+    std::string ciphername=item->second.ciphername;
+    // Make sure we use the proper nesting on the file name. That's why plain name is a reference, but cipher name
+    // is a copy
+    nest_name(ciphername);
+
     const std::string dst_file(autofd::combine_paths( dst_dir, plainname.c_str() ) );
     const std::string src_file(autofd::combine_paths( source_dir, ciphername.c_str() ));
     const std::string key_file(autofd::combine_paths( key_dir, ciphername.c_str() ));
