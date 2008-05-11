@@ -47,6 +47,9 @@ class autommap {
         DWORD flProtect;
         DWORD dwDesiredAccess;
 
+        ptr=NULL;
+        mapping=NULL;
+
         switch( prot ) {
         case PROT_WRITE|PROT_READ:
             flProtect=PAGE_READWRITE;
@@ -70,18 +73,22 @@ class autommap {
             if( highsize!=0 )
                 throw EXCEPT_CLASS("File too big to be mapped", ERROR_NOT_ENOUGH_MEMORY );
         }
-        mapping=CreateFileMapping( fd, NULL, flProtect, 0, 0, NULL );
-        if( mapping==NULL )
-            throw EXCEPT_CLASS("CreateFileMapping failed", GetLastError() );
 
-        ptr=MapViewOfFileEx( mapping, dwDesiredAccess, static_cast<DWORD>(offset>>32),
-            static_cast<DWORD>(offset), length, start );
-        if( ptr==NULL ) {
-            CloseHandle( mapping );
-            mapping=NULL;
+        // If the actual file length is 0, do not map
+        if( length!=0 ) {
+            mapping=CreateFileMapping( fd, NULL, flProtect, 0, 0, NULL );
+            if( mapping==NULL )
+                throw EXCEPT_CLASS("CreateFileMapping failed", GetLastError() );
+
+            ptr=MapViewOfFileEx( mapping, dwDesiredAccess, static_cast<DWORD>(offset>>32),
+                static_cast<DWORD>(offset), length, start );
+            if( ptr==NULL ) {
+                CloseHandle( mapping );
+                mapping=NULL;
 #if defined(EXCEPT_CLASS)
-            throw EXCEPT_CLASS("mmap failed", errno);
+                throw EXCEPT_CLASS("mmap failed", errno);
 #endif
+            }
         }
 
         size=length;
