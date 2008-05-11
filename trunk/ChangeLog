@@ -1,3 +1,4 @@
+Version 1.08 - May 11 2008
     * Fix bug - when a directory turns into a file with --name-encrypt and
       --delete, rsyncrypto would terminate with an error
     * Make sure that using a preexisting empty filemap does not crash rsyncrypto
