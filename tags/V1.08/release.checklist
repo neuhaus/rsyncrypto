@@ -1,0 +1,15 @@
+- Make sure that the ChangeLog file is up to date
+- Make sure that the README, NEWS, INSTALL, INSTALL.win and the man page are up to date
+- Regenerate the HTML man page, if applicable
+- Make sure that the version number is correct in configure.ac, Windows resource files and the Setup project.
+- Make sure that rsyncrypto.h has the correct version number for Win32
+- Tag the release (tags/Vversion)
+- Export the release from the tag name
+- Run ./bootstrap and delete autom4te.cache
+- Package the release as tar.gz on Linux from clean export.
+- Make sure you can still build on both Linux and Windows from the tar.gz
+- On Windows, make sure that running with latest version of OpenSSL and argtable
+- Package name for windows - rsyncrypto-x86-version.msi (remember to rename)
+- Release on SF, freshmeat.
+- Add tracker group for new version on SF.
+- Update the "download" page in the file release page on SF to the new version for both all and Windows
