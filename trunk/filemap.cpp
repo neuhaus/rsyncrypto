@@ -66,64 +66,64 @@ void filemap::fill_map( const char *list_filename, bool encrypt )
     autofd listfile_fd;
 
     try {
-	autofd _listfile_fd( list_filename, O_RDONLY );
+        autofd _listfile_fd( list_filename, O_RDONLY );
         listfile_fd=_listfile_fd;
     } catch( const rscerror &err ) {
-	if( err.errornum()!=ENOENT )
-	    throw;
-	nofile=true;
+        if( err.errornum()!=ENOENT )
+            throw;
+        nofile=true;
     }
 
     // If the file doesn't exist, an empty map is what "initialization" is for us. Simply get out.
     if( !nofile ) {
-	autommap listfile( listfile_fd, PROT_READ );
+        autommap listfile( listfile_fd, PROT_READ );
 
         size_t offset=0;
         while( offset<listfile.getsize() ) {
-	    filemap entry;
-	    char ch=-1;
+            filemap entry;
+            char ch=-1;
 	    
-	    entry.dirsep=listfile.get_uc()[offset++];
-	    int i;
-	    for( i=0; i+offset<listfile.getsize() && (ch=listfile.get_uc()[offset+i])!=' ' &&
-		    ch!='\0'; ++i )
-		;
+            entry.dirsep=listfile.get_uc()[offset++];
+            int i;
+            for( i=0; i+offset<listfile.getsize() && (ch=listfile.get_uc()[offset+i])!=' ' &&
+                ch!='\0'; ++i )
+                ;
 
-	    if( ch!=' ' )
-		throw rscerror("Corrupt filemap - no plaintext file");
+            if( ch!=' ' )
+                throw rscerror("Corrupt filemap - no plaintext file");
 
-	    entry.ciphername=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
-	    offset+=i+1;
-	    
-	    for( i=0; i+offset<listfile.getsize() && (ch=listfile.get_uc()[offset+i])!='\0'; ++i )
-		;
-	    if( ch!='\0' )
-		throw rscerror("Corrupt filemap - file is not NULL terminated");
-	    entry.plainname=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
+            entry.ciphername=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
+            offset+=i+1;
 
-	    offset+=i+1;
+            for( i=0; i+offset<listfile.getsize() && (ch=listfile.get_uc()[offset+i])!='\0'; ++i )
+                ;
+            if( ch!='\0' )
+                throw rscerror("Corrupt filemap - file is not NULL terminated");
+            entry.plainname=std::string(reinterpret_cast<const char *>(listfile.get_uc()+offset), i);
 
-	    replace_dir_sep( entry.plainname, entry.dirsep );
+            offset+=i+1;
 
-	    // Hashing direction (encoded->unencoded file names or vice versa) depends on whether we are
-	    // encrypting or decrypting
-	    std::string key;
-	    if( encrypt ) {
-		key=entry.plainname;
-	    } else {
-		key=entry.ciphername;
-	    }
+            replace_dir_sep( entry.plainname, entry.dirsep );
 
-	    if( !namemap.insert(filemaptype::value_type(key, entry)).second ) {
-		// filemap already had an item with the same key
-		throw rscerror("Corrupt filemap - dupliacte key");
-	    }
+            // Hashing direction (encoded->unencoded file names or vice versa) depends on whether we are
+            // encrypting or decrypting
+            std::string key;
+            if( encrypt ) {
+                key=entry.plainname;
+            } else {
+                key=entry.ciphername;
+            }
 
-	    // If we are encrypting, we will also need the other map direction
-	    if( encrypt && !reversemap.insert(revfilemap::value_type(entry.ciphername, entry.plainname)).second ) {
-		// Oops - two files map to the same cipher name
-		throw rscerror("Corrupt filemap - dupliace encrypted name");
-	    }
+            if( !namemap.insert(filemaptype::value_type(key, entry)).second ) {
+                // filemap already had an item with the same key
+                throw rscerror("Corrupt filemap - dupliacte key");
+            }
+
+            // If we are encrypting, we will also need the other map direction
+            if( encrypt && !reversemap.insert(revfilemap::value_type(entry.ciphername, entry.plainname)).second ) {
+                // Oops - two files map to the same cipher name
+                throw rscerror("Corrupt filemap - dupliace encrypted name");
+            }
         }
     }
 }
