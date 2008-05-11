@@ -1,4 +1,4 @@
-	* Make sure that using a preexisting empty filemap does not crash rsyncrypto
+    * Make sure that using a preexisting empty filemap does not crash rsyncrypto
     * Fix bug - -d with --filelist with stdin as input created erronous "need
       --no-archive-mode".
     * Fix bug (win32 only) - mkdir error really fixed this time.
