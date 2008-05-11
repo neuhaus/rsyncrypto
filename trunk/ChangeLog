@@ -1,3 +1,7 @@
+    * Fix bug (win32 only) - mkdir error really fixed this time.
+    * Fix bug - --ne-nesting would cause --delete and --delete-keys to delete
+      the wrong path (and thus fail)
+
 Version 1.07 - May 7 2008
     * Fix bug (Win32) - trying to work cross drive to a drive that is not C:
       would fail the mkdir with an error (Access denied or similar)

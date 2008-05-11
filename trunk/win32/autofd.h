@@ -321,7 +321,7 @@ public:
                     std::string subpath(path, sublen);
 					if( !CreateDirectory( subpath.c_str(), NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS ) {
 						// "Creating" a drive letter may fail for a whole host of reasons while actually succeeding
-						if( sublen!=3 || subpath[1]!=':' ||
+						if( sublen!=2 || subpath[1]!=':' ||
 							// Got this far in the "if" only if we tried to create something of the form C:
 							// Only a ERROR_INVALID_DRIVE actually means an error
 							GetLastError()==ERROR_INVALID_DRIVE )
