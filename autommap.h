@@ -48,8 +48,11 @@ public:
     {
         struct stat filestat;
         if( fstat(fd, &filestat)==0 ) {
-            autommap that(NULL, filestat.st_size, prot, MAP_SHARED, fd, 0);
-            *this=that;
+            // Do nothing without an error if file is empty
+            if( filestat.st_size!=0 ) {
+                autommap that(NULL, filestat.st_size, prot, MAP_SHARED, fd, 0);
+                *this=that;
+            }
         }
 #if defined(EXCEPT_CLASS)
         else
