@@ -1,3 +1,5 @@
+    * Fix bug - -d with --filelist with stdin as input created erronous "need
+      --no-archive-mode".
     * Fix bug (win32 only) - mkdir error really fixed this time.
     * Fix bug - --ne-nesting would cause --delete and --delete-keys to delete
       the wrong path (and thus fail)

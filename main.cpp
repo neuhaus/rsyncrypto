@@ -73,7 +73,7 @@ void parse_cmdline( int argc, char *argv[] )
             throw rscerror("Cannot specify key size for decryption");
         if( EXISTS(fr) || EXISTS(fk) )
             throw rscerror("\"force\" options incompatible with -d option");
-        if( strcmp(FILENAME(src), "-")==0 ) {
+        if( strcmp(FILENAME(src), "-")==0 && !EXISTS(filelist) ) {
             // Plaintext file is standard input/output
             if( !EXISTS(noarch) ) {
                 throw rscerror("Must use \"--no-archive-mode\" if plaintext file is stdin");
