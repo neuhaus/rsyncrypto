@@ -1,3 +1,5 @@
+    * Fix bug - when a directory turns into a file with --name-encrypt and
+      --delete, rsyncrypto would terminate with an error
     * Make sure that using a preexisting empty filemap does not crash rsyncrypto
     * Fix bug - -d with --filelist with stdin as input created erronous "need
       --no-archive-mode".
