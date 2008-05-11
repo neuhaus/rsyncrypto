@@ -316,7 +316,7 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
     try {
         status=autofd::lstat(dst_file.c_str());
     } catch( const rscerror &err ) {
-        if( err.errornum()==ENOENT ) {
+        if( err.errornum()==ENOENT || err.errornum()==ENOTDIR ) {
             // Need to erase file
             
             if( VERBOSE(1) )
