@@ -303,8 +303,8 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
 	filemaptype::iterator &item, RSA *rsa_key )
 {
     struct stat status;
-    const std::string &plainname=item->second.plainname;
-    std::string ciphername=item->second.ciphername;
+    const std::string &plainname=item->second.plainname, &orig_ciphername=item->second.ciphername;
+    std::string ciphername=orig_ciphername;
     // Make sure we use the proper nesting on the file name. That's why plain name is a reference, but cipher name
     // is a copy
     nest_name(ciphername);
@@ -320,15 +320,15 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
             // Need to erase file
             
             if( VERBOSE(1) )
-                std::cout<<"Delete "<<ciphername<<" ("<<plainname<<")"<<std::endl;
+                std::cout<<"Delete "<<orig_ciphername<<" ("<<plainname<<")"<<std::endl;
             if( unlink( src_file.c_str() )!=0 && errno!=ENOENT )
                 throw rscerror("Erasing file", errno, src_file.c_str());
             if( EXISTS(delkey) ) {
                 if( VERBOSE(1) )
-                    std::cout<<"Delete key "<<ciphername<<" ("<<plainname<<")"<<std::endl;
+                    std::cout<<"Delete key "<<orig_ciphername<<" ("<<plainname<<")"<<std::endl;
                 if( unlink( key_file.c_str() )!=0 && errno!=ENOENT )
                     throw rscerror("Erasing key file", errno, key_file.c_str());
-                reversemap.erase( ciphername );
+                reversemap.erase( orig_ciphername );
                 namemap.erase( item );
             }
         } else {
