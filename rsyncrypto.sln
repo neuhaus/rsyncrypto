@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "argtable2", "contrib\argtab
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "win32\Setup.vdproj", "{A64940EB-AD03-4222-A264-CDF83ED4C8F9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsyncrypto_recover", "rsyncrypto_recover.vcproj", "{AF78D926-4040-4CB3-B23A-F2C64F9220E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -35,6 +37,10 @@ Global
 		{62A9FFFB-4D8E-4D59-A072-56577DFF954B}.Release|Win32.Build.0 = Release|Win32
 		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Debug|Win32.ActiveCfg = Debug
 		{A64940EB-AD03-4222-A264-CDF83ED4C8F9}.Release|Win32.ActiveCfg = Release
+		{AF78D926-4040-4CB3-B23A-F2C64F9220E9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AF78D926-4040-4CB3-B23A-F2C64F9220E9}.Debug|Win32.Build.0 = Debug|Win32
+		{AF78D926-4040-4CB3-B23A-F2C64F9220E9}.Release|Win32.ActiveCfg = Release|Win32
+		{AF78D926-4040-4CB3-B23A-F2C64F9220E9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
