@@ -309,26 +309,34 @@ public:
     // Recursively create directories
     // mode is the permissions of the end directory
     // int_mode is the permissions of all intermediately created dirs
+
+private:
+    static void mkpath_actual(const std::string &path, mode_t mode)
+    {
+        if( !CreateDirectory( path.c_str(), NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS ) {
+            // "Creating" a drive letter may fail for a whole host of reasons while actually succeeding
+            if( path.length()!=2 || path[1]!=':' ||
+                // Got this far in the "if" only if we tried to create something of the form C:
+                // Only a ERROR_INVALID_DRIVE actually means an error
+                GetLastError()==ERROR_INVALID_DRIVE )
+
+                throw rscerror("mkdir failed", Error2errno(GetLastError()), path.c_str() );
+        }
+    }
+public:
     static void mkpath(const char *path, mode_t mode)
     {
         if( path[0]!='\0' ) {
             for( int sublen=0; path[sublen]!='\0'; sublen++ ) {
                 if( sublen>0 && path[sublen]==DIRSEP_C && path[sublen+1]!=DIRSEP_C ) {
                     std::string subpath(path, sublen);
-					if( !CreateDirectory( subpath.c_str(), NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS ) {
-						// "Creating" a drive letter may fail for a whole host of reasons while actually succeeding
-						if( sublen!=2 || subpath[1]!=':' ||
-							// Got this far in the "if" only if we tried to create something of the form C:
-							// Only a ERROR_INVALID_DRIVE actually means an error
-							GetLastError()==ERROR_INVALID_DRIVE )
-
-							throw rscerror("mkdir failed", Error2errno(GetLastError()), subpath.c_str() );
-					}
+                    mkpath_actual(subpath, mode);
                 }
             }
 
-            if( !CreateDirectory( path, NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS )
-                throw rscerror("mkdir failed", Error2errno(GetLastError()), path );
+            mkpath_actual(path, mode);
+            //if( !CreateDirectory( path, NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS )
+            //    throw rscerror("mkdir failed", Error2errno(GetLastError()), path );
         }
     }
 
