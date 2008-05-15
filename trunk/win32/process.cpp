@@ -27,7 +27,7 @@
  *
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
-#include "precomp.h"
+#include "../precomp.h"
 #include "process.h"
 #include "win32redir.h"
 
