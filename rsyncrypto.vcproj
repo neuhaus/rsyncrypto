@@ -52,7 +52,7 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="precomp.h"
-				PrecompiledHeaderFile=".\Debug/rsyncrypto.pch"
+				PrecompiledHeaderFile="$(OutDir)\$(TargetName).pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -148,7 +148,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="precomp.h"
-				PrecompiledHeaderFile=".\Release/rsyncrypto.pch"
+				PrecompiledHeaderFile="$(OutDir)\$(TargetName).pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -374,6 +374,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -383,6 +384,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 			</File>
@@ -396,6 +398,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -405,6 +408,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 			</File>
@@ -444,6 +448,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -453,6 +458,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 			</File>

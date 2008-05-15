@@ -28,7 +28,7 @@
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
-#include "precomp.h"
+#include "../precomp.h"
 
 int Error2errno( DWORD Error ) {
 	switch( Error ) {

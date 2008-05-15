@@ -205,6 +205,22 @@
 			<File
 				RelativePath=".\win32\win32glue.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../precomp.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PrecompiledHeaderThrough="../precomp.h"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
