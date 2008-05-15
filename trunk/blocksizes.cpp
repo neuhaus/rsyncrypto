@@ -27,6 +27,7 @@
  *
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
+#include "precomp.h"
 #include "rsyncrypto.h"
 #include "crypt_key.h"
 #include "random.h"
