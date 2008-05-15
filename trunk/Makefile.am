@@ -16,6 +16,6 @@ test: rsyncrypto
 
 docs: rsyncrypto.html rsyncrypto_recover.html
 
-%.html: %.man
+.man.html:
 	man2html "$<" | tail -n +3 > "$@.tmp"
 	mv "$@.tmp" "$@"
