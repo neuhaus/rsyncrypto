@@ -1,1 +1,2 @@
-Version 1.02 has been released, and declared fully stable and functional.
+A new tool has been introduced, called rsyncrypto_recover. It allows extracting
+all good mapping from an otherwise corrupt file map.

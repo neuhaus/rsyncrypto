@@ -1,8 +1,20 @@
+ATTENTION: Version 1.07 introduced a bug that would trigger when an entire
+directory hierarchy was deleted when all of --name-encrypt, --ne-nesting of
+more than 0 and --delete-keys were in effect. All files deleted were
+incorrectly removed from the file map, leaving behind dummy entries. Further
+attempt to use that file with rsyncrypto would result in a "corrupt filemap"
+message and an rsyncrypto abort.
+
+Version 1.09 fixed this bug. It also introduced a new tool, designed to fix the
+corruption left behind by the bug. Running the corrupted file map through
+rsyncrypto_recover should fix the file and restore it to full working order.
+As long as the only message printed during the restore process is
+"Rsyncrypto 1.07 corrupted record - safetly discarded" no data loss has occured
+
+
 Rsyncrypto requires gzip that supports the "rsyncable" flag. The gzip rsyncable
 flag is a patch written by Rusty Russell. This patch is available in the
 "contrib" directory, and nees to be applied against the *gzip* sources.
-
-Version 1.02 is released and ready for production use (fully stable).
 
 Items currently on the todo list for version 2:
 1. Treat filename mapping on Windows as case insensitive
