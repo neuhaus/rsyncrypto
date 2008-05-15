@@ -51,7 +51,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="rsyncrypto.h"
+				PrecompiledHeaderThrough="precomp.h"
 				PrecompiledHeaderFile=".\Debug/rsyncrypto.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
@@ -60,6 +60,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -146,7 +147,7 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="rsyncrypto.h"
+				PrecompiledHeaderThrough="precomp.h"
 				PrecompiledHeaderFile=".\Release/rsyncrypto.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
@@ -373,7 +374,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						PrecompiledHeaderThrough="../rsyncrypto.h"
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -383,7 +384,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						PrecompiledHeaderThrough="../rsyncrypto.h"
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 			</File>
@@ -420,7 +421,7 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="../rsyncrypto.h"
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -431,7 +432,7 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="../rsyncrypto.h"
+						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 			</File>
@@ -471,11 +472,11 @@
 				>
 			</File>
 			<File
-				RelativePath="autodir.h"
+				RelativePath="win32\autodir.h"
 				>
 			</File>
 			<File
-				RelativePath="win32\autodir.h"
+				RelativePath="autodir.h"
 				>
 			</File>
 			<File
@@ -503,6 +504,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\win32\config.h"
+				>
+			</File>
+			<File
 				RelativePath="crypt_key.h"
 				>
 			</File>
@@ -519,7 +524,7 @@
 				>
 			</File>
 			<File
-				RelativePath="process.h"
+				RelativePath=".\precomp.h"
 				>
 			</File>
 			<File
@@ -527,7 +532,15 @@
 				>
 			</File>
 			<File
+				RelativePath="process.h"
+				>
+			</File>
+			<File
 				RelativePath="random.h"
+				>
+			</File>
+			<File
+				RelativePath=".\rcserror.h"
 				>
 			</File>
 			<File

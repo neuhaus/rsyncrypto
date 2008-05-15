@@ -9,10 +9,6 @@
 #include "autohandle.h"
 #include "errno.h"
 
-typedef int ssize_t;
-typedef unsigned short mode_t;
-typedef HANDLE file_t;
-
 // Fill in missing declarations
 #define O_ACCMODE (O_RDONLY|O_WRONLY|O_RDWR)
 

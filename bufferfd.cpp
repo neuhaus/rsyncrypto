@@ -1,6 +1,6 @@
 /*
  * rsyncrypto - an rsync friendly encryption
- * Copyright (C) 2006 Shachar Shemesh for Lingnu Open Source Consulting ltd.
+ * Copyright (C) 2006-2008 Shachar Shemesh for Lingnu Open Source Consulting ltd.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
-#include "rsyncrypto.h"
+#include "precomp.h"
 #include "bufferfd.h"
 
 const size_t read_bufferfd::DEFAULT_BUF_SIZE=8192;
