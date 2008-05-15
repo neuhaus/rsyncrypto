@@ -27,7 +27,7 @@
  *
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
-#include "rsyncrypto.h"
+#include "precomp.h"
 #include "process.h"
 
 process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, ... )
