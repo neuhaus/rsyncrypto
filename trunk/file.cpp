@@ -1,6 +1,6 @@
 /*
  * rsyncrypto - an rsync friendly encryption
- * Copyright (C) 2005,2006 Shachar Shemesh for Lingnu Open Source Consulting ltd.
+ * Copyright (C) 2005-2008 Shachar Shemesh for Lingnu Open Source Consulting ltd.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
  * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
  */
 
-
+#include "precomp.h"
 #include "rsyncrypto.h"
 #include "file.h"
 #include "autodir.h"
