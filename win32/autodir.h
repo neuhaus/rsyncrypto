@@ -46,7 +46,7 @@ public:
     struct dirent *read()
     {
         if( !eof ) {
-            strcpy(posixdir.d_name, finddata.cFileName);
+            strcpy_s(posixdir.d_name, finddata.cFileName);
             if( !FindNextFile(h_dirscan, &finddata) ) {
                 eof=true;
                 DWORD error=GetLastError();
