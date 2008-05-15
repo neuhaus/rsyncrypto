@@ -85,6 +85,12 @@ void filemap::fill_map( const char *list_filename, bool encrypt )
             char ch=-1;
 	    
             entry.dirsep=listfile.get_uc()[offset++];
+
+            if( entry.dirsep==' ' || entry.dirsep=='\0' ) {
+                // Probably a filemap corrupted by rsyncrypto 1.07
+                throw rscerror("Corrupt filemap - rsyncrypto_recover will, likely, fully restore it");
+            }
+
             int i;
             for( i=0; i+offset<listfile.getsize() && (ch=listfile.get_uc()[offset+i])!=' ' &&
                 ch!='\0'; ++i )
