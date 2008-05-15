@@ -1,3 +1,10 @@
+Version 1.09 - May 15 2008
+    * Fix serious bug - when deleting an entire directory with --name-encrypt
+      and --delete-keys, rsyncrypto (since 1.07) would leave a corrupt filemap
+      behind.
+    * Add a tool "rsyncrypto_recover", which fixes the corruption caused by
+      the above bug.
+
 Version 1.08 - May 11 2008
     * Fix bug - when a directory turns into a file with --name-encrypt and
       --delete, rsyncrypto would terminate with an error
