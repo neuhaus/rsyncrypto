@@ -1,0 +1,385 @@
+.TH RSYNCRYPTO 1 "May 5, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.\" Please adjust this date whenever revising the manpage.
+.SH NAME
+rsyncrypto \- rsync friendly encryption
+.SH SYNOPSIS
+.B rsyncrypto
+.RI [ options ] " srcfile dstfile keyfile key"
+.br
+.B rsyncrypto
+.RI [ options ] " \fB-r\fI srcdir dstdir keysdir key"
+.SH DESCRIPTION
+This manual page documents the \fBrsyncrypto\fP command.
+.PP
+\fBrsyncrypto\fP is a utility that encrypts a file (or a directory structure)
+in a way that ensures that local changes to the plain text file will result in
+local changes to the cipher text file. This, in turn, ensures that doing
+\fBrsync\fP to synchronize the encrypted files to another machine will have
+only a small impact on \fBrsync\fP's efficiency.
+.PP
+\fBrsyncrypto\fP will encrypt files using a symmetric block cipher (AES). Each
+file is encrypted using a unique key. The file key is stored in two locations.
+One is the "\fIkey\fP" file, and the second is inside the encrypted file
+itself. The second copy is encrypted using a RSA public key, which can be
+shared for all encrypted files.
+.PP
+Decrypting the file can take place in one of two forms:
+.TP
+.B Warm Decryption
+\fIkeyfile\fP is used to decrypt \fIsrcfile\fP into \fIdstfile\fP.
+.TP
+.B Cold Decryption
+If \fIkeyfile\fP is lost and \fIkey\fP is the \fBprivate\fP key for the RSA
+encryption, extract and create \fIkeyfile\fP from the encrypted \fIsrcfile\fP,
+and create both \fIkeyfile\fP and \fIdstfile\fP.
+.PP
+If both \fIkeyfile\fP and the private key are not available, decryption cannot
+take place. Typically, this means that you would either want to transfer the
+encrypted files in whatever way (secure or insecure, but probably \fBrsync\fP
+:), and keep the plain text file, as well as the key file, secure. As long as
+you saved the RSA private key, you can reconstruct them both.
+.SH PARAMETERS
+The parameters meaning depend on the existence of the \fI-r\fP and \fI-d\fP
+flags.
+.TP
+\fIsrcfile\fP or \fIsrcdir\fP
+This is the source for the operation. This will be the plain text file for
+encryption, and the cipher text file for decryption. If the \fI-r\fP option is
+given, \fIsrcdir\fP is the directory from which files are to be
+encrypted/decrypted. Otherwise, \fIsrcfile\fP is the file to be
+encrypted/decrypted. In any case, \fIsrc\fP must exist prior to running
+\fBrsyncrypto\fP.
+.TP
+\fIdstfile\fP or \fIdstdir\fP
+Similar to \fIsrc\fP, this is the destination of the operation. It will be
+the plain text to be created if \fI-d\fP was given, or the encrypted file
+otherwise.
+.TP
+\fIkeyfile\fP or \fIkeydir\fP
+The file holding the symmetric key for the encryption, or a directory in which
+symmetric key files reside. If the later, the key files will have the same name
+as the plain text files.
+.TP
+\fIkey\fP
+This file can either be a X509 certificate holding a public key, or a PEM format
+private key. The private key is never needed unless a cold decryption is
+required. See the
+.BR req (1)
+or
+.BR x509 (1)
+manual pages for more info.
+.P
+If \fIdst\fP does not exist, it will be created. The directory in which it
+is to be created must exist prior to running \fBrsyncrypto\fP.
+.P
+If encrypting, and a symmetric key for the file is found, the same parameters
+will be used for the encryption unless the \fI\-\-fr\fP or \fI\-\-fk\fP options
+are used. If that's the case, the key file is going to be replaced with the
+correct parameters.
+.SH OPTIONS
+These programs follow the usual GNU command line syntax, with long options
+starting with two dashes (`-').
+.TP
+.BR \-h ", " \-\-help
+Show summary of options.
+.TP
+.BR \-V ", " \-\-version
+Print out the current version number.
+.TP
+.BR \-d ", " \-\-decrypt
+Decrypt \fIsrc\fP into \fIdst\fP. The default behaviour is to encrypt \fIsrc\fP
+into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
+.TP
+.BR \-r ", " \-\-recurse
+Recursively encrypt/decrypt an entire directory structure. All files under
+\fIsrcdir\fP will be encrypted to files of the same name and path (almost, see
+\fI\-\-trim\fP) under \fIdstdir\fP. If not already there, a key file will be
+created for each file under \fIkeydir\fP.
+.TP
+.B \-\-filelist
+The first argument is a pointer to a file (or "\-" for stdin) that has a list
+of files to process. Any name ending with a "/" is taken to be a directory in
+recursive mode, and any other name is a file name. The second argument is a
+directory where the files are encrypted to. \-\-filelist and \-r are mutually
+exclusive.
+.TP
+.BR \-c ", " \-\-changed
+Check the src and destination modified time (see \-\-modify\-window) prior
+to performing the operation. If the modified time is the same, assume that the
+files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
+file sizes are not compared. This is because the file size is expected to change
+during the encryption (and thus decryption) operation.
+.TP
+.BI \-\-modify\-window= num
+Only applicable when \fB\-c\fP is in effect. When comparing file modification times,
+treat as equal modification times that are \fInum\fP seconds apart. Default value is
+zero.
+
+This option is most useful when the encrypted file is stored on a FAT file system.
+FAT can only store modification time with a 2 seconds accuracy. This may result in
+the modification time changing between original and encrypted file. In such a case,
+\fB\-\-modify\-window=1\fP should be used.
+.TP
+.BI "\-n\fP, \fB\-\-name\-encrypt=" translation_file
+Encrypt the file name. If this option is specified, this means that file
+names are encrypted as well. This is done by changing the name of the encrypted
+file to a random string of characters, and storing the translation in the file
+given as parameter.
+If working in recursive mode, this file is automatically also included in the
+encryption, and is given the fixed name "filemap". This is done so that
+decryption of the file names is possible when the symmetric keys are lost.
+.TP
+.BI \-\-ne\-nesting= num
+When the \-\-name\-encrypt option is used, by default all mangled file names
+are stored in a single directory. When encrypting large directory trees, this
+can result in rather big directories. Using "\-\-ne\-nesting" will split the
+files to subdirectories, according to random bits that are part of the
+encrypted file name. "n" is the number of directories to nest.
+.TP
+.BI \-\-trim= num
+Determine how many directory levels to trim from the beginning of the \fIsrcdir\fP
+path when creating directories under \fIdstdir\fP. The default value is 1. See
+.B "THE TRIM OPTION"
+for more details.
+.TP
+.B \-\-delete
+When in recursive mode, delete files and directories under \fIdstdir\fP that do
+not exist under \fIsrcdir\fP.
+.TP
+.B \-\-delete\-keys
+When deleting files, also delete their symmetric key and file name mapping (if
+applicable). When only \fB\-\-delete\fP is used, the symmetric key and file
+mapping are kept, so that if the file is recreated, it will be rsyncable with
+the original file. This option implies \fB\-\-delete\fP.
+.TP
+.BI \-b num " \-\-keybits=" num
+Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
+Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
+will only affect files for which no \fIkeyfile\fP exists.
+.TP
+.BI \-\-noatime= num
+(Only on some platforms, most notably Linux). The platform usually keeps track of when
+files were last being accessed. Since \fBrsyncrypto\fP is typically used for backup, it
+opens the files it encrypts with the O_NOATIME option, which is a Linux specific
+extension that tells the system not to update the file's access time. When opening a
+file where the opening process is not owned by the file owner, an attempt to open the
+file with O_NOATIME will cause the open to fail with "permission denied".
+ 
+\fInum\fP can be one of these options:
+\fB0\fP means do not use O_NOATIME at all.
+\fB1\fP (the default) means attempt to only use O_NOATIME if \fBrsyncrypto\fP thinks it
+will not cause a permission denied error.
+\fB2\fP means to use O_NOATIME always.
+.TP
+.B \-\-no\-archive\-mode
+Do not try to preserve timestamps. This option is incompatible with \fB\-c\fP.
+.TP
+.BI \-\-gzip= path
+By default, \fBrsyncrypto\fP will compress the plain text prior to encrypting
+it. In order not to become rsync unfriendly due to the compression,
+\fBrsyncrypto\fP will search the path for an instance of
+.BR gzip (1)
+that supports the \fI\-\-rsyncable\fP option. If the system's default gzip does
+not support this option (all Debian and derivatives, as well as some others, support it), use
+this option to tell \fBrsyncrypto\fP to use a different instance of gzip. The
+tests directory of rsyncrypto's source has a file called "gzip", that does NULL
+compression by redirecting the input and output to
+.BR cat (1).
+.TP
+.B \fB\-\-roll-win=\fInum\fP, \fB\-\-roll-min=\fInum\fP, \fB\-\-roll-sensitivity=\fInum
+Affects the rolling block algorithm. See \fBNOTES\fP.
+.TP
+.BR \-\-fk ", " \-\-fr
+If command line, or a version with different defaults, dictate different
+values for the \fI\-\-roll\-*\fP options or the \fI\-b\fP option, these will only
+affect files for which \fIkeyfile\fP does not yet exist. specifying the
+\fI\-\-fk\fP or \fI\-\-fr\fP will recreate \fIkeyfile\fP if it has values different
+than those in the previous key file.
+.TP
+.BR \-v ", " \-\-verbose
+Increase verbosity level. Specify several times to be more verbose.
+.SH NOTES
+.B encrypting stdin
+.P
+If \fIsrcfile\fP is given as `-', the plain text data will be read fro stdin.
+This does not yet work for decompression (see \fBBUGS\fP).
+.P
+.BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
+.P
+These values affect some of the inner workings of \fBrsyncrypto\fP's decision
+making.  In particular, these affect how \fBrsyncrypto\fP decides when to
+revert to the IV.
+
+These options should not be played with unless you understand what you are
+doing. They are not dangerous, in that they will never cause data loss. Any
+value should still allow decryption of the file. They do have an affect on
+\fBrsync\fP's efficiency.
+.P
+These options are only there to allow quick response in case a security problem
+pops up with their default values. If that happens, an advisory may come out
+giving new values to fill in as a workaround. Until that happens, most users
+are advised to leave these options alone.
+.SH "THE TRIM OPTION"
+When running \fBrsyncrypto\fP in recursive mode, the directory structure under
+\fIsrcdir\fP is re-created under \fIdstdir\fP, with one directory stripped from
+the path. In other words, if we have a directory structure which has:
+.P
+a/b/c/file
+.P
+running \fBrsyncrypto\fP with \fIsrcdir\fP of "a/b", and \fIdstdir\fP of "f"
+will create "f/b/c/file".
+.P
+The \fI\-\-trim\fP options lets the user say how many parts to trim from
+\fIsrcdir\fP when creating directories under \fIdstdir\fP and \fIkeydir\fP. If, in the
+above example, we said
+.IR \-\-trim =0
+then "f/a/b/c/file" would have been created. Likewise, if we said
+.IR \-\-trim =2
+then "f/c/file" would have been created.
+.P
+It is an error to give a trim value which is higher than the number of
+directory parts actually in \fIsrcdir\fP. In the above example,
+.IR \-\-trim =3
+would result in an error.
+.SH SECURITY
+The roll values affect, to a not totally known degree, how much information
+is "leaked" between plain text and cipher text. The default values are supposed
+to leak less than 20 bits of aggregated information about the plain text file
+for every 8KB, in the worst case. These values, we hope, will be considered
+secure enough for most usages. However, if your country's fate is at stake, use
+a non-rsync optimized encryption, such as the one provided by
+.BR openssl (1).
+.SH "EXAMPLES AND TUTORIAL"
+.P
+Before starting to use rsyncrypto you will need a public key in X509
+certificate format. The quickest way to generate one of these is using the
+openssl(1) package. To generate a new 1536 bit RSA key as "backup.key", and
+store the corresponding unencrypted public key in "backup.crt", use the
+following command:
+.PP
+.RS
+\f(CWopenssl req \-nodes \-newkey rsa:1536 \-x509 \-keyout backup.key \-out backup.crt\fP
+.RE
+.PP
+It does not matter what you answer for the certificate details, or when you set
+it to expire. Rsyncrypto ignores everything in the certificate but the actual
+key.
+.PP
+To encrypt file "data" into "data.enc", storing the file's specific key at "data.key", run:
+.PP
+.RS
+\f(CWrsyncrypto data data.enc data.key backup.crt\fP
+.RE
+.PP
+Anywhere in these examples that "backup.crt" is used, "backup.key" can be used
+as well. The above could also have "backup.key" as the last argument. If these
+examples list "backup.key" specifically, then it means that "backup.crt"
+.B cannot
+be used instead.
+.P
+"data.enc" will be created. If "data.key" exists from a previous run, then the
+newly created "data.enc" will have the same symmetric key and other attributes,
+thus maintaining the rsync friendliness of the encryption. It is therefor
+important to provide any previous key file for the data if one is available.
+.P
+The command line to decrypt the file depends on whether you have the key file
+used when the file was encrypted. If you do, then decryption can take place
+using only the public key, with the following command:
+.P
+.RS
+\f(CWrsyncrypto \-d data.enc data.dec data.key backup.crt\fP
+.RE
+.PP
+If the key file was lost, the private key must be used to recover it from the
+encrypted file using the following command:
+.P
+.RS
+\f(CWrsyncrypto \-d data.enc data.dec data.key backup.key\fP
+.RE
+.P
+"data.key" will be created by the above command, as well as "data.dec".
+.PP
+Use of rsyncrypto to encrypt whole directories is similar, with directory names
+replacing file names in the above example. To encrypt the content of a
+directory called "data" to a directory called "enc", storing the symmetric keys
+in a directory called "keys", run the following command:
+.P
+.RS
+\f(CWrsyncrypto \-r data enc keys backup.crt\fP
+.RE
+.P
+As before the directories "enc" and "keys" will be created if they do not
+already exist. The directory structure under "plain" will be duplicated under 
+"enc" and under "keys". That is, if there is a file called "foo" under "data",
+an encrypted files called "foo" will be created under "enc", and a key file
+named "foo" will be created under "keys". In other words, the first part of the
+path to "data/foo" (the part that says "data") is eliminated from the path, and
+this determines the name of the files under "enc" and "keys".
+.P
+If a different trimming is required, the \-\-trim option can be used. To have
+rsyncrypto create "enc/data/foo" instead of the above, use the following
+command:
+.P
+.RS
+\f(CWrsyncrypto \-r \-\-trim=0 data enc keys backup.crt\fP
+.RE
+.P
+Instead of taking all files from a single directory, it is possible to supply
+rsyncrypto with a list of files and directories which to encrypt. This is done
+using the \-\-filelist option, like so:
+.P
+.RS
+\f(CWrsyncrypto \-\-filelist \-\-trim=0 list enc keys backup.crt\fP
+.RE
+.P
+"enc" and "keys" retain the same meaning as before. "list" is a text file with
+a list, one per line, of files to encrypt. The \-\-trim=0 option says that if
+list contains a line saying "/home/foo/bar" which states the name of a file,
+then an encrypted file called "enc/home/foo/bar" will be created. Without it,
+the file will be called "enc/foo/bar". Likewise, with \-\-trim=2, the file
+would be created as "enc/bar".
+.P
+It is often a problem that the file names are not encrypted. If that is the
+case, we can ask rsyncrypto to encrypt the file names, as well as the actual
+files. Rsyncrypto does not actually encrypt the file names. Instead, it
+replaces the actual file name with a random series of characters. The mapping
+between the actual file name and the garbled name is stored in a mapping file.
+.P
+.RS
+\f(CWrsyncrypto \-\-name\-encrypt=map \-\-trim=0 \-r plain enc keys backup.crt\fP
+.RE
+.P
+This will encrypt the "plain" directory structure into enc, exactly as before.
+Unlike before, all files will be directly under the "enc" directory, and will
+be named as a meaningless garble. A file called "map" will be created under the
+current directory that contains a map between the gabled and the real name of
+the file. In addition, two files, called "enc/filemap" and "keys/filemap", will
+also be created. These are the encrypted and key file corresponding to the "map"
+file mentioned above. During decryption, if "map" does not exist, it will be
+created by decrypting "enc/filemap".
+.P
+.B "Important note:"
+When performing filename encryption, it is vitally important to give the correct
+\-\-trim values, both during encryption and during decryption. Failing to do so
+will cause rsyncrypto to search for non-existing file names, and to fail to
+locate the files to decrypt.
+.SH BUGS
+Not providing a correct key file may result in segmentation fault.
+.P
+It is not yet possible to decrypt using password protected private key.
+.P
+Decrypting from stdin is not yet supported.
+.SH SEE ALSO
+.BR rsync (1),
+.BR gzip (1),
+.BR openssl (1),
+.BR x509 (1),
+.BR req (1).
+.br
+.SH AUTHOR
+rsyncrypto was written by Shachar Shemesh for Lingnu Open Source Consulting ltd.
+http://www.lingnu.com
+.PP
+This manual page was written by Shachar Shemesh <shachar@debian.org>
+.SH PROJECT HOMEPAGE
+http://sourceforge.net/projects/rsyncrypto
