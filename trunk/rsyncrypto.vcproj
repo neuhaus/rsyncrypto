@@ -374,7 +374,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -384,7 +383,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						PrecompiledHeaderThrough="../precomp.h"
 					/>
 				</FileConfiguration>
 			</File>
