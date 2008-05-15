@@ -2,7 +2,7 @@
 - Make sure that the README, NEWS, INSTALL, INSTALL.win and the man page are up to date
 - Regenerate the HTML man page, if applicable
 - Make sure that the version number is correct in configure.ac, Windows resource files and the Setup project.
-- Make sure that rsyncrypto.h has the correct version number for Win32
+- Make sure that win32/config.h has the correct version number for Win32 (three places)
 - Tag the release (tags/Vversion)
 - Export the release from the tag name
 - Run ./bootstrap and delete autom4te.cache
