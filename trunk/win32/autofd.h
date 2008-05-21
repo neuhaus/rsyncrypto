@@ -335,8 +335,6 @@ public:
             }
 
             mkpath_actual(path, mode);
-            //if( !CreateDirectory( path, NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS )
-            //    throw rscerror("mkdir failed", Error2errno(GetLastError()), path );
         }
     }
 

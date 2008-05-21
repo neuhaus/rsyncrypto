@@ -1,3 +1,6 @@
+    * Windows - mkdir would still fail if last component of the path to create
+      was a drive letter.
+
 Version 1.09 - May 15 2008
     * Fix serious bug - when deleting an entire directory with --name-encrypt
       and --delete-keys, rsyncrypto (since 1.07) would leave a corrupt filemap
