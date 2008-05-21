@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
     
         size_t offset=0;
         enum {DIRSEP, CIPHERNAME, SPACE, PLAINNAME, INVALID, RSYNC107_INVALID} state=DIRSEP;
-        int line_state;
+        int line_state=0;
         file_record record;
 
         while( offset<map.getsize() ) {
@@ -83,7 +83,7 @@ int main( int argc, char *argv[] )
                 }
                 break;
             case CIPHERNAME:
-                if( ch>='0' && ch<='9' || ch>='A' && ch<='F' ) {
+                if( (ch>='0' && ch<='9') || (ch>='A' && ch<='F') ) {
                     record.crypt[line_state]=ch;
 
                     // A legal hexadecimal character
