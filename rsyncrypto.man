@@ -87,7 +87,7 @@ Show summary of options.
 Print out the current version number.
 .TP
 .BR \-d ", " \-\-decrypt
-Decrypt \fIsrc\fP into \fIdst\fP. The default behaviour is to encrypt \fIsrc\fP
+Decrypt \fIsrc\fP into \fIdst\fP. The default behavior is to encrypt \fIsrc\fP
 into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
 .TP
 .BR \-r ", " \-\-recurse
@@ -131,7 +131,7 @@ option allows focusing \fBrsync\fP on only those files that are known to have
 changed, rather than have it send the entire file list to the remote machine, making
 the rsync operation faster. It should be noted that rsync version 3 starts the
 actual file transfer while it is still transferring the file list, making the
-performance gain from this option less noticable.
+performance gain from this option less noticeable.
 
 When using this option in conjunction with rsync, keep in mind that \fIlogfile\fP
 is zeroed out before being written into. This means that unless there is at least
@@ -155,7 +155,7 @@ decryption of the file names is possible when the symmetric keys are lost.
 When the \-\-name\-encrypt option is used, by default all mangled file names
 are stored in a single directory. When encrypting large directory trees, this
 can result in rather big directories. Using "\-\-ne\-nesting" will split the
-files to subdirectories, according to random bits that are part of the
+files to sub directories, according to random bits that are part of the
 encrypted file name. "n" is the number of directories to nest.
 .TP
 .BI \-\-trim= num
@@ -381,7 +381,7 @@ file mentioned above. During decryption, if "map" does not exist, it will be
 created by decrypting "enc/filemap".
 .P
 .B "Important note:"
-When performing filename encryption, it is vitally important to give the correct
+When performing file name encryption, it is vitally important to give the correct
 \-\-trim values, both during encryption and during decryption. Failing to do so
 will cause rsyncrypto to search for non-existing file names, and to fail to
 locate the files to decrypt.
