@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "May 5, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "May 23, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -119,6 +119,28 @@ This option is most useful when the encrypted file is stored on a FAT file syste
 FAT can only store modification time with a 2 seconds accuracy. This may result in
 the modification time changing between original and encrypted file. In such a case,
 \fB\-\-modify\-window=1\fP should be used.
+.TP
+.BI "\-\-export\-changes=" logfile
+Whenever encrypting or deleting a file, write the file's name to \fIlogfile\fP. This
+allows passing \fIlogfile\fP to \fBrsync\fP(1) using the \fB\-\-include\-from\fP
+rsync option.
+
+This option is mostly useful if \fBrsyncrypto\fP is used to repeatedly encrypt a huge
+directory tree, and then using rsync to synchronize it remotely. The use of this
+option allows focusing \fBrsync\fP on only those files that are known to have
+changed, rather than have it send the entire file list to the remote machine, making
+the rsync operation faster. It should be noted that rsync version 3 starts the
+actual file transfer while it is still transferring the file list, making the
+performance gain from this option less noticable.
+
+When using this option in conjunction with rsync, keep in mind that \fIlogfile\fP
+is zeroed out before being written into. This means that unless there is at least
+one completely successful rsync operation for each rsyncrypto invocation, it is
+possible to have files that have been changed on disk by a previous invocation
+of rsyncrypto, but were over written by a later invocation and do not show up
+in the latest version of \fIlogfile\fP. In other words, if rsyncrypto is run
+more than once between two completely successful invocations of rsync, it is
+possible for \fIlogfile\fP not to be complete. Use this option at your own risk!
 .TP
 .BI "\-n\fP, \fB\-\-name\-encrypt=" translation_file
 Encrypt the file name. If this option is specified, this means that file

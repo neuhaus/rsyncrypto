@@ -1,3 +1,6 @@
+    * Add an option "--export-changes" that writes to a log file the files
+      affected by the operation in a way suitable for passing to rsync's
+      --include-from option
     * Windows - mkdir would still fail if last component of the path to create
       was a drive letter.
 
