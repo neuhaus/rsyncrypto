@@ -2,7 +2,7 @@
 <HTML><HEAD><TITLE>Man page of RSYNCRYPTO</TITLE>
 </HEAD><BODY>
 <H1>RSYNCRYPTO</H1>
-Section: Rsyncrypto User Manual (1)<BR>Updated: May 5, 2008<BR><A HREF="#index">Index</A>
+Section: Rsyncrypto User Manual (1)<BR>Updated: May 23, 2008<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 
@@ -158,6 +158,29 @@ This option is most useful when the encrypted file is stored on a FAT file syste
 FAT can only store modification time with a 2 seconds accuracy. This may result in
 the modification time changing between original and encrypted file. In such a case,
 <B>--modify-window=1</B> should be used.
+<DT><B>--export-changes=</B><I>logfile</I>
+
+<DD>
+Whenever encrypting or deleting a file, write the file's name to <I>logfile</I>. This
+allows passing <I>logfile</I> to <B><A HREF="/cgi-bin/man/man2html?1+rsync">rsync</A></B>(1) using the <B>--include-from</B>
+rsync option.
+<P>
+This option is mostly useful if <B>rsyncrypto</B> is used to repeatedly encrypt a huge
+directory tree, and then using rsync to synchronize it remotely. The use of this
+option allows focusing <B>rsync</B> on only those files that are known to have
+changed, rather than have it send the entire file list to the remote machine, making
+the rsync operation faster. It should be noted that rsync version 3 starts the
+actual file transfer while it is still transferring the file list, making the
+performance gain from this option less noticable.
+<P>
+When using this option in conjunction with rsync, keep in mind that <I>logfile</I>
+is zeroed out before being written into. This means that unless there is at least
+one completely successful rsync operation for each rsyncrypto invocation, it is
+possible to have files that have been changed on disk by a previous invocation
+of rsyncrypto, but were over written by a later invocation and do not show up
+in the latest version of <I>logfile</I>. In other words, if rsyncrypto is run
+more than once between two completely successful invocations of rsync, it is
+possible for <I>logfile</I> not to be complete. Use this option at your own risk!
 <DT><B>-n</B>, <B>--name-encrypt=</B><I>translation_file</I>
 
 <DD>
@@ -534,6 +557,6 @@ This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debi
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 14:14:44 GMT, May 07, 2008
+Time: 14:21:17 GMT, May 23, 2008
 </BODY>
 </HTML>
