@@ -9,11 +9,11 @@ struct startup_options {
     struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim, *nenest;
     struct arg_int *noatime, *mod_win;
     struct arg_file *gzip;
-    struct arg_file *src, *dst, *key, *master, *nameenc;
+    struct arg_file *src, *dst, *key, *master, *nameenc, *export_changes;
     struct arg_rem *rem1;
     struct arg_end *end;
 
-    void *argtable[27
+    void *argtable[28
 #if HAVE_NOATIME
         +1
 #endif
@@ -36,6 +36,7 @@ struct startup_options {
                 "<src> <dst> and <keys> are directory names, and are processed recursively");
         argtable[i++]=changed=arg_lit0( "c", "changed", "Only encrypt changed files. Requires -r or --filelist");
         argtable[i++]=mod_win=arg_int0( NULL, "modify-window", "<n>", "compare mod-times with reduced accuracy" );
+        argtable[i++]=export_changes=arg_file0( NULL, "export-changes", "log_file", "Write list of affected files to a log file" );
         argtable[i++]=nameenc=arg_file0( "n", "name-encrypt", "translation_file", "Encrypt file names");
         argtable[i++]=nenest=arg_int0( NULL, "ne-nesting", "<n>", "set the hash directory tree depth when encrypting file names" );
         argtable[i++]=trim=arg_int0( NULL, "trim", "<n>",
@@ -91,6 +92,7 @@ extern startup_options options;
 #define ARG(arg) (*(options.arg))
 #define VERBOSE(val) (ARG(verbosity).count>=(val))
 extern std::ostream *report0, *report1, *report2, *report3;
+extern std::auto_ptr<std::ostream> changes_log;
 
 #define EXCEPT_CLASS rscerror
 

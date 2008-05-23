@@ -35,6 +35,8 @@
 #include "argtable2.h"
 #include "filemap.h"
 
+std::auto_ptr<std::ostream> changes_log;
+
 void version()
 {
     printf("%s by Shachar Shemesh\n", PACKAGE_STRING);
@@ -79,6 +81,9 @@ void parse_cmdline( int argc, char *argv[] )
                 throw rscerror("Must use \"--no-archive-mode\" if plaintext file is stdin");
             }
         }
+        if( EXISTS(export_changes) ) {
+            throw rscerror("Log export not supported in decrypt mode");
+        }
     }
 
     // Apply default values
@@ -122,6 +127,10 @@ int main( int argc, char *argv[] )
             if( rsa_key==NULL ) {
                 throw rscerror( "Couldn't parse RSA key", 0, FILENAME(master) );
             }
+        }
+
+        if( EXISTS(export_changes) ) {
+            changes_log=std::auto_ptr<std::ofstream>(new std::ofstream(FILENAME(export_changes), std::ofstream::trunc));
         }
 
         const char *opname=NULL;

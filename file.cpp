@@ -100,39 +100,40 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
         std::string srcname=srcfd.readline();
 
         if( srcname!="" ) try {
-	    // Seperate the prefix from the actual name
-	    size_t src_offset=calc_trim( srcname.c_str(), VAL(trim) );
-	    std::string src_prefix(srcname.c_str(), src_offset);
-	    srcname=std::string(srcname.c_str()+src_offset);
-	    
-	    // Perform name (de)mangling
-        std::string src=srcnameop( src_prefix.c_str(), srcname.c_str(), 0 );
-        
-        struct stat filestat=autofd::stat( src.c_str() );
-        
-        switch( filestat.st_mode&S_IFMT ) {
-        case S_IFREG:
-            {
-                std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
-                std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
-                
-                struct stat dststat;
-                bool found=true;
-                
-                try {
-                    dststat=autofd::lstat( dstfile.c_str() );
-                } catch( const rscerror & ) {
-                    found=false;
-                }
-                if( !EXISTS(changed) || !found ||
-                    abs(dststat.st_mtime-filestat.st_mtime)>VAL(mod_win) )
+            // Seperate the prefix from the actual name
+            size_t src_offset=calc_trim( srcname.c_str(), VAL(trim) );
+            std::string src_prefix(srcname.c_str(), src_offset);
+            srcname=std::string(srcname.c_str()+src_offset);
+
+            // Perform name (de)mangling
+            std::string src=srcnameop( src_prefix.c_str(), srcname.c_str(), 0 );
+
+            struct stat filestat=autofd::stat( src.c_str() );
+
+            switch( filestat.st_mode&S_IFMT ) {
+            case S_IFREG:
                 {
-                    if( VERBOSE(1) )
-                        std::cerr<<opname<<" file: "<<srcname<<std::endl;
-                    
-                    op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key, &filestat );
-                } else if( VERBOSE(1) ) {
-                    std::cerr<<opname<<": skipped unchanged file: "<<srcname<<std::endl;
+                    std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
+                    std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
+
+                    struct stat dststat;
+                    bool found=true;
+
+                    try {
+                        dststat=autofd::lstat( dstfile.c_str() );
+                    } catch( const rscerror & ) {
+                        found=false;
+                    }
+                    if( !EXISTS(changed) || !found ||
+                            abs(dststat.st_mtime-filestat.st_mtime)>VAL(mod_win) )
+                    {
+                        // Report to stderr the operation
+                        if( VERBOSE(1) )
+                            std::cerr<<opname<<" file: "<<srcname<<std::endl;
+
+                        op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key, &filestat );
+                    } else if( VERBOSE(1) ) {
+                        std::cerr<<opname<<": skipped unchanged file: "<<srcname<<std::endl;
                 }
             }
             break;
@@ -185,8 +186,10 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                         statsuccess=false;
                     }
                     if( !EXISTS(changed) || !statsuccess || abs(dststat.st_mtime-status.st_mtime)>VAL(mod_win) ) {
+                        // Report to stderr (if applicable) the operation
                         if( VERBOSE(1) && opname!=NULL )
                             std::cerr<<opname<<" "<<src_filename<<std::endl;
+
                         try {
                             op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(),
                                 rsa_key, &status );
@@ -243,17 +246,31 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
             switch( status.st_mode & S_IFMT ) {
             case S_IFDIR:
                 // Need to erase directory
-                if( VERBOSE(1) )
-                    std::cerr<<"Delete dirs "<<dst_file<<", "<< key_file<<std::endl;
+                if( VERBOSE(1) ) {
+                    if( EXISTS(delkey) )
+                        std::cerr<<"Delete dirs "<<source_file<<", "<<key_file<<std::endl;
+                    else
+                        std::cerr<<"Delete dir "<<source_file<<std::endl;
+                }
+
+                // If an execution log is active - report the operation
+                if( changes_log.get()!=NULL ) {
+                    (*changes_log.get())<<source_file<<std::endl;
+                }
+
                 autofd::rmdir( source_file );
-                autofd::rmdir( key_file );
+                if( EXISTS(delkey) )
+                    autofd::rmdir( key_file );
                 break;
             case S_IFREG:
 #if defined S_IFLNK
             case S_IFLNK:
 #endif
                 if( VERBOSE(1) )
-                    std::cout<<"Delete "<<source_file<<std::endl;
+                    std::cerr<<"Delete "<<source_file<<std::endl;
+                // If an execution log is active - report the operation
+                if( changes_log.get()!=NULL )
+                    (*changes_log.get())<<source_file<<std::endl;
                 if( unlink( source_file )!=0 )
                     throw rscerror("Erasing file", errno, source_file );
                 if( EXISTS(delkey) ) {
@@ -306,6 +323,11 @@ void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir,
 void file_encrypt( const char *source_file, const char *dst_file, const char *key_file,
         RSA *rsa_key, const struct stat *stat )
 {
+    // If an execution log is active - report the operation
+    if( changes_log.get()!=NULL ) {
+        (*changes_log.get())<<dst_file<<std::endl;
+    }
+
     std::auto_ptr<key> head;
     autofd headfd;
 
