@@ -75,19 +75,19 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_7AA21D34C9754E188E760A1FCEF0435D"
+        "MsmKey" = "8:_7AC774A6E2EC4A5A9F22DC637703079A"
         "OwnerKey" = "8:_A305235D6DA24CC886ED177E432C79BB"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7AA21D34C9754E188E760A1FCEF0435D"
+        "MsmKey" = "8:_7AC774A6E2EC4A5A9F22DC637703079A"
         "OwnerKey" = "8:_DCD9BAAC5B404F8898893516AB39E8DE"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7AA21D34C9754E188E760A1FCEF0435D"
+        "MsmKey" = "8:_7AC774A6E2EC4A5A9F22DC637703079A"
         "OwnerKey" = "8:_AA6D4F5C08A34948A58B8DD3CA531D30"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -107,12 +107,6 @@
         {
         "MsmKey" = "8:_AE921D89A3074422BC890DB369816100"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_BC66766B2FD649818DBFAB2C3FB403ED"
-        "OwnerKey" = "8:_7AA21D34C9754E188E760A1FCEF0435D"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -137,6 +131,12 @@
         {
         "MsmKey" = "8:_E0BEF7A45EE5410D9525E17E5C37D2C2"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E8F81F92F87B45D59E78935179D469D7"
+        "OwnerKey" = "8:_7AC774A6E2EC4A5A9F22DC637703079A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -584,14 +584,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Rsyncrypto"
-        "ProductCode" = "8:{C47E9265-6D7B-4AD5-817F-CB79F24A7277}"
-        "PackageCode" = "8:{9BE16FF5-A50B-49F2-BBCB-79D30617EE16}"
+        "ProductCode" = "8:{671ECAAE-0907-4D00-BD15-03A071C6811B}"
+        "PackageCode" = "8:{A48F86C3-2479-4E1C-889C-A42BCBDB8372}"
         "UpgradeCode" = "8:{764176D3-A200-42EF-AECE-8BA0C3610502}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.9"
+        "ProductVersion" = "8:1.0.10"
         "Manufacturer" = "8:Lingnu Open Source Consulting Ltd."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -1194,7 +1194,7 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_7AA21D34C9754E188E760A1FCEF0435D"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_7AC774A6E2EC4A5A9F22DC637703079A"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -1208,7 +1208,7 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_BC66766B2FD649818DBFAB2C3FB403ED"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_E8F81F92F87B45D59E78935179D469D7"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -1255,7 +1255,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A305235D6DA24CC886ED177E432C79BB"
             {
-            "SourcePath" = "8:..\\Debug\\argtable2.dll"
+            "SourcePath" = "8:..\\Release\\argtable2.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
@@ -1283,7 +1283,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_AA6D4F5C08A34948A58B8DD3CA531D30"
             {
-            "SourcePath" = "8:..\\Debug\\rsyncrypto.exe"
+            "SourcePath" = "8:..\\Release\\rsyncrypto.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
@@ -1311,7 +1311,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_DCD9BAAC5B404F8898893516AB39E8DE"
             {
-            "SourcePath" = "8:..\\Debug\\rsyncrypto_recover.exe"
+            "SourcePath" = "8:..\\Release\\rsyncrypto_recover.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_587A5DC817854760A6D26D07800A6F7A"
