@@ -79,7 +79,7 @@ public:
     autofd( file_t file_p, bool except ) : autohandle(file_p), f_eof(false)
     {
         if( *this==INVALID_HANDLE_VALUE )
-            throw EXCEPT_CLASS("file open failed", GetLastError());
+            throw EXCEPT_CLASS("file handle open failed", GetLastError());
     }
 
     autofd( const char *pathname, int flags, mode_t mode=0 ) : f_eof(false)
@@ -115,7 +115,7 @@ public:
             NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL ));
 
         if( *this==INVALID_HANDLE_VALUE )
-            throw EXCEPT_CLASS("file open failed", Error2errno(GetLastError()) );
+            throw EXCEPT_CLASS("file open failed", Error2errno(GetLastError()), pathname );
     }
 #endif
     // Default copy constructor and operator= do exactly what we want.
