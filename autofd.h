@@ -52,7 +52,7 @@ public:
     autofd( file_t fd_p, bool except ) : fd(fd_p), owner(valid()), f_eof(false)
     {
         if( except && valid() )
-            throw EXCEPT_CLASS("file open failed", errno);
+            throw EXCEPT_CLASS("fd open failed", errno);
     }
 
     autofd( const char *pathname, int flags, mode_t mode=0 ) : owner(true), f_eof(false)
@@ -60,7 +60,7 @@ public:
         fd=open( pathname, flags, mode );
 
         if( fd==-1 )
-            throw EXCEPT_CLASS("file open failed", errno);
+            throw EXCEPT_CLASS("file open failed", errno, pathname);
     }
 #endif
     autofd( const autofd &that ) : fd(that.release()), owner(true), f_eof(false)
