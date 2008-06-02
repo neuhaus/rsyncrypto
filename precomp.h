@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 #endif
 
-#if HAVE_MMAP
+#if HAVE_SYS_MMAN_H
 #include <sys/mman.h>
 #endif
 
