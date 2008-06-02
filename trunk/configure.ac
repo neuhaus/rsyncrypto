@@ -61,7 +61,7 @@ AC_SYS_LARGEFILE
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([fcntl.h netinet/in.h stdlib.h string.h strings.h sys/time.h unistd.h utime.h])
+AC_CHECK_HEADERS([fcntl.h netinet/in.h stdlib.h string.h strings.h sys/time.h unistd.h utime.h sys/mman.h])
 
 AC_CHECK_HEADERS([argtable2.h] [map],[],[AC_MSG_FAILURE([Mandatory header file not found])])
 
@@ -108,7 +108,6 @@ AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
 AC_FUNC_LSTAT
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
-AC_FUNC_MMAP
 AC_FUNC_STAT
 AC_CHECK_FUNCS([bzero dup2 memset mkdir munmap rmdir strchr strerror strtoul])
 
