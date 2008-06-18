@@ -96,11 +96,7 @@ extern std::auto_ptr<std::ostream> changes_log;
 
 #define EXCEPT_CLASS rscerror
 
-#include "autoarray.h"
-#if defined(__unix__)
-#include "autofd.h"
-#include "autommap.h"
-#elif defined(_WIN32)
+#if defined(_WIN32)
 
 static inline void ODS(const char *format, ... )
 {
@@ -116,10 +112,6 @@ static inline void ODS(const char *format, ... )
 }
 
 #include "win32/types.h"
-#include "win32/autofd.h"
-#include "win32/autommap.h"
-#else
-#error Unsupported platform
 #endif
 
 #endif // RSYNCRYPTO_H

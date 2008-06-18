@@ -91,7 +91,7 @@
 
 #include "autoarray.h"
 #include "rcserror.h"
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 #include "autofd.h"
 #include "autommap.h"
 #elif defined(_WIN32)
