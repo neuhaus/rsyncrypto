@@ -21,12 +21,21 @@ public:
         std::string ret(msg);
         if( param.length()!=0 )
             ret+="("+param+")";
-        ret+=": "+sysmsg;
+        if( sysmsg.length()!=0 )
+            ret+=": "+sysmsg;
 
         return ret;
     }
     int errornum() const {
         return errnum;
+    }
+};
+
+class delayed_error : public rscerror
+{
+public:
+    delayed_error() : rscerror("Exit code delayed from previous errors")
+    {
     }
 };
 
