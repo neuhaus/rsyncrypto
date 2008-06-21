@@ -96,6 +96,8 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
         srcfd=autofd(src, O_RDONLY);
     }
 
+    bool error=false;
+
     while( !srcfd.eof() ) {
         std::string srcname=srcfd.readline();
 
@@ -153,9 +155,16 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
             std::cerr<<"Unsupported file type. Skipping "<<src<<std::endl;
             break;
         }
+        } catch( const delayed_error &err ) {
+            error=true;
         } catch( const rscerror &err ) {
             std::cerr<<"Error in encryption of "<<srcname<<": "<<err.error()<<std::endl;
+            error=true;
         }
+    }
+
+    if( error ) {
+        throw delayed_error();
     }
 }
 
@@ -166,6 +175,8 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
     autodir dir(src_dir);
 
     struct dirent *ent;
+    bool error=false;
+
     while( (ent=dir.read())!=NULL ) {
         try {
             std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
@@ -222,9 +233,16 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                         break;
                 }
             }
+        } catch( const delayed_error &err ) {
+            error=true;
         } catch( const rscerror &err ) {
             std::cerr<<err.error()<<std::endl;
+            error=true;
         }
+    }
+
+    if( error ) {
+        throw delayed_error();
     }
 }
 
