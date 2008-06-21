@@ -167,59 +167,63 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
 
     struct dirent *ent;
     while( (ent=dir.read())!=NULL ) {
-        std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
-        
-        struct stat status, dststat;
-        status=autofd::lstat( src_filename.c_str() );
-        std::string dst_filename(dstname(dst_dir, src_filename.c_str()+src_offset, status.st_mode));
-        std::string key_filename(keyname(key_dir, src_filename.c_str()+src_offset, status.st_mode));
-        
-        if( dst_filename.length()>0 ) {
-            switch( status.st_mode & S_IFMT ) {
-            case S_IFREG:
-                // Regular file
-                {
-                    bool statsuccess=true;
-                    try {
-                        dststat=autofd::lstat( dst_filename.c_str() );
-                    } catch( const rscerror & ) {
-                        statsuccess=false;
-                    }
-                    if( !EXISTS(changed) || !statsuccess || abs(dststat.st_mtime-status.st_mtime)>VAL(mod_win) ) {
-                        // Report to stderr (if applicable) the operation
-                        if( VERBOSE(1) && opname!=NULL )
-                            std::cerr<<opname<<" "<<src_filename<<std::endl;
+        try {
+            std::string src_filename(autofd::combine_paths(src_dir, ent->d_name));
 
-                        try {
-                            op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(),
-                                rsa_key, &status );
-                        } catch( const rscerror &err ) {
-                            std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
+            struct stat status, dststat;
+            status=autofd::lstat( src_filename.c_str() );
+            std::string dst_filename(dstname(dst_dir, src_filename.c_str()+src_offset, status.st_mode));
+            std::string key_filename(keyname(key_dir, src_filename.c_str()+src_offset, status.st_mode));
+
+            if( dst_filename.length()>0 ) {
+                switch( status.st_mode & S_IFMT ) {
+                    case S_IFREG:
+                        // Regular file
+                        {
+                            bool statsuccess=true;
+                            try {
+                                dststat=autofd::lstat( dst_filename.c_str() );
+                            } catch( const rscerror & ) {
+                                statsuccess=false;
+                            }
+                            if( !EXISTS(changed) || !statsuccess || abs(dststat.st_mtime-status.st_mtime)>VAL(mod_win) ) {
+                                // Report to stderr (if applicable) the operation
+                                if( VERBOSE(1) && opname!=NULL )
+                                    std::cerr<<opname<<" "<<src_filename<<std::endl;
+
+                                try {
+                                    op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(),
+                                            rsa_key, &status );
+                                } catch( const rscerror &err ) {
+                                    std::cerr<<opname<<" "<<dst_filename<<" error: "<<err.error()<<std::endl;
+                                }
+                            } else if( VERBOSE(2) && opname!=NULL ) {
+                                std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
+                            }
                         }
-                    } else if( VERBOSE(2) && opname!=NULL ) {
-                        std::cerr<<"Skipping unchanged file "<<src_filename<<std::endl;
-                    }
+                        break;
+                    case S_IFDIR:
+                        // Directory
+                        if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
+                            if( !op_handle_dir ) {
+                                recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op,
+                                        src_offset, op_handle_dir, opname, dstname, keyname );
+                            } else {
+                                recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op,
+                                        src_offset, op_handle_dir, opname, dstname, keyname );
+                                op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(),
+                                        rsa_key, &status );
+                            }
+                        }
+                        break;
+                    default:
+                        // Unhandled type
+                        std::cerr<<"Skipping unhandled file type: "<<src_filename<<std::endl;
+                        break;
                 }
-                break;
-            case S_IFDIR:
-                // Directory
-                if( strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0 ) {
-                    if( !op_handle_dir ) {
-                        recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op,
-                            src_offset, op_handle_dir, opname, dstname, keyname );
-                    } else {
-                        recurse_dir_enc( src_filename.c_str(), dst_dir, key_dir, rsa_key, op,
-                            src_offset, op_handle_dir, opname, dstname, keyname );
-                        op( src_filename.c_str(), dst_filename.c_str(), key_filename.c_str(),
-                            rsa_key, &status );
-                    }
-                }
-                break;
-            default:
-                // Unhandled type
-                std::cerr<<"Skipping unhandled file type: "<<src_filename<<std::endl;
-                break;
             }
+        } catch( const rscerror &err ) {
+            std::cerr<<err.error()<<std::endl;
         }
     }
 }
