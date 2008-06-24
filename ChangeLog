@@ -1,8 +1,13 @@
+Version 1.11 - June 24 2008
     * Resolve oldest reported problem - segfault when private key is needed
       but not available.
     * On Vista, identify (and ignore) symbolic links
     * Do not terminate as soon as an error occures. Continue at next
       reasonable operation.
+    * Fix Cygwin, Mac compilation problems
+    * Change autoconf to test for the correct stuff for mmap headers
+    * Make the error messages in case of file open more useful
+    * Spelling corrections in the manual page
 
 Version 1.10 - May 23 2008
     * Add an option "--export-changes" that writes to a log file the files
