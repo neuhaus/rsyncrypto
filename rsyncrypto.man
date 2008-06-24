@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "May 23, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "June 24, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -386,8 +386,6 @@ When performing file name encryption, it is vitally important to give the correc
 will cause rsyncrypto to search for non-existing file names, and to fail to
 locate the files to decrypt.
 .SH BUGS
-Not providing a correct key file may result in segmentation fault.
-.P
 It is not yet possible to decrypt using password protected private key.
 .P
 Decrypting from stdin is not yet supported.

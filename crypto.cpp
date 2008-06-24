@@ -155,6 +155,11 @@ key *decrypt_header( file_t fromfd, RSA *prv )
     unsigned char *buff=filemap.get_uc()+sizeof(HEADER_ENCRYPTION_VERSION);
     auto_array<unsigned char> decrypted(new unsigned char[headsize]);
 
+    if( (prv->p==0 || prv->q==0) ) {
+        // This is not a private key!
+        throw rscerror("Neither AES session key nor RSA private key present - cannot decrypt using only public key");
+    }
+
     if( RSA_private_decrypt(key_size, buff, decrypted.get(), prv, RSA_PKCS1_OAEP_PADDING)==-1 ) {
         unsigned long rsaerr=ERR_get_error();
         throw rscerror(ERR_error_string(rsaerr, NULL));
