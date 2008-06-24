@@ -2,7 +2,7 @@
 <HTML><HEAD><TITLE>Man page of RSYNCRYPTO</TITLE>
 </HEAD><BODY>
 <H1>RSYNCRYPTO</H1>
-Section: Rsyncrypto User Manual (1)<BR>Updated: May 23, 2008<BR><A HREF="#index">Index</A>
+Section: Rsyncrypto User Manual (1)<BR>Updated: June 24, 2008<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 
@@ -122,7 +122,7 @@ Print out the current version number.
 <DT><B>-d</B>, <B>--decrypt</B>
 
 <DD>
-Decrypt <I>src</I> into <I>dst</I>. The default behaviour is to encrypt <I>src</I>
+Decrypt <I>src</I> into <I>dst</I>. The default behavior is to encrypt <I>src</I>
 into <I>dst</I>, and create <I>keyfile</I> if it does not exist.
 <DT><B>-r</B>, <B>--recurse</B>
 
@@ -171,7 +171,7 @@ option allows focusing <B>rsync</B> on only those files that are known to have
 changed, rather than have it send the entire file list to the remote machine, making
 the rsync operation faster. It should be noted that rsync version 3 starts the
 actual file transfer while it is still transferring the file list, making the
-performance gain from this option less noticable.
+performance gain from this option less noticeable.
 <P>
 When using this option in conjunction with rsync, keep in mind that <I>logfile</I>
 is zeroed out before being written into. This means that unless there is at least
@@ -197,7 +197,7 @@ decryption of the file names is possible when the symmetric keys are lost.
 When the --name-encrypt option is used, by default all mangled file names
 are stored in a single directory. When encrypting large directory trees, this
 can result in rather big directories. Using &quot;--ne-nesting&quot; will split the
-files to subdirectories, according to random bits that are part of the
+files to sub directories, according to random bits that are part of the
 encrypted file name. &quot;n&quot; is the number of directories to nest.
 <DT><B>--trim=</B><I>num</I>
 
@@ -493,15 +493,12 @@ created by decrypting &quot;enc/filemap&quot;.
 
 <B>Important note:</B>
 
-When performing filename encryption, it is vitally important to give the correct
+When performing file name encryption, it is vitally important to give the correct
 --trim values, both during encryption and during decryption. Failing to do so
 will cause rsyncrypto to search for non-existing file names, and to fail to
 locate the files to decrypt.
 <A NAME="lbAK">&nbsp;</A>
 <H2>BUGS</H2>
-
-Not providing a correct key file may result in segmentation fault.
-<P>
 
 It is not yet possible to decrypt using password protected private key.
 <P>
@@ -557,6 +554,6 @@ This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debi
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 14:21:17 GMT, May 23, 2008
+Time: 10:17:54 GMT, June 24, 2008
 </BODY>
 </HTML>
