@@ -1,3 +1,4 @@
+	* On Vista, identify (and ignore) symbolic links
     * Do not terminate as soon as an error occures. Continue at next
       reasonable operation.
 

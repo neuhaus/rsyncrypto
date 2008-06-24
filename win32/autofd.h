@@ -12,6 +12,8 @@
 // Fill in missing declarations
 #define O_ACCMODE (O_RDONLY|O_WRONLY|O_RDWR)
 
+#define S_IFLNK 0120000
+
 #define S_IRWXU 00700
 #define S_IRUSR 00400
 #define S_IWUSR 00200
@@ -187,7 +189,10 @@ public:
         ret.st_dev=0;
         ret.st_rdev=0;
         
-        if( data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY ) {
+        if( data.dwFileAttributes&FILE_ATTRIBUTE_REPARSE_POINT ) {
+            // The Vista equivalent of a symbolic link, more or less
+            ret.st_mode=S_IFLNK;
+        } else if( data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY ) {
             ret.st_mode=S_IFDIR;
         } else {
             ret.st_mode=S_IFREG;
