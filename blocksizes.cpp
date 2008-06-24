@@ -25,7 +25,7 @@
  * but you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  *
- * The project's homepage is at http://sourceforge.net/projects/rsyncrypto
+ * The project's homepage is at http://rsyncrypto.lingnu.com/
  */
 #include "precomp.h"
 #include "rsyncrypto.h"

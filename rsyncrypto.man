@@ -402,4 +402,4 @@ http://www.lingnu.com
 .PP
 This manual page was written by Shachar Shemesh <shachar@debian.org>
 .SH PROJECT HOMEPAGE
-http://sourceforge.net/projects/rsyncrypto
+http://rsyncrypto.lingnu.com
