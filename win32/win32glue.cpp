@@ -33,13 +33,46 @@
 int Error2errno( DWORD Error ) {
 	switch( Error ) {
 	case ERROR_SUCCESS:
-		return 0;
-	case ERROR_FILE_NOT_FOUND:
-	case ERROR_PATH_NOT_FOUND:
-		return ENOENT;
-	case ERROR_INVALID_DRIVE:
-		return ENODEV;
-	default:
-		return Error;
-	}
+            return 0;
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
+            return ENOENT;
+        case ERROR_INVALID_DRIVE:
+            return ENODEV;
+        case ERROR_ACCESS_DENIED:
+            return EACCES;
+        case ERROR_TOO_MANY_OPEN_FILES:
+            return EMFILE;
+        case ERROR_INVALID_HANDLE:
+            return EBADF;
+        case ERROR_ARENA_TRASHED:
+        case ERROR_NOT_ENOUGH_MEMORY:
+        case ERROR_INVALID_BLOCK:
+        case ERROR_OUTOFMEMORY:
+            return ENOMEM;
+        case ERROR_BAD_ENVIRONMENT:
+            return E2BIG;
+        case ERROR_BAD_FORMAT:
+            return ENOEXEC;
+        case ERROR_CURRENT_DIRECTORY:
+            return EBUSY;
+        case ERROR_NOT_SAME_DEVICE:
+            return EXDEV;
+        case ERROR_WRITE_PROTECT:
+            return EROFS;
+        case ERROR_BAD_UNIT:
+            return ENODEV;
+        case ERROR_NOT_READY:
+            // return ENXIO; // An approximation
+            return ENOMEDIUM;
+        case ERROR_BAD_LENGTH:
+            return E2BIG;
+        case ERROR_WRITE_FAULT:
+        case ERROR_READ_FAULT:
+            return EIO;
+        case ERROR_SHARING_VIOLATION:
+            return EBUSY;
+        default:
+            return Error;
+        }
 }
