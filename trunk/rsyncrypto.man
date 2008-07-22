@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "June 24, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "July 22, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -110,6 +110,25 @@ files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
 during the encryption (and thus decryption) operation.
 .TP
+.B \-\-risky\-writes
+Usually, when rsyncrypto writes a file, it uses a temporary name and moves the
+file to its final name when successfully done. This serves two purposes.  During
+encryption, this prevents the false sense of security that may arise in case of
+an rsyncrypto interruption by preventing a partial file from being present (and
+in case of an update, by keeping the old backup). This also ensures that restarting
+rsyncrypto will enable it to correctly detect whether the operation needs to be
+repeated. During decryption, this prevents overwriting a file until we are certain
+we can decrypt its source.
+
+The main problem with this approach is that, if the file being written is large,
+the file system needs to have enough space for two copies of it for the duration of
+the operation. Also, if hard links are maintained, the default rsyncrypto behavior
+will break the link.
+
+Specify \fB\-\-risky\-writes\fP to make rsyncrypto directly overwrite the existing file
+using the final name.
+deleted as soon as the operation begins, a
+.TP
 .BI \-\-modify\-window= num
 Only applicable when \fB\-c\fP is in effect. When comparing file modification times,
 treat as equal modification times that are \fInum\fP seconds apart. Default value is
@@ -140,7 +159,10 @@ possible to have files that have been changed on disk by a previous invocation
 of rsyncrypto, but were over written by a later invocation and do not show up
 in the latest version of \fIlogfile\fP. In other words, if rsyncrypto is run
 more than once between two completely successful invocations of rsync, it is
-possible for \fIlogfile\fP not to be complete. Use this option at your own risk!
+possible for \fIlogfile\fP not to be complete. \fBUse this option at your own risk!\fP
+
+It is highly recommended that you upgrade to rsync version 3 or higher rather than
+rely on this option.
 .TP
 .BI "\-n\fP, \fB\-\-name\-encrypt=" translation_file
 Encrypt the file name. If this option is specified, this means that file

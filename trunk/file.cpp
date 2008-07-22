@@ -441,12 +441,23 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     status=infd.fstat();
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777);
-    write_bufferfd outfd(autofd(dst_file, O_CREAT|O_TRUNC|O_WRONLY, 0666));
+
+    std::string tmpname(dst_file);
+
+    if( !EXISTS(risky_writes) ) {
+        tmpname+=CREATE_SUFFIX;
+    }
+
+    write_bufferfd outfd(autofd(tmpname.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0666));
     head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
     if( !headeread ) {
         write_header( key_file, head.get());
     }
-    copy_metadata( dst_file, &status );
+    copy_metadata( tmpname.c_str(), &status );
+
+    if( !EXISTS(risky_writes) ) {
+        autofd::mv( tmpname.c_str(), dst_file );
+    }
 }
 
 std::string name_concat( const char *left, const char *right, mode_t mode )

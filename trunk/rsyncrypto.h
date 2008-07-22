@@ -5,7 +5,7 @@
 
 struct startup_options {
     struct arg_lit *help, *del, *delkey, *filelist, *fr, *fk, *noarch, *version;
-    struct arg_lit *decrypt, *verbosity, *recurse, *changed;
+    struct arg_lit *decrypt, *verbosity, *recurse, *changed, *risky_writes;
     struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim, *nenest;
     struct arg_int *noatime, *mod_win;
     struct arg_file *gzip;
@@ -13,7 +13,7 @@ struct startup_options {
     struct arg_rem *rem1;
     struct arg_end *end;
 
-    void *argtable[28
+    void *argtable[29
 #if HAVE_NOATIME
         +1
 #endif
@@ -45,6 +45,7 @@ struct startup_options {
         argtable[i++]=delkey=arg_lit0( NULL, "delete-keys", "Delete also the keys. Implies --delete");
         argtable[i++]=filelist=arg_lit0( NULL, "filelist",
                 "<src> is a list of file and directory names to process. \"-\" means read from stdin.");
+        argtable[i++]=risky_writes=arg_lit0( NULL, "risky-writes", "Write files in place - do not do safe replacement" );
         noatime=arg_int0( NULL, "noatime", "<n>", "Level of O_NOATIME use" );
 #if HAVE_NOATIME
         argtable[i++]=noatime;
@@ -95,6 +96,9 @@ extern std::ostream *report0, *report1, *report2, *report3;
 extern std::auto_ptr<std::ostream> changes_log;
 
 #define EXCEPT_CLASS rscerror
+
+// Add a constant suffix to files while they are being created
+#define CREATE_SUFFIX ".rsyncrypto_tmp"
 
 #if defined(_WIN32)
 
