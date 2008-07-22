@@ -63,8 +63,8 @@ int Error2errno( DWORD Error ) {
         case ERROR_BAD_UNIT:
             return ENODEV;
         case ERROR_NOT_READY:
-            // return ENXIO; // An approximation
-            return ENOMEDIUM;
+            return ENXIO; // An approximation
+            // return ENOMEDIUM;
         case ERROR_BAD_LENGTH:
             return E2BIG;
         case ERROR_WRITE_FAULT:
