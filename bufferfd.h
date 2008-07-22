@@ -48,7 +48,28 @@ public:
 	buf_size(bufsize), buffer(new char [bufsize]), buffill(0)
     {
     }
-    // We're ok with the default copy constructor
+
+    // This is not exactly the copy constructor, as the right hand side is not const
+    write_bufferfd( write_bufferfd &rhs ) : buf_size(rhs.buf_size)
+    {
+        rhs.flush();
+
+        static_cast<autofd &>(*this)=rhs;
+        buffer=rhs.buffer;
+        buffill=0;
+    }
+
+    // A close relative - the operator=
+    write_bufferfd &operator=( write_bufferfd &rhs )
+    {
+        flush();
+        rhs.flush();
+
+        // Do not copy the buffer size, obviously
+        static_cast<autofd &>(*this)=rhs;
+
+        return *this;
+    }
 
     ~write_bufferfd()
     {

@@ -204,6 +204,13 @@ public:
 
         return ret;
     }
+
+    static void mv( const char *src, const char *dst ) {
+        if( rename( src, dst )<0 ) {
+            throw rscerror("rename failed", errno, dst );
+        }
+    }
+
     // Recursively create directories
     // mode is the permissions of the end directory
     // int_mode is the permissions of all intermediately created dirs

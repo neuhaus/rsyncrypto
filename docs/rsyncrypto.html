@@ -2,7 +2,7 @@
 <HTML><HEAD><TITLE>Man page of RSYNCRYPTO</TITLE>
 </HEAD><BODY>
 <H1>RSYNCRYPTO</H1>
-Section: Rsyncrypto User Manual (1)<BR>Updated: June 24, 2008<BR><A HREF="#index">Index</A>
+Section: Rsyncrypto User Manual (1)<BR>Updated: July 22, 2008<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 
@@ -147,6 +147,26 @@ to performing the operation. If the modified time is the same, assume that the
 files are also the same, and skip the operation. Notice that unlike <B>rsync</B>,
 file sizes are not compared. This is because the file size is expected to change
 during the encryption (and thus decryption) operation.
+<DT><B>--risky-writes</B>
+
+<DD>
+Usually, when rsyncrypto writes a file, it uses a temporary name and moves the
+file to its final name when successfully done. This serves two purposes.  During
+encryption, this prevents the false sense of security that may arise in case of
+an rsyncrypto interruption by preventing a partial file from being present (and
+in case of an update, by keeping the old backup). This also ensures that restarting
+rsyncrypto will enable it to correctly detect whether the operation needs to be
+repeated. During decryption, this prevents overwriting a file until we are certain
+we can decrypt its source.
+<P>
+The main problem with this approach is that, if the file being written is large,
+the file system needs to have enough space for two copies of it for the duration of
+the operation. Also, if hard links are maintained, the default rsyncrypto behavior
+will break the link.
+<P>
+Specify <B>--risky-writes</B> to make rsyncrypto directly overwrite the existing file
+using the final name.
+deleted as soon as the operation begins, a
 <DT><B>--modify-window=</B><I>num</I>
 
 <DD>
@@ -180,7 +200,10 @@ possible to have files that have been changed on disk by a previous invocation
 of rsyncrypto, but were over written by a later invocation and do not show up
 in the latest version of <I>logfile</I>. In other words, if rsyncrypto is run
 more than once between two completely successful invocations of rsync, it is
-possible for <I>logfile</I> not to be complete. Use this option at your own risk!
+possible for <I>logfile</I> not to be complete. <B>Use this option at your own risk!</B>
+<P>
+It is highly recommended that you upgrade to rsync version 3 or higher rather than
+rely on this option.
 <DT><B>-n</B>, <B>--name-encrypt=</B><I>translation_file</I>
 
 <DD>
@@ -554,6 +577,6 @@ This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debi
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 19:42:25 GMT, June 24, 2008
+Time: 05:45:50 GMT, July 22, 2008
 </BODY>
 </HTML>
