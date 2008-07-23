@@ -1,0 +1,38 @@
+.TH RSYNCRYPTO_RECOVER 1 "May 13, 2008" "Lingnu Open Source Consulting" "Rsyncrypto_recover User Manual"
+.\" Please adjust this date whenever revising the manpage.
+.SH NAME
+rsyncrypto_recover \- recover all usable data from corrupted rsyncrypto filemaps
+.SH SYNOPSIS
+.B rsyncrypto_recover
+.IB badfile " > " goodfile
+.SH DESCRIPTION
+This manual page documents the \fBrsyncrypto_recover\fP command.
+.PP
+When the \fBrsyncrypto\fP command is used with the \fB\-\-name\-encrypt\fP command,
+a file containing the mapping from the plain text representation to the encrypted
+file names is formed. This file mapping has a strict format of records delimited
+by a NULL byte.
+.PP
+A bug introduced in version 1.07 or \fBrsyncrypto\fP, and solved in version 1.09,
+caused this file to be somewhat corrupted under certain circumstances, most notably
+the use of the \fB\-\-delete\-keys\fP command line option.
+.PP
+It is important to note that the only records corrupted are records that were due
+to be deleted anyways. \fBThis bug did not result in any loss of actual important data.\fP
+It did, however, leave behind a file that \fBrsyncrypto\fP then refused to open.
+.PP
+\fBrsyncrypto_recover\fP will read in a file map, and output to the standard output
+only those records that are valid.
+.SH PARAMETERS
+.TP
+.I badfile
+A file map that contains some good and some corrupted records.
+.SH SEE ALSO
+.BR rsyncrypto (1)
+.SH AUTHOR
+rsyncrypto was written by Shachar Shemesh for Lingnu Open Source Consulting ltd.
+http://www.lingnu.com
+.PP
+This manual page was written by Shachar Shemesh <shachar@debian.org>
+.SH PROJECT HOMEPAGE
+http://rsyncrypto.lingnu.com
