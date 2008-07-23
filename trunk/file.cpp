@@ -403,7 +403,12 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
     }
 
     autofd::mkpath( std::string(dst_file, autofd::dirpart(dst_file)).c_str(), 0777 );
-    write_bufferfd outfd(autofd(dst_file, O_CREAT|O_TRUNC|O_RDWR, 0666));
+    std::string tmpdst(dst_file);
+
+    if( !EXISTS(risky_writes) ) {
+        tmpdst+=CREATE_SUFFIX;
+    }
+    write_bufferfd outfd(autofd(tmpdst.c_str(), O_CREAT|O_TRUNC|O_RDWR, 0666));
     encrypt_file( head.get(), rsa_key, infd, outfd );
     if( !headfd.valid() ) {
         write_header( key_file, head.get() );
@@ -411,7 +416,11 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 
     // Set the times on the encrypted file to match the plaintext file
     if( archive && stat!=NULL ) {
-        copy_metadata( dst_file, stat );
+        copy_metadata( tmpdst.c_str(), stat );
+    }
+
+    if( !EXISTS(risky_writes) ) {
+        autofd::mv( tmpdst.c_str(), dst_file );
     }
 }
 
