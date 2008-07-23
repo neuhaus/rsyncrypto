@@ -311,10 +311,16 @@ public:
 
         return ret;
     }
+
+    static void mv( const char *src, const char *dst ) {
+        if( !MoveFileEx( src, dst, MOVEFILE_REPLACE_EXISTING) ) {
+            throw rscerror("rename failed", Error2errno(GetLastError()), dst );
+        }
+    }
+
     // Recursively create directories
     // mode is the permissions of the end directory
     // int_mode is the permissions of all intermediately created dirs
-
 private:
     static void mkpath_actual(const std::string &path, mode_t mode)
     {
