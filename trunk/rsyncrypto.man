@@ -127,7 +127,6 @@ will break the link.
 
 Specify \fB\-\-risky\-writes\fP to make rsyncrypto directly overwrite the existing file
 using the final name.
-deleted as soon as the operation begins, a
 .TP
 .BI \-\-modify\-window= num
 Only applicable when \fB\-c\fP is in effect. When comparing file modification times,
