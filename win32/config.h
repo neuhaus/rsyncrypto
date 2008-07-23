@@ -160,13 +160,13 @@
 #define PACKAGE_NAME "rsyncrypto"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "rsyncrypto 1.11"
+#define PACKAGE_STRING "rsyncrypto 1.12"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "rsyncrypto"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.11"
+#define PACKAGE_VERSION "1.12"
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
@@ -175,7 +175,7 @@
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "1.11"
+#define VERSION "1.12"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS

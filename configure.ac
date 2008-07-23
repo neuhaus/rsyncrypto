@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([rsyncrypto],[1.11])
+AC_INIT([rsyncrypto],[1.12])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([rsyncrypto.h])
 AM_CONFIG_HEADER([config.h])

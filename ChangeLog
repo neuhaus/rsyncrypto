@@ -1,3 +1,8 @@
+Version 1.12 - July 23 2008
+    * Switch to safe creation and overwriting of files
+    * Remove claimed bashism from the test script
+    * Improve the Win32 reported error codes
+
 Version 1.11 - June 24 2008
     * Resolve oldest reported problem - segfault when private key is needed
       but not available.
