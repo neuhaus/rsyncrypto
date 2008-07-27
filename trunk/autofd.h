@@ -128,8 +128,9 @@ private:
     {
         ssize_t res=::write( fd, buf, count );
 
-        if( res!=static_cast<ssize_t>(count) )
+        if( res<=0 ) {
             throw rscerror("write failed", errno);
+        }
 
         return res;
     }

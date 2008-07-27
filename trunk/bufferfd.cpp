@@ -96,8 +96,29 @@ ssize_t write_bufferfd::write( void *buf, size_t count )
 void write_bufferfd::flush()
 {
     if( buffill>0 ) {
-	autofd::write( buffer.get(), buffill );
+        try {
+            // If the write was partial, shift the buffer
+            ssize_t count=autofd::write( buffer.get(), buffill );
 
-	buffill=0;
+            if( count==buffill ) {
+                buffill=0;
+
+                error=false;
+            } else {
+                int diff=buffill-count;
+
+                for( int i=0; i<diff; ++i ) {
+                    buffer[i]=buffer[i+diff];
+                }
+
+                buffill=diff;
+            }
+        } catch(const rscerror &exc)
+        {
+            // Mark that we have had an error on this buffer
+            error=true;
+
+            throw exc;
+        }
     }
 }

@@ -39,18 +39,19 @@ class write_bufferfd : public autofd {
     const size_t buf_size;
     auto_array<char> buffer;
     mutable int buffill;
+    mutable bool error;
 public:
     write_bufferfd( size_t bufsize=DEFAULT_BUF_SIZE ) : buf_size(bufsize),
-	buffer(new char [bufsize]), buffill(0)
+	buffer(new char [bufsize]), buffill(0), error(false)
     {
     }
     write_bufferfd( const autofd &rhs, size_t bufsize=DEFAULT_BUF_SIZE ) : autofd(rhs),
-	buf_size(bufsize), buffer(new char [bufsize]), buffill(0)
+	buf_size(bufsize), buffer(new char [bufsize]), buffill(0), error(false)
     {
     }
 
     // This is not exactly the copy constructor, as the right hand side is not const
-    write_bufferfd( write_bufferfd &rhs ) : buf_size(rhs.buf_size)
+    write_bufferfd( write_bufferfd &rhs ) : buf_size(rhs.buf_size), error(false)
     {
         rhs.flush();
 
@@ -67,13 +68,15 @@ public:
 
         // Do not copy the buffer size, obviously
         static_cast<autofd &>(*this)=rhs;
+        error=false;
 
         return *this;
     }
 
     ~write_bufferfd()
     {
-	flush();
+        if( !error )
+            flush();
     }
 
     ssize_t write( void *buf, size_t count );
