@@ -2,7 +2,7 @@
 <HTML><HEAD><TITLE>Man page of RSYNCRYPTO</TITLE>
 </HEAD><BODY>
 <H1>RSYNCRYPTO</H1>
-Section: Rsyncrypto User Manual (1)<BR>Updated: July 22, 2008<BR><A HREF="#index">Index</A>
+Section: Rsyncrypto User Manual (1)<BR>Updated: October 21, 2008<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 
@@ -23,6 +23,12 @@ rsyncrypto - rsync friendly encryption
 
 [<I>options</I>]<I> </I><B>-r</B><I> srcdir dstdir keysdir key</I>
 
+<BR>
+
+<B>rsyncrypto</B>
+
+[<I>options</I>]<I> </I><B>--filelist=</B><I>file srcdir dstdir keysdir key</I>
+
 <A NAME="lbAD">&nbsp;</A>
 <H2>DESCRIPTION</H2>
 
@@ -33,7 +39,7 @@ This manual page documents the <B>rsyncrypto</B> command.
 in a way that ensures that local changes to the plain text file will result in
 local changes to the cipher text file. This, in turn, ensures that doing
 <B>rsync</B> to synchronize the encrypted files to another machine will have
-only a small impact on <B>rsync</B>'s efficiency.
+only a small impact on <B>rsync</B>'s wire efficiency.
 <P>
 
 <B>rsyncrypto</B> will encrypt files using a symmetric block cipher (AES). Each
@@ -64,21 +70,23 @@ encrypted files in whatever way (secure or insecure, but probably <B>rsync</B>
 :), and keep the plain text file, as well as the key file, secure. As long as
 you saved the RSA private key, you can reconstruct them both.
 <A NAME="lbAE">&nbsp;</A>
-<H2>PARAMETERS</H2>
+<H2>ARGUMENTS</H2>
 
-The parameters meaning depend on the existence of the <I>-r</I> and <I>-d</I>
-flags.
+The argument meaning depends on the existence of the <B>-r</B>, <B>--filelist</B>
+and <B>-d</B> flags.
 <DL COMPACT>
 <DT><I>srcfile</I> or <I>srcdir</I><DD>
 This is the source for the operation. This will be the plain text file for
-encryption, and the cipher text file for decryption. If the <I>-r</I> option is
+encryption, and the cipher text file for decryption. If the <B>-r</B> option is
 given, <I>srcdir</I> is the directory from which files are to be
-encrypted/decrypted. Otherwise, <I>srcfile</I> is the file to be
+encrypted/decrypted. If the <B>--filelist</B> option is given, <I>srcdir</I> is
+the directory in relation to which the file names given by the filelist file are
+interpreted. If neither are given, <I>srcfile</I> is the file to be
 encrypted/decrypted. In any case, <I>src</I> must exist prior to running
 <B>rsyncrypto</B>.
 <DT><I>dstfile</I> or <I>dstdir</I><DD>
 Similar to <I>src</I>, this is the destination of the operation. It will be
-the plain text to be created if <I>-d</I> was given, or the encrypted file
+the plain text to be created if <B>-d</B> was given, or the encrypted file
 otherwise.
 <DT><I>keyfile</I> or <I>keydir</I><DD>
 The file holding the symmetric key for the encryption, or a directory in which
@@ -87,13 +95,7 @@ as the plain text files.
 <DT><I>key</I><DD>
 This file can either be a X509 certificate holding a public key, or a PEM format
 private key. The private key is never needed unless a cold decryption is
-required. See the
-<B><A HREF="/cgi-bin/man/man2html?1+req">req</A></B>(1)
-
-or
-<B><A HREF="/cgi-bin/man/man2html?1+x509">x509</A></B>(1)
-
-manual pages for more info.
+required. See the <B><A HREF="/cgi-bin/man/man2html?1+req">req</A></B>(1) or <B><A HREF="/cgi-bin/man/man2html?1+x509">x509</A></B>(1) manual pages for more info.
 </DL>
 <P>
 
@@ -102,14 +104,14 @@ is to be created must exist prior to running <B>rsyncrypto</B>.
 <P>
 
 If encrypting, and a symmetric key for the file is found, the same parameters
-will be used for the encryption unless the <I>--fr</I> or <I>--fk</I> options
+will be used for the encryption unless the <B>--fr</B> or <B>--fk</B> options
 are used. If that's the case, the key file is going to be replaced with the
 correct parameters.
 <A NAME="lbAF">&nbsp;</A>
 <H2>OPTIONS</H2>
 
 These programs follow the usual GNU command line syntax, with long options
-starting with two dashes (`-').
+starting with two dashes (`--').
 <DL COMPACT>
 <DT><B>-h</B>, <B>--help</B>
 
@@ -129,20 +131,27 @@ into <I>dst</I>, and create <I>keyfile</I> if it does not exist.
 <DD>
 Recursively encrypt/decrypt an entire directory structure. All files under
 <I>srcdir</I> will be encrypted to files of the same name and path (almost, see
-<I>--trim</I>) under <I>dstdir</I>. If not already there, a key file will be
+&quot;<B>--trim</B>&quot;) under <I>dstdir</I>. If not already there, a key file will be
 created for each file under <I>keydir</I>.
-<DT><B>--filelist</B>
+<DT><B>--filelist=</B><I>file</I>
 
 <DD>
-The first argument is a pointer to a file (or &quot;-&quot; for stdin) that has a list
-of files to process. Any name ending with a &quot;/&quot; is taken to be a directory in
-recursive mode, and any other name is a file name. The second argument is a
-directory where the files are encrypted to. --filelist and -r are mutually
-exclusive.
+<I>File</I> is the name of a file (or &quot;-&quot; for stdin) that has a list
+of files and directories to process. If the name matches a directory, the entire
+directory is encrytped in recursive mode.
+<P>
+Absolute file names in <I>file</I> are taken literally, but are stored as relative
+(stripped of the leading slash and drive name where applicable). Relative names
+are interpreted in relation to the directory name given by the <I>srcdir</I> argument.
+All names are trimmed according to the <B>--trim</B> option.
+<P>
+<I>dstdir</I> is interpreted as with the <B>-r</B> option.
+<P>
+<B>--filelist</B> and <B>-r</B> are mutually exclusive.
 <DT><B>-c</B>, <B>--changed</B>
 
 <DD>
-Check the src and destination modified time (see --modify-window) prior
+Check the src and destination modified time (see <B>--modify-window</B>) prior
 to performing the operation. If the modified time is the same, assume that the
 files are also the same, and skip the operation. Notice that unlike <B>rsync</B>,
 file sizes are not compared. This is because the file size is expected to change
@@ -216,11 +225,11 @@ decryption of the file names is possible when the symmetric keys are lost.
 <DT><B>--ne-nesting=</B><I>num</I>
 
 <DD>
-When the --name-encrypt option is used, by default all mangled file names
+When the <B>--name-encrypt</B> option is used, by default all mangled file names
 are stored in a single directory. When encrypting large directory trees, this
-can result in rather big directories. Using &quot;--ne-nesting&quot; will split the
+can result in rather big directories. Using &quot;<B>--ne-nesting</B>&quot; will split the
 files to sub directories, according to random bits that are part of the
-encrypted file name. &quot;n&quot; is the number of directories to nest.
+encrypted file name. &quot;<I>num</I>&quot; is the number of directories to nest.
 <DT><B>--trim=</B><I>num</I>
 
 <DD>
@@ -245,23 +254,23 @@ the original file. This option implies <B>--delete</B>.
 
 <DD>
 Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
-Note that unless the <I>--fr</I> or <I>--fkP options are also specified, this
-will only affect files for which no keyfile</I> exists.
+Note that unless the <I>--fr</I> or <I>--fk</I> options are also specified, this
+will only affect files for which no <I>keyfile</I> exists.
 <DT><B>--noatime=</B><I>num</I>
 
 <DD>
 (Only on some platforms, most notably Linux). The platform usually keeps track of when
 files were last being accessed. Since <B>rsyncrypto</B> is typically used for backup, it
-opens the files it encrypts with the O_NOATIME option, which is a Linux specific
+opens the files it encrypts with the <B>O_NOATIME</B> option, which is a Linux specific
 extension that tells the system not to update the file's access time. When opening a
 file where the opening process is not owned by the file owner, an attempt to open the
 file with O_NOATIME will cause the open to fail with &quot;permission denied&quot;.
 <BR>&nbsp;
 <I>num</I> can be one of these options:
-<B>0</B> means do not use O_NOATIME at all.
-<B>1</B> (the default) means attempt to only use O_NOATIME if <B>rsyncrypto</B> thinks it
+<B>0</B> means do not use <B>O_NOATIME</B> at all.
+<B>1</B> (the default) means attempt to only use <B>O_NOATIME</B> if <B>rsyncrypto</B> thinks it
 will not cause a permission denied error.
-<B>2</B> means to use O_NOATIME always.
+<B>2</B> means to use <B>O_NOATIME</B> always.
 <DT><B>--no-archive-mode</B>
 
 <DD>
@@ -274,7 +283,7 @@ it. In order not to become rsync unfriendly due to the compression,
 <B>rsyncrypto</B> will search the path for an instance of
 <B><A HREF="/cgi-bin/man/man2html?1+gzip">gzip</A></B>(1)
 
-that supports the <I>--rsyncable</I> option. If the system's default gzip does
+that supports the <B>--rsyncable</B> option. If the system's default gzip does
 not support this option (all Debian and derivatives, as well as some others, support it), use
 this option to tell <B>rsyncrypto</B> to use a different instance of gzip. The
 tests directory of rsyncrypto's source has a file called &quot;gzip&quot;, that does NULL
@@ -289,9 +298,9 @@ Affects the rolling block algorithm. See <B>NOTES</B>.
 
 <DD>
 If command line, or a version with different defaults, dictate different
-values for the <I>--roll-*</I> options or the <I>-b</I> option, these will only
+values for the <B>--roll-*</B> options or the <B>-b</B> option, these will only
 affect files for which <I>keyfile</I> does not yet exist. specifying the
-<I>--fk</I> or <I>--fr</I> will recreate <I>keyfile</I> if it has values different
+<B>--fk</B> or <B>--fr</B> will recreate <I>keyfile</I> if it has values different
 than those in the previous key file.
 <DT><B>-v</B>, <B>--verbose</B>
 
@@ -305,11 +314,11 @@ Increase verbosity level. Specify several times to be more verbose.
 
 <P>
 
-If <I>srcfile</I> is given as `-', the plain text data will be read fro stdin.
+If <I>srcfile</I> is given as `-', the plain text data will be read from stdin.
 This does not yet work for decompression (see <B>BUGS</B>).
 <P>
 
-<B>--roll-win</B>=num, <B>--roll-min</B>=num, <B>--roll-sensitivity</B>=num
+<B>--roll-win=</B><I>num</I>, <B>--roll-min=</B><I>num</I>, <B>--roll-sensitivity=</B><I>num</I>
 
 <P>
 
@@ -342,20 +351,20 @@ running <B>rsyncrypto</B> with <I>srcdir</I> of &quot;a/b&quot;, and <I>dstdir</
 will create &quot;f/b/c/file&quot;.
 <P>
 
-The <I>--trim</I> options lets the user say how many parts to trim from
+The <B>--trim</B> options lets the user say how many parts to trim from
 <I>srcdir</I> when creating directories under <I>dstdir</I> and <I>keydir</I>. If, in the
 above example, we said
-<I>--trim</I>=0
+<B>--trim</B>=0
 
 then &quot;f/a/b/c/file&quot; would have been created. Likewise, if we said
-<I>--trim</I>=2
+<B>--trim</B>=2
 
 then &quot;f/c/file&quot; would have been created.
 <P>
 
 It is an error to give a trim value which is higher than the number of
 directory parts actually in <I>srcdir</I>. In the above example,
-<I>--trim</I>=3
+<B>--trim</B>=3
 
 would result in an error.
 <A NAME="lbAI">&nbsp;</A>
@@ -561,7 +570,7 @@ This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debi
 <DT><A HREF="#lbAB">NAME</A><DD>
 <DT><A HREF="#lbAC">SYNOPSIS</A><DD>
 <DT><A HREF="#lbAD">DESCRIPTION</A><DD>
-<DT><A HREF="#lbAE">PARAMETERS</A><DD>
+<DT><A HREF="#lbAE">ARGUMENTS</A><DD>
 <DT><A HREF="#lbAF">OPTIONS</A><DD>
 <DT><A HREF="#lbAG">NOTES</A><DD>
 <DT><A HREF="#lbAH">THE TRIM OPTION</A><DD>
@@ -576,6 +585,6 @@ This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debi
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 19:43:39 GMT, July 23, 2008
+Time: 15:02:14 GMT, October 21, 2008
 </BODY>
 </HTML>

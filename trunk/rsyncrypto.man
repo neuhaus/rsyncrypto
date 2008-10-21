@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "July 22, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "October 21, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -7,7 +7,10 @@ rsyncrypto \- rsync friendly encryption
 .RI [ options ] " srcfile dstfile keyfile key"
 .br
 .B rsyncrypto
-.RI [ options ] " \fB-r\fI srcdir dstdir keysdir key"
+.RI [ options ] " \fB\-r\fI srcdir dstdir keysdir key"
+.br
+.B rsyncrypto
+.RI [ options ] " \fB\-\-filelist=\fIfile srcdir dstdir keysdir key"
 .SH DESCRIPTION
 This manual page documents the \fBrsyncrypto\fP command.
 .PP
@@ -15,7 +18,7 @@ This manual page documents the \fBrsyncrypto\fP command.
 in a way that ensures that local changes to the plain text file will result in
 local changes to the cipher text file. This, in turn, ensures that doing
 \fBrsync\fP to synchronize the encrypted files to another machine will have
-only a small impact on \fBrsync\fP's efficiency.
+only a small impact on \fBrsync\fP's wire efficiency.
 .PP
 \fBrsyncrypto\fP will encrypt files using a symmetric block cipher (AES). Each
 file is encrypted using a unique key. The file key is stored in two locations.
@@ -38,21 +41,23 @@ take place. Typically, this means that you would either want to transfer the
 encrypted files in whatever way (secure or insecure, but probably \fBrsync\fP
 :), and keep the plain text file, as well as the key file, secure. As long as
 you saved the RSA private key, you can reconstruct them both.
-.SH PARAMETERS
-The parameters meaning depend on the existence of the \fI-r\fP and \fI-d\fP
-flags.
+.SH ARGUMENTS
+The argument meaning depends on the existence of the \fB\-r\fP, \fB\-\-filelist\fP
+and \fB-d\fP flags.
 .TP
 \fIsrcfile\fP or \fIsrcdir\fP
 This is the source for the operation. This will be the plain text file for
-encryption, and the cipher text file for decryption. If the \fI-r\fP option is
+encryption, and the cipher text file for decryption. If the \fB\-r\fP option is
 given, \fIsrcdir\fP is the directory from which files are to be
-encrypted/decrypted. Otherwise, \fIsrcfile\fP is the file to be
+encrypted/decrypted. If the \fB\-\-filelist\fP option is given, \fIsrcdir\fP is
+the directory in relation to which the file names given by the filelist file are
+interpreted. If neither are given, \fIsrcfile\fP is the file to be
 encrypted/decrypted. In any case, \fIsrc\fP must exist prior to running
 \fBrsyncrypto\fP.
 .TP
 \fIdstfile\fP or \fIdstdir\fP
 Similar to \fIsrc\fP, this is the destination of the operation. It will be
-the plain text to be created if \fI-d\fP was given, or the encrypted file
+the plain text to be created if \fB\-d\fP was given, or the encrypted file
 otherwise.
 .TP
 \fIkeyfile\fP or \fIkeydir\fP
@@ -63,22 +68,18 @@ as the plain text files.
 \fIkey\fP
 This file can either be a X509 certificate holding a public key, or a PEM format
 private key. The private key is never needed unless a cold decryption is
-required. See the
-.BR req (1)
-or
-.BR x509 (1)
-manual pages for more info.
+required. See the \fBreq\fP(1) or \fBx509\fP(1) manual pages for more info.
 .P
 If \fIdst\fP does not exist, it will be created. The directory in which it
 is to be created must exist prior to running \fBrsyncrypto\fP.
 .P
 If encrypting, and a symmetric key for the file is found, the same parameters
-will be used for the encryption unless the \fI\-\-fr\fP or \fI\-\-fk\fP options
+will be used for the encryption unless the \fB\-\-fr\fP or \fB\-\-fk\fP options
 are used. If that's the case, the key file is going to be replaced with the
 correct parameters.
 .SH OPTIONS
 These programs follow the usual GNU command line syntax, with long options
-starting with two dashes (`-').
+starting with two dashes (`\-\-').
 .TP
 .BR \-h ", " \-\-help
 Show summary of options.
@@ -93,18 +94,25 @@ into \fIdst\fP, and create \fIkeyfile\fP if it does not exist.
 .BR \-r ", " \-\-recurse
 Recursively encrypt/decrypt an entire directory structure. All files under
 \fIsrcdir\fP will be encrypted to files of the same name and path (almost, see
-\fI\-\-trim\fP) under \fIdstdir\fP. If not already there, a key file will be
+"\fB\-\-trim\fP") under \fIdstdir\fP. If not already there, a key file will be
 created for each file under \fIkeydir\fP.
 .TP
-.B \-\-filelist
-The first argument is a pointer to a file (or "\-" for stdin) that has a list
-of files to process. Any name ending with a "/" is taken to be a directory in
-recursive mode, and any other name is a file name. The second argument is a
-directory where the files are encrypted to. \-\-filelist and \-r are mutually
-exclusive.
+.BI \-\-filelist= file
+\fIFile\fP is the name of a file (or "\-" for stdin) that has a list
+of files and directories to process. If the name matches a directory, the entire
+directory is encrytped in recursive mode.
+
+Absolute file names in \fIfile\fP are taken literally, but are stored as relative
+(stripped of the leading slash and drive name where applicable). Relative names
+are interpreted in relation to the directory name given by the \fIsrcdir\fP argument.
+All names are trimmed according to the \fB\-\-trim\fP option.
+
+\fIdstdir\fP is interpreted as with the \fB\-r\fP option.
+
+\fB\-\-filelist\fP and \fB\-r\fP are mutually exclusive.
 .TP
 .BR \-c ", " \-\-changed
-Check the src and destination modified time (see \-\-modify\-window) prior
+Check the src and destination modified time (see \fB\-\-modify\-window\fP) prior
 to performing the operation. If the modified time is the same, assume that the
 files are also the same, and skip the operation. Notice that unlike \fBrsync\fP,
 file sizes are not compared. This is because the file size is expected to change
@@ -173,11 +181,11 @@ encryption, and is given the fixed name "filemap". This is done so that
 decryption of the file names is possible when the symmetric keys are lost.
 .TP
 .BI \-\-ne\-nesting= num
-When the \-\-name\-encrypt option is used, by default all mangled file names
+When the \fB\-\-name\-encrypt\fP option is used, by default all mangled file names
 are stored in a single directory. When encrypting large directory trees, this
-can result in rather big directories. Using "\-\-ne\-nesting" will split the
+can result in rather big directories. Using "\fB\-\-ne\-nesting\fP" will split the
 files to sub directories, according to random bits that are part of the
-encrypted file name. "n" is the number of directories to nest.
+encrypted file name. "\fInum\fP" is the number of directories to nest.
 .TP
 .BI \-\-trim= num
 Determine how many directory levels to trim from the beginning of the \fIsrcdir\fP
@@ -197,22 +205,22 @@ the original file. This option implies \fB\-\-delete\fP.
 .TP
 .BI \-b num " \-\-keybits=" num
 Specify the block cipher's key size. For AES, these can be 128, 192 or 256.
-Note that unless the \fI\-\-fr\fP or \fI\-\-fk\P options are also specified, this
+Note that unless the \fI\-\-fr\fP or \fI\-\-fk\fP options are also specified, this
 will only affect files for which no \fIkeyfile\fP exists.
 .TP
 .BI \-\-noatime= num
 (Only on some platforms, most notably Linux). The platform usually keeps track of when
 files were last being accessed. Since \fBrsyncrypto\fP is typically used for backup, it
-opens the files it encrypts with the O_NOATIME option, which is a Linux specific
+opens the files it encrypts with the \fBO_NOATIME\fP option, which is a Linux specific
 extension that tells the system not to update the file's access time. When opening a
 file where the opening process is not owned by the file owner, an attempt to open the
 file with O_NOATIME will cause the open to fail with "permission denied".
  
 \fInum\fP can be one of these options:
-\fB0\fP means do not use O_NOATIME at all.
-\fB1\fP (the default) means attempt to only use O_NOATIME if \fBrsyncrypto\fP thinks it
+\fB0\fP means do not use \fBO_NOATIME\fP at all.
+\fB1\fP (the default) means attempt to only use \fBO_NOATIME\fP if \fBrsyncrypto\fP thinks it
 will not cause a permission denied error.
-\fB2\fP means to use O_NOATIME always.
+\fB2\fP means to use \fBO_NOATIME\fP always.
 .TP
 .B \-\-no\-archive\-mode
 Do not try to preserve timestamps. This option is incompatible with \fB\-c\fP.
@@ -222,7 +230,7 @@ By default, \fBrsyncrypto\fP will compress the plain text prior to encrypting
 it. In order not to become rsync unfriendly due to the compression,
 \fBrsyncrypto\fP will search the path for an instance of
 .BR gzip (1)
-that supports the \fI\-\-rsyncable\fP option. If the system's default gzip does
+that supports the \fB\-\-rsyncable\fP option. If the system's default gzip does
 not support this option (all Debian and derivatives, as well as some others, support it), use
 this option to tell \fBrsyncrypto\fP to use a different instance of gzip. The
 tests directory of rsyncrypto's source has a file called "gzip", that does NULL
@@ -234,9 +242,9 @@ Affects the rolling block algorithm. See \fBNOTES\fP.
 .TP
 .BR \-\-fk ", " \-\-fr
 If command line, or a version with different defaults, dictate different
-values for the \fI\-\-roll\-*\fP options or the \fI\-b\fP option, these will only
+values for the \fB\-\-roll\-*\fP options or the \fB\-b\fP option, these will only
 affect files for which \fIkeyfile\fP does not yet exist. specifying the
-\fI\-\-fk\fP or \fI\-\-fr\fP will recreate \fIkeyfile\fP if it has values different
+\fB\-\-fk\fP or \fB\-\-fr\fP will recreate \fIkeyfile\fP if it has values different
 than those in the previous key file.
 .TP
 .BR \-v ", " \-\-verbose
@@ -244,10 +252,10 @@ Increase verbosity level. Specify several times to be more verbose.
 .SH NOTES
 .B encrypting stdin
 .P
-If \fIsrcfile\fP is given as `-', the plain text data will be read fro stdin.
+If \fIsrcfile\fP is given as `-', the plain text data will be read from stdin.
 This does not yet work for decompression (see \fBBUGS\fP).
 .P
-.BR \-\-roll-win "=num, " \-\-roll-min "=num, " \-\-roll-sensitivity =num
+.BI \-\-roll-win= "num\fP, " \-\-roll-min= "num\fP, " \-\-roll-sensitivity= num
 .P
 These values affect some of the inner workings of \fBrsyncrypto\fP's decision
 making.  In particular, these affect how \fBrsyncrypto\fP decides when to
@@ -272,17 +280,17 @@ a/b/c/file
 running \fBrsyncrypto\fP with \fIsrcdir\fP of "a/b", and \fIdstdir\fP of "f"
 will create "f/b/c/file".
 .P
-The \fI\-\-trim\fP options lets the user say how many parts to trim from
+The \fB\-\-trim\fP options lets the user say how many parts to trim from
 \fIsrcdir\fP when creating directories under \fIdstdir\fP and \fIkeydir\fP. If, in the
 above example, we said
-.IR \-\-trim =0
+.BR \-\-trim =0
 then "f/a/b/c/file" would have been created. Likewise, if we said
-.IR \-\-trim =2
+.BR \-\-trim =2
 then "f/c/file" would have been created.
 .P
 It is an error to give a trim value which is higher than the number of
 directory parts actually in \fIsrcdir\fP. In the above example,
-.IR \-\-trim =3
+.BR \-\-trim =3
 would result in an error.
 .SH SECURITY
 The roll values affect, to a not totally known degree, how much information
