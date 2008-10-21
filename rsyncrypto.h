@@ -4,7 +4,8 @@
 #include "rcserror.h"
 
 struct startup_options {
-    struct arg_lit *help, *del, *delkey, *filelist, *fr, *fk, *noarch, *version;
+    struct arg_lit *help, *del, *delkey, *fr, *fk, *noarch, *version;
+    struct arg_file *filelist;
     struct arg_lit *decrypt, *verbosity, *recurse, *changed, *risky_writes;
     struct arg_int *keysize, *rollwin, *rollmin, *rollsens, *trim, *nenest;
     struct arg_int *noatime, *mod_win;
@@ -22,7 +23,7 @@ struct startup_options {
     startup_options()
     {
         int i=0;
-        argtable[i++]=src=arg_file1( NULL, NULL, "<src>", "Source file or directory (or filelist)" );
+        argtable[i++]=src=arg_file1( NULL, NULL, "<src>", "Source file or (if -r or --filelist is given) directory" );
         argtable[i++]=dst=arg_file1( NULL, NULL, "<dst>", "Destination file or directory" );
         argtable[i++]=key=arg_file1( NULL, NULL, "<key>", "Keys file or directory" );
         argtable[i++]=master=arg_file1( NULL, NULL, "<master key>",
@@ -43,8 +44,8 @@ struct startup_options {
                 "Number of directory entries to trim from the begining of the path. Default 1");
         argtable[i++]=del=arg_lit0( NULL, "delete", "Delete files under <dst> not under <src>. Requires -r");
         argtable[i++]=delkey=arg_lit0( NULL, "delete-keys", "Delete also the keys. Implies --delete");
-        argtable[i++]=filelist=arg_lit0( NULL, "filelist",
-                "<src> is a list of file and directory names to process. \"-\" means read from stdin.");
+        argtable[i++]=filelist=arg_file0( NULL, "filelist", "<file>",
+                "<file> is a list of file and directory names to process. \"-\" means read from stdin.");
         argtable[i++]=risky_writes=arg_lit0( NULL, "risky-writes", "Write files in place - do not do safe replacement" );
         noatime=arg_int0( NULL, "noatime", "<n>", "Level of O_NOATIME use" );
 #if HAVE_NOATIME
