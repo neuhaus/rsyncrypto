@@ -51,6 +51,35 @@ public:
     {
         return ::telldir( dir );
     }
+
+    static std::string getwd()
+    {
+        size_t maxlen=PATH_MAX;
+        std::string ret;
+
+        while (ret.empty() ) {
+            std::auto_ptr<char> wd(new char[maxlen]);
+
+            if( getcwd( wd.get(), maxlen )!=NULL ) {
+                ret=wd.get();
+            } else {
+                if( errno==ERANGE ) {
+                    maxlen*=2;
+                } else {
+                    // Fatal error
+                    throw rscerror("getcwd failed", errno);
+                }
+            }
+        }
+
+        return ret;
+    }
+    static void chdir( const char *dir )
+    {
+        if( ::chdir(dir)<0 ) {
+            throw rscerror("chdir failed", errno, dir);
+        }
+    }
 };
 
 #endif // AUTODIR_H

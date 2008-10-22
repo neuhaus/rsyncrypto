@@ -264,6 +264,12 @@ public:
 
         return ret;
     }
+
+    // Return true if the path is an absolute one, false if a relative one
+    static bool is_absolute( const char *path )
+    {
+        return path[0]=='/';
+    }
     // Status queries
     bool eof() const
     {

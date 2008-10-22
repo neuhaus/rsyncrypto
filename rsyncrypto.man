@@ -1,4 +1,4 @@
-.TH RSYNCRYPTO 1 "October 21, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
+.TH RSYNCRYPTO 1 "October 22, 2008" "Lingnu Open Source Consulting" "Rsyncrypto User Manual"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 rsyncrypto \- rsync friendly encryption
@@ -110,6 +110,12 @@ All names are trimmed according to the \fB\-\-trim\fP option.
 \fIdstdir\fP is interpreted as with the \fB\-r\fP option.
 
 \fB\-\-filelist\fP and \fB\-r\fP are mutually exclusive.
+
+\fBBACKWARDS INCOMPATIBILITY NOTICE:\fP Up until version 1.12 of rsyncrypto, \fB\-\-filelist\fP
+did not receive any parameters, and the file name to use was taken from the \fIsrc\fP argument.
+This was changed in version 1.13 because the previous way could cause problems when the file list
+was created in relation to a different work directory than the one in use. Pass `\fB.\fP' as
+\fIsrcdir\fP to get the old semantics.
 .TP
 .BR \-c ", " \-\-changed
 Check the src and destination modified time (see \fB\-\-modify\-window\fP) prior

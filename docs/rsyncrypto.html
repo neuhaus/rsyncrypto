@@ -2,7 +2,7 @@
 <HTML><HEAD><TITLE>Man page of RSYNCRYPTO</TITLE>
 </HEAD><BODY>
 <H1>RSYNCRYPTO</H1>
-Section: Rsyncrypto User Manual (1)<BR>Updated: October 21, 2008<BR><A HREF="#index">Index</A>
+Section: Rsyncrypto User Manual (1)<BR>Updated: October 22, 2008<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 
@@ -148,6 +148,12 @@ All names are trimmed according to the <B>--trim</B> option.
 <I>dstdir</I> is interpreted as with the <B>-r</B> option.
 <P>
 <B>--filelist</B> and <B>-r</B> are mutually exclusive.
+<P>
+<B>BACKWARDS INCOMPATIBILITY NOTICE:</B> Up until version 1.12 of rsyncrypto, <B>--filelist</B>
+did not receive any parameters, and the file name to use was taken from the <I>src</I> argument.
+This was changed in version 1.13 because the previous way could cause problems when the file list
+was created in relation to a different work directory than the one in use. Pass `<B>.</B>' as
+<I>srcdir</I> to get the old semantics.
 <DT><B>-c</B>, <B>--changed</B>
 
 <DD>
@@ -585,6 +591,6 @@ This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debi
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 15:02:14 GMT, October 21, 2008
+Time: 11:34:23 GMT, October 22, 2008
 </BODY>
 </HTML>
