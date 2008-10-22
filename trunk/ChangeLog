@@ -1,3 +1,7 @@
+    * --filelist now accepts as mandatory parameter the file list source. The
+      first argument is now the directory in relation to which relative paths
+      are interpreted.
+
 Version 1.12 - July 23 2008
     * Switch to safe creation and overwriting of files
     * Remove claimed bashism from the test script

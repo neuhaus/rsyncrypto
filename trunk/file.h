@@ -18,6 +18,4 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 void file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key,
         const struct stat *stat );
 
-int calc_trim( const char *path, int trim_count );
-
 #endif // FILE_H
