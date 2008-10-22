@@ -254,7 +254,7 @@ public:
             ;
 
         ret.resize(++i);
-        if( i>0 )
+        if( i>0 && ret[i-1]!=DIRSEP_C )
             ret+=DIRSEP_S;
 
         // Trim leading slashes
