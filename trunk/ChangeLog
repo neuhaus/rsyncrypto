@@ -1,6 +1,8 @@
     * --filelist now accepts as mandatory parameter the file list source. The
       first argument is now the directory in relation to which relative paths
       are interpreted.
+    * Prevent absolute paths from appearing with two leading slashes when
+      --trim=0
 
 Version 1.12 - July 23 2008
     * Switch to safe creation and overwriting of files
