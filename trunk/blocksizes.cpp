@@ -27,7 +27,7 @@
  *
  * The project's homepage is at http://rsyncrypto.lingnu.com/
  */
-#include "precomp.h"
+#include <precomp.h>
 #include "rsyncrypto.h"
 #include "crypt_key.h"
 #include "random.h"

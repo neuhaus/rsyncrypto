@@ -31,7 +31,7 @@
 #ifdef _WIN32
 #error Win32 code is at win32/redir.cpp
 #else
-#include "precomp.h"
+#include <precomp.h>
 #include "redir.h"
 
 void redir_pipe::child_redirect( int redir_type, void *plat_opaq )

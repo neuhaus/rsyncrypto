@@ -28,7 +28,7 @@
  * The project's homepage is at http://rsyncrypto.lingnu.com/
  */
 
-#include "precomp.h"
+#include <precomp.h>
 #include "aes_crypt.h"
 
 aes_key::aes_key( uint16_t key_size,  uint32_t sum_span, uint32_t sum_mod, uint32_t sum_min_dist,
