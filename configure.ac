@@ -129,5 +129,22 @@ else
 fi
 
 # Checks for library functions.
+
+# Checks for compiler precompiled headers support
+AC_MSG_CHECKING([whether compiler supports gcc style precompiled headers])
+
+touch conftest.h
+rm -f a.out
+if $CXX -c conftest.h >/dev/null 2>&1 && test "! -e a.out -a -f conftest.h.gch"
+then
+    AM_CONDITIONAL(PRECOMPILED_HEADERS, true)
+    AC_MSG_RESULT([yes])
+else
+    rm -f a.out
+    AM_CONDITIONAL(PRECOMPILED_HEADERS, false)
+    AC_MSG_RESULT([no])
+fi
+
+
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT

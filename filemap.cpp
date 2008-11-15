@@ -35,7 +35,7 @@
  * name. Each line is terminated with a NULL.
  */
 
-#include "precomp.h"
+#include <precomp.h>
 #include "rsyncrypto.h"
 #include "filemap.h"
 

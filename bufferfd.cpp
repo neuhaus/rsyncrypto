@@ -28,7 +28,7 @@
  * The project's homepage is at http://rsyncrypto.lingnu.com/
  */
 
-#include "precomp.h"
+#include <precomp.h>
 #include "bufferfd.h"
 
 const size_t read_bufferfd::DEFAULT_BUF_SIZE=8192;
