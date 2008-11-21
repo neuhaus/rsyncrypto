@@ -49,7 +49,7 @@ aes_key::aes_key( size_t keybits, uint32_t sum_span, uint32_t sum_mod, uint32_t 
 {
     if( !RAND_bytes(aes_header.iv, sizeof( aes_header.iv )) ||
                 !RAND_bytes(secret_key.get(), header.key_size) )
-            throw rscerror("No random entropy for key and IV");
+            throw rscerror(_T("No random entropy for key and IV"));
 
     update_keys();
 }

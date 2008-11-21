@@ -18,7 +18,7 @@ class process_ctl {
     process_ctl &operator= ( const process_ctl & );
 public:
     // The ... is substituted for further command line arguments, in execlp syntax
-    process_ctl( char *cmdline, redir *input, redir *output, redir *error, ... );
+    process_ctl( TCHAR *cmdline, redir *input, redir *output, redir *error, ... );
 
     int wait() const;
 };

@@ -76,7 +76,7 @@ struct startup_options {
             trim->ival[0]=1;
             rollwin->ival[0]=8192;
             rollmin->ival[0]=8192;
-            gzip->filename[0]="gzip";
+            gzip->filename[0]=_T("gzip");
             nenest->ival[0]=0;
         }
     }

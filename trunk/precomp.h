@@ -6,9 +6,16 @@
 
 // Windows all encompasing includes
 #if defined(_WIN32)
-#define STRICT
+
+// Override the Windows definition of off_t
+typedef unsigned long long _off_t;
+typedef _off_t off_t;
+#define _OFF_T_DEFINED
+
+#include <tchar.h>
 #include <windows.h>
 #include "win32/types.h"
+
 #endif
 
 // "sys" includes
@@ -71,12 +78,6 @@
 #include <string.h>
 #endif
 
-#if 0 
-#if HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
 #include <stdarg.h>
 #include <assert.h>
 
@@ -89,6 +90,26 @@
 // Argtable includes
 #include <argtable2.h>
 
+// We need to manually handle some of the T functions for unicode/ansi modes
+#if _UNICODE
+
+#define _tmain wmain
+typedef std::wstring TSTRING;
+
+// Fill in the output operators
+static inline std::ostream &operator<< ( std::ostream &stream, const TSTRING &str )
+{
+    return stream<<(std::wstring &)str;
+}
+#else
+
+#define _tmain main
+typedef std::string TSTRING;
+
+#endif
+
+#include "platform.h"
+
 #include "autoarray.h"
 #include "rcserror.h"
 #if defined(__unix__) || defined(__APPLE__)
@@ -100,6 +121,5 @@
 #else
 #error Unsupported platform
 #endif
-
 
 #endif // PRECOMPILED_HEADERS_H

@@ -23,7 +23,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -118,7 +118,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -528,6 +528,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\platform.h"
+				>
+			</File>
+			<File
 				RelativePath=".\precomp.h"
 				>
 			</File>
@@ -621,10 +625,6 @@
 		</File>
 		<File
 			RelativePath="README"
-			>
-		</File>
-		<File
-			RelativePath=".\contrib\rsyncrypto.html"
 			>
 		</File>
 	</Files>

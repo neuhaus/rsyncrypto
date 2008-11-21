@@ -31,7 +31,7 @@
 #include "process.h"
 #include "win32redir.h"
 
-process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, ... )
+process_ctl::process_ctl( TCHAR *cmd, redir *input, redir *output, redir *error, ... )
 {
     STARTUPINFO siStartInfo; 
     // Set up members of the STARTUPINFO structure. 
@@ -57,22 +57,22 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
     // Set up members of the PROCESS_INFORMATION structure. 
     ZeroMemory( &pInfo, sizeof(pInfo) );    
     
-    std::string cmdline;
-    cmdline="\"";
+    TSTRING cmdline;
+    cmdline=_T("\"");
     cmdline+=cmd;
-    cmdline+="\" ";
+    cmdline+=_T("\" ");
 
     va_list args;
     va_start(args, error);
-    const char *param;
-    while( (param=va_arg(args, const char *))!=NULL ) {
-        if( *param=='\0' || strchr( param, ' ' )==NULL ) {
-            cmdline+="\"";
+    const TCHAR *param;
+    while( (param=va_arg(args, const TCHAR *))!=NULL ) {
+        if( *param==_T('\0') || _tcschr( param, ' ' )==NULL ) {
+            cmdline+=_T("\"");
             cmdline+=param;
-            cmdline+="\" ";
+            cmdline+=_T("\" ");
         } else {
             cmdline+=param;
-            cmdline+=" ";
+            cmdline+=_T(" ");
         }
     }
 
@@ -80,7 +80,7 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
 
     // Create the child process.
     if( CreateProcess(NULL, 
-        const_cast<char *>(cmdline.c_str()),       // command line 
+        const_cast<TCHAR *>(cmdline.c_str()),       // command line 
         NULL,          // process security attributes 
         NULL,          // primary thread security attributes 
         TRUE,          // handles are inherited 
@@ -95,7 +95,7 @@ process_ctl::process_ctl( char *cmd, redir *input, redir *output, redir *error, 
     } else
     {
         // CreateProcess failed
-        throw rscerror("Child process not created", Error2errno(GetLastError()) );
+        throw rscerror(_T("Child process not created"), Error2errno(GetLastError()) );
     }
 }
 
@@ -104,7 +104,7 @@ int process_ctl::wait() const
     WaitForSingleObject(hProcess, INFINITE);
     DWORD exitcode=-1;
     if( !GetExitCodeProcess( hProcess, &exitcode ) )
-        throw rscerror("Couldn't get child process return code", Error2errno(GetLastError()));
+        throw rscerror(_T("Couldn't get child process return code"), Error2errno(GetLastError()));
 
     return exitcode;
 }
