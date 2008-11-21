@@ -42,7 +42,7 @@ key *key::read_key( const unsigned char *buffer )
     const ext_key_header *buff=reinterpret_cast<const ext_key_header *>(buffer);
 
     if( buff->version!=htonl(VERSION_MAGIC_1) )
-        throw rscerror("Invalid version magic");
+        throw rscerror(_T("Invalid version magic"));
 
     std::auto_ptr<key> ret;
     
@@ -53,7 +53,7 @@ key *key::read_key( const unsigned char *buffer )
                 ntohl(buff->sum_min_dist), buffer+sizeof(*buff) ));
         break;
     default:
-        throw rscerror("Invalid block cypher");
+        throw rscerror(_T("Invalid block cypher"));
     }
 
     return ret.release();
@@ -69,7 +69,7 @@ key *key::new_key( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint3
         ret=std::auto_ptr<key>(new aes_key( keybits, sum_span, sum_mod, sum_min_dist ));
         break;
     default:
-        throw rscerror("Invalid block cypher");
+        throw rscerror(_T("Invalid block cypher"));
     }
 
     return ret.release();

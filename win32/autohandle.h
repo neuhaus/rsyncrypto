@@ -58,7 +58,7 @@ public:
     {
 #if defined(EXCEPT_CLASS)
         if( !owner )
-            throw EXCEPT_CLASS("Releasing non-owner handle");
+            throw EXCEPT_CLASS(_T("Releasing non-owner handle"));
 #endif
 
         owner=false;
@@ -78,7 +78,7 @@ public:
         if( !DuplicateHandle(hProcess, handle, hProcess, &hNewHandle, 0, inheritable,
             DUPLICATE_SAME_ACCESS ) ) {
 #if defined(EXCEPT_CLASS)
-            throw EXCEPT_CLASS("Error duplicating handle", GetLastError());
+            throw EXCEPT_CLASS(_T("Error duplicating handle"), GetLastError());
 #endif
         }
 

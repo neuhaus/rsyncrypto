@@ -8,7 +8,7 @@
 #define AUTODIR_H
 
 struct dirent {
-    char d_name[MAX_PATH];
+    TCHAR d_name[MAX_PATH];
 };
 
 class autodir {
@@ -21,12 +21,12 @@ class autodir {
     autodir( const autodir & );
     autodir &operator=( const autodir & );
 public:
-    explicit autodir( const char *dirname ) : eof(false)
+    explicit autodir( const TCHAR *dirname ) : eof(false)
     {
-        h_dirscan=FindFirstFile((std::string(dirname)+"\\*").c_str(), &finddata );
+        h_dirscan=FindFirstFile((TSTRING(dirname)+_T("\\*")).c_str(), &finddata );
 #if defined(EXCEPT_CLASS)
         if( h_dirscan==INVALID_HANDLE_VALUE )
-            throw rscerror("opendir failed", Error2errno(GetLastError()), dirname);
+            throw rscerror(_T("opendir failed"), Error2errno(GetLastError()), dirname);
 #endif
     }
     ~autodir()
@@ -46,12 +46,12 @@ public:
     struct dirent *read()
     {
         if( !eof ) {
-            strcpy_s(posixdir.d_name, finddata.cFileName);
+            _tcscpy_s(posixdir.d_name, MAX_PATH, finddata.cFileName);
             if( !FindNextFile(h_dirscan, &finddata) ) {
                 eof=true;
                 DWORD error=GetLastError();
                 if( error!=ERROR_NO_MORE_FILES ) {
-                    throw rscerror("Error getting directory listing", Error2errno(error));
+                    throw rscerror(_T("Error getting directory listing"), Error2errno(error));
                 }
             }
             return &posixdir;

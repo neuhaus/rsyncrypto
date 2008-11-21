@@ -19,7 +19,7 @@ public:
             output=autofd(hWritePipe);
         } else {
 #if defined(EXCEPT_CLASS)
-            throw EXCEPT_CLASS("Couldn't create pipe", GetLastError() );
+            throw EXCEPT_CLASS(_T("Couldn't create pipe"), GetLastError() );
 #endif
         }
     }

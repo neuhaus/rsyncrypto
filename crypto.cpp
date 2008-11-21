@@ -42,7 +42,7 @@
 #define VERSION_MAGIC_1 0xD657EA1Cul
 
 /* Public/Private key handling */
-RSA *extract_public_key( const char *pem_filename )
+RSA *extract_public_key( const TCHAR *pem_filename )
 {
     BIO *in;
     X509 *x509;
@@ -53,15 +53,15 @@ RSA *extract_public_key( const char *pem_filename )
     /* First, get the certificate loaded into a stream */
     in=BIO_new(BIO_s_file()); /* NULL is error */
     if( in==NULL )
-        throw rscerror( "Error allocating public key", ENOMEM );
+        throw rscerror( _T("Error allocating public key"), ENOMEM );
 
     if( BIO_read_filename(in, pem_filename)<=0 ) /* <=0 is error */
-        throw rscerror( "Error reading public key file", errno, pem_filename );
+        throw rscerror( _T("Error reading public key file"), errno, pem_filename );
 
     /* Next, extract the X509 certificate from it */
     x509=PEM_read_bio_X509(in, NULL, NULL, NULL );
     if( x509==NULL )
-        throw rscerror( "Error parsing certificate" );
+        throw rscerror( _T("Error parsing certificate") );
 
     /* And the public key in generic format */
     pkey=X509_get_pubkey(x509);
@@ -75,7 +75,7 @@ RSA *extract_public_key( const char *pem_filename )
     return rsa;
 }
 
-RSA *extract_private_key( const char *key_filename )
+RSA *extract_private_key( const TCHAR *key_filename )
 {
     BIO *in;
     RSA *rsa=NULL;
@@ -84,9 +84,9 @@ RSA *extract_private_key( const char *key_filename )
     /* First, get the certificate loaded into a stream */
     in=BIO_new(BIO_s_file()); /* NULL is error */
     if( in==NULL )
-        throw rscerror( "Error allocating private key" );
+        throw rscerror( _T("Error allocating private key") );
     if( BIO_read_filename(in, key_filename)<=0 ) /* <=0 is error */
-        throw rscerror( "Error reading private key file", errno, key_filename );
+        throw rscerror( _T("Error reading private key file"), errno, key_filename );
     
     /* And finally, we get the actual RSA key */
     rsa=PEM_read_bio_RSAPrivateKey(in,NULL,NULL,NULL);
@@ -102,15 +102,15 @@ key *read_header( const autofd &headfd )
     return key::read_key( headmap.get_uc() );
 }
 
-void write_header( const char *filename, const key *head )
+void write_header( const TCHAR *filename, const key *head )
 {
-    autofd::mkpath( std::string(filename, autofd::dirpart(filename)).c_str(), 0700 );
+    autofd::mkpath( TSTRING(filename, autofd::dirpart(filename)).c_str(), 0700 );
     autofd newhead(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
     off_t headsize=head->exported_length();
 
     if( newhead.lseek( headsize-1, SEEK_SET )!=headsize-1 ||
             newhead.write( filename, 1 )!=1 )
-        throw rscerror("write failed", errno, filename );
+        throw rscerror(_T("write failed"), errno, filename );
 
     autommap headfilemap( NULL, static_cast<size_t>(headsize), PROT_WRITE|PROT_READ, MAP_SHARED,
         newhead, 0 );
@@ -138,7 +138,7 @@ void encrypt_header( const key *header, RSA *rsa, unsigned char *to )
     /* Encrypt the whole thing in place */
     if( RSA_public_encrypt(export_size, to, to, rsa, RSA_PKCS1_OAEP_PADDING)==-1 ) {
         unsigned long rsaerr=ERR_get_error();
-        throw rscerror(ERR_error_string(rsaerr, NULL));
+        throw rscerror(a2t(ERR_error_string(rsaerr, NULL)));
     }
 }
 
@@ -150,19 +150,19 @@ key *decrypt_header( file_t fromfd, RSA *prv )
     autommap filemap(NULL, headsize, PROT_READ, MAP_PRIVATE, fromfd, 0);
 
     if( *static_cast<uint32_t *>(filemap.get())!=htonl(HEADER_ENCRYPTION_VERSION) )
-        throw rscerror("Wrong file or header encrypted with wrong encryption");
+        throw rscerror(_T("Wrong file or header encrypted with wrong encryption"));
 
     unsigned char *buff=filemap.get_uc()+sizeof(HEADER_ENCRYPTION_VERSION);
     auto_array<unsigned char> decrypted(new unsigned char[headsize]);
 
     if( (prv->p==0 || prv->q==0) ) {
         // This is not a private key!
-        throw rscerror("Neither AES session key nor RSA private key present - cannot decrypt using only public key");
+        throw rscerror(_T("Neither AES session key nor RSA private key present - cannot decrypt using only public key"));
     }
 
     if( RSA_private_decrypt(key_size, buff, decrypted.get(), prv, RSA_PKCS1_OAEP_PADDING)==-1 ) {
         unsigned long rsaerr=ERR_get_error();
-        throw rscerror(ERR_error_string(rsaerr, NULL));
+        throw rscerror(a2t(ERR_error_string(rsaerr, NULL)));
     }
 
     std::auto_ptr<key> ret(key::read_key( decrypted.get() ));
@@ -184,7 +184,7 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
 
     redir_pipe ipipe(8000);
     redir_fd redir_from(fromfd);
-    process_ctl gzip_process( const_cast<char *>(FILENAME(gzip)), &redir_from, &ipipe, NULL,  "--rsyncable", NULL );
+    process_ctl gzip_process( const_cast<TCHAR *>(FILENAME(gzip)), &redir_from, &ipipe, NULL,  "--rsyncable", NULL );
 
     // Run through gzip's output, and encrypt it
     const size_t block_size=header->block_size(); // Let's cache the block size
@@ -235,7 +235,7 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
         autommap buffer( NULL, key_size, PROT_READ|PROT_WRITE, MAP_SHARED, tofd, 0 );
         encrypt_header( header, rsa, buffer.get_uc() );
     } else {
-        throw rscerror("Error in running gzip");
+        throw rscerror(_T("Error in running gzip"));
     }
 
     tofd.clear();
@@ -253,7 +253,7 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
 
     /* If file does not contain a valid header - abort */
     if( header==NULL )
-        throw rscerror("Couldn't extract encryption header");
+        throw rscerror(_T("Couldn't extract encryption header"));
 
     struct stat filestat;
     off_t currpos;
@@ -265,7 +265,7 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
 
     redir_pipe opipe;
     redir_fd redir_to(tofd);
-    process_ctl gzip_process( const_cast<char *>(FILENAME(gzip)), &opipe, &redir_to, NULL, "-d", NULL );
+    process_ctl gzip_process( const_cast<TCHAR *>(FILENAME(gzip)), &opipe, &redir_to, NULL, _T("-d"), NULL );
 
     size_t numread;
     const size_t block_size=header->block_size();
@@ -278,7 +278,7 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
     while( !done && (numread=fromfd.read( buffer.get(), block_size))!=0 ) {
         currpos+=numread;
         if( numread>0 && numread<block_size )
-            throw rscerror("Unexpected file end");
+            throw rscerror(_T("Unexpected file end"));
 
         if( new_block ) {
             header->init_encrypt();
@@ -297,7 +297,7 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
 
             // Oops - file is not a whole multiple of block size
             if( currpos>filestat.st_size-block_size )
-                throw rscerror("Uneven file end");
+                throw rscerror(_T("Uneven file end"));
         } else {
             writefd->write( buffer.get(), i );
         }
@@ -305,21 +305,21 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
         // If this was not a full block, the remaining bytes should be zero
         for( ; i<block_size; ++i )
             if( buffer[i]!=0 )
-                throw rscerror("Error in encrypted stream");
+                throw rscerror(_T("Error in encrypted stream"));
     }
     
     // The next block will tell us how many bytes of the last block should be written.
     auto_array<unsigned char> buffer2(new unsigned char [block_size]);
     if( fromfd.read( buffer2.get(), block_size)!=static_cast<ssize_t>(block_size) )
-        throw rscerror("Unexcpeted end of file past sanity checks");
+        throw rscerror(_T("Unexcpeted end of file past sanity checks"));
 
     header->init_encrypt();
     header->decrypt_block( buffer2.get(), block_size );
     for( unsigned int i=1; i<block_size; ++i )
         if( buffer2[i]!=0 )
-            throw rscerror("Error in encrypted stream (trailer)");
+            throw rscerror(_T("Error in encrypted stream (trailer)"));
     if( buffer2[0]>=block_size )
-        throw rscerror("Error in encrypted stream (trailer 2)");
+        throw rscerror(_T("Error in encrypted stream (trailer 2)"));
 
     if( buffer2[0]==0 )
         buffer2[0]=block_size;
@@ -332,7 +332,7 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
     int child_status=gzip_process.wait();
 
     if( child_status!=0 )
-        throw rscerror("gunzip failed to run");
+        throw rscerror(_T("gunzip failed to run"));
 
     new_header.release();
     fromfd.clear();

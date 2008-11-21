@@ -81,10 +81,10 @@ public:
     autofd( file_t file_p, bool except ) : autohandle(file_p), f_eof(false)
     {
         if( *this==INVALID_HANDLE_VALUE )
-            throw EXCEPT_CLASS("file handle open failed", GetLastError());
+            throw EXCEPT_CLASS(_T("file handle open failed"), GetLastError());
     }
 
-    autofd( const char *pathname, int flags, mode_t mode=0 ) : f_eof(false)
+    autofd( const TCHAR *pathname, int flags, mode_t mode=0 ) : f_eof(false)
     {
         DWORD access=0, disposition=0;
 
@@ -117,7 +117,7 @@ public:
             NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL ));
 
         if( *this==INVALID_HANDLE_VALUE )
-            throw EXCEPT_CLASS("file open failed", Error2errno(GetLastError()), pathname );
+            throw EXCEPT_CLASS(_T("file open failed"), Error2errno(GetLastError()), pathname );
     }
 #endif
     // Default copy constructor and operator= do exactly what we want.
@@ -142,7 +142,7 @@ private:
     {
         DWORD ures;
         if( !ReadFile( fd, buf, count, &ures, NULL ) && GetLastError()!=ERROR_BROKEN_PIPE )
-            throw rscerror("read failed", Error2errno(GetLastError()));
+            throw rscerror(_T("read failed"), Error2errno(GetLastError()));
 
         return ures;
     }
@@ -161,7 +161,7 @@ private:
     {
         DWORD written;
         if( !WriteFile( fd, buf, count, &written, NULL ) )
-            throw rscerror("write failed", Error2errno(GetLastError()));
+            throw rscerror(_T("write failed"), Error2errno(GetLastError()));
 
         return written;
     }
@@ -171,16 +171,16 @@ public:
         return write( *static_cast<const autohandle *>(this), buf, count );
     }
 
-    static struct stat lstat( const char *file_name )
+    static struct stat lstat( const TCHAR *file_name )
     {
         return autofd::stat( file_name );
     }
-    static struct stat stat( const char *file_name )
+    static struct stat stat( const TCHAR *file_name )
     {
         struct stat ret;
         WIN32_FILE_ATTRIBUTE_DATA data;
         if( !GetFileAttributesEx( file_name, GetFileExInfoStandard, &data ) )
-            throw rscerror("stat failed", Error2errno(GetLastError()), file_name);
+            throw rscerror(_T("stat failed"), Error2errno(GetLastError()), file_name);
 
         ZeroMemory( &ret, sizeof(ret) );
         ret.st_atime=ft2ut(data.ftLastAccessTime);
@@ -211,7 +211,7 @@ public:
         BY_HANDLE_FILE_INFORMATION info;
 
         if( !GetFileInformationByHandle(*this, &info ) )
-            throw rscerror("stat failed", Error2errno(GetLastError()));
+            throw rscerror(_T("stat failed"), Error2errno(GetLastError()));
 
         ZeroMemory(&ret, sizeof(ret));
         ret.st_atime=ft2ut(info.ftLastAccessTime);
@@ -243,7 +243,7 @@ public:
             dwMoveMethod=FILE_END;
             break;
         default:
-            throw rscerror("Invalid whence given", EINVAL);
+            throw rscerror(_T("Invalid whence given"), EINVAL);
         }
 
         LONG offsethigh, offsetlow;
@@ -261,7 +261,7 @@ public:
     {
         return lseek( *static_cast<const autohandle *>(this), offset, whence );
     }
-    static int utimes( const char *filename, const struct timeval tv[2])
+    static int utimes( const TCHAR *filename, const struct timeval tv[2])
     {
         FILETIME modtime, accesstime;
 
@@ -285,44 +285,58 @@ public:
         orig_std.release();
         return ret;
     }
-    static void rmdir( const char *pathname )
+    static void rmdir( const TCHAR *pathname )
     {
         if( !RemoveDirectory(pathname) ) {
             DWORD error=GetLastError();
 
             if( error!=ERROR_FILE_NOT_FOUND && error!=ERROR_PATH_NOT_FOUND )
-                throw rscerror("Error removing directory", Error2errno(error), pathname);
+                throw rscerror(_T("Error removing directory"), Error2errno(error), pathname);
         }
     }
     // Nonstandard file io
  
     // Read from the stream up to, including, the newline
-    std::string readline() const
+    TSTRING readline() const
     {
-        std::string ret;
-        char ch;
+        TSTRING ret;
+        TCHAR ch;
 
-        while( read( &ch, 1 )==1 && ch!='\n' ) {
+        while( read( &ch, sizeof(TCHAR) )==sizeof(TCHAR) && ch!=_T('\n') ) {
             ret+=ch;
         }
 
-        if( ch=='\n' && ret.length()>0 && ret[ret.length()-1]=='\r' )
+        if( ch==_T('\n') && ret.length()>0 && ret[ret.length()-1]==_T('\r') )
             ret.resize(ret.length()-1);
 
         return ret;
     }
 
-    static void mv( const char *src, const char *dst ) {
+    static void mv( const TCHAR *src, const TCHAR *dst ) {
         if( !MoveFileEx( src, dst, MOVEFILE_REPLACE_EXISTING) ) {
-            throw rscerror("rename failed", Error2errno(GetLastError()), dst );
+            throw rscerror(_T("rename failed"), Error2errno(GetLastError()), dst );
         }
+    }
+    static int unlink(const TCHAR *pathname)
+    {
+        DWORD error=ERROR_SUCCESS;
+        if( !DeleteFile( pathname ) && (error=GetLastError())!=ERROR_FILE_NOT_FOUND )
+            throw rscerror(_T("Erasing file"), Error2errno(GetLastError()), pathname );
+
+        if( error!=ERROR_SUCCESS ) {
+            errno=Error2errno(error);
+            
+            return -1;
+        }
+
+        return 0;
     }
 
     // Recursively create directories
     // mode is the permissions of the end directory
     // int_mode is the permissions of all intermediately created dirs
 private:
-    static void mkpath_actual(const std::string &path, mode_t mode)
+    static void mkpath_actual(const TSTRING &path, mode_t mode)
     {
         if( !CreateDirectory( path.c_str(), NULL ) && GetLastError()!=ERROR_ALREADY_EXISTS ) {
             // "Creating" a drive letter may fail for a whole host of reasons while actually succeeding
@@ -331,16 +345,16 @@ private:
                 // Only a ERROR_INVALID_DRIVE actually means an error
                 GetLastError()==ERROR_INVALID_DRIVE )
 
-                throw rscerror("mkdir failed", Error2errno(GetLastError()), path.c_str() );
+                throw rscerror(_T("mkdir failed"), Error2errno(GetLastError()), path.c_str() );
         }
     }
 public:
-    static void mkpath(const char *path, mode_t mode)
+    static void mkpath(const TCHAR *path, mode_t mode)
     {
         if( path[0]!='\0' ) {
             for( int sublen=0; path[sublen]!='\0'; sublen++ ) {
                 if( sublen>0 && path[sublen]==DIRSEP_C && path[sublen+1]!=DIRSEP_C ) {
-                    std::string subpath(path, sublen);
+                    TSTRING subpath(path, sublen);
                     mkpath_actual(subpath, mode);
                 }
             }
@@ -350,7 +364,7 @@ public:
     }
 
     // Return the dir part of the name
-    static int dirpart( const char *path )
+    static int dirpart( const TCHAR *path )
     {
         int i, last=0;
 
@@ -362,26 +376,32 @@ public:
         return last;
     }
 
-    static std::string combine_paths( const char *left, const char *right )
+    static TSTRING combine_paths( const TCHAR *left, const TCHAR *right )
     {
-        std::string ret(left);
+        TSTRING ret(left);
 
         int i;
         // Trim trailing slashes
-        for( i=ret.length()-1; i>0 && ret[i]==DIRSEP_C; --i )
+        for( i=ret.length()-1; i>0 && ret[i]==_T(DIRSEP_C); --i )
             ;
 
         ret.resize(++i);
         if( i>0 )
-            ret+=DIRSEP_S;
+            ret+=_T(DIRSEP_S);
 
         // Trim leading slashes
-        for( i=0; right[i]==DIRSEP_C; ++i )
+        for( i=0; right[i]==_T(DIRSEP_C); ++i )
             ;
         ret+=right+i;
 
         return ret;
     }
+
+    // Return the length of the absolute specifier of the path
+    static size_t is_absolute( const TCHAR *path ) {
+        return path[0]==_T('\\') || path[0]!=_T('\0') && path[1]==_T(':');
+    }
+    
     // Status queries
     bool eof() const
     {

@@ -61,7 +61,7 @@ class autommap {
             break;
         default:
 #if defined(EXCEPT_CLASS)
-            throw EXCEPT_CLASS("Unsupported mmap protection mode");
+            throw EXCEPT_CLASS(_T("Unsupported mmap protection mode"));
 #else
             return;
 #endif
@@ -71,14 +71,14 @@ class autommap {
             DWORD highsize;
             length=GetFileSize( fd, &highsize );
             if( highsize!=0 )
-                throw EXCEPT_CLASS("File too big to be mapped", ERROR_NOT_ENOUGH_MEMORY );
+                throw EXCEPT_CLASS(_T("File too big to be mapped"), ERROR_NOT_ENOUGH_MEMORY );
         }
 
         // If the actual file length is 0, do not map
         if( length!=0 ) {
             mapping=CreateFileMapping( fd, NULL, flProtect, 0, 0, NULL );
             if( mapping==NULL )
-                throw EXCEPT_CLASS("CreateFileMapping failed", GetLastError() );
+                throw EXCEPT_CLASS(_T("CreateFileMapping failed"), GetLastError() );
 
             ptr=MapViewOfFileEx( mapping, dwDesiredAccess, static_cast<DWORD>(offset>>32),
                 static_cast<DWORD>(offset), length, start );
@@ -86,7 +86,7 @@ class autommap {
                 CloseHandle( mapping );
                 mapping=NULL;
 #if defined(EXCEPT_CLASS)
-                throw EXCEPT_CLASS("mmap failed", errno);
+                throw EXCEPT_CLASS(_T("mmap failed"), errno);
 #endif
             }
         }

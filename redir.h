@@ -44,7 +44,7 @@ public:
     redir_fd( file_t fd, bool except ) : autofd( fd, except )
     {
     }
-    redir_fd( const char *pathname, int flags, mode_t mode ) : autofd( pathname, flags, mode )
+    redir_fd( const TCHAR *pathname, int flags, mode_t mode ) : autofd( pathname, flags, mode )
     {
     }
 #endif

@@ -54,7 +54,7 @@ void usage()
 
 startup_options options;
 
-void parse_cmdline( int argc, char *argv[] )
+void parse_cmdline( int argc, TCHAR *argv[] )
 {
     int nerrors=arg_parse( argc, argv, options.argtable );
 	if( nerrors!=0 ) {
@@ -63,26 +63,26 @@ void parse_cmdline( int argc, char *argv[] )
     }
 
     if( EXISTS(trim) && !EXISTS(recurse) && !EXISTS(filelist) )
-        throw rscerror("Cannot trim names when not doing directory recursion or filelist");
+        throw rscerror(_T("Cannot trim names when not doing directory recursion or filelist"));
     if( EXISTS(nameenc) && !EXISTS(recurse) && !EXISTS(filelist) )
-        throw rscerror("Cannot encrypt names when not doing directory recursion or filelist");
+        throw rscerror(_T("Cannot encrypt names when not doing directory recursion or filelist"));
     if( EXISTS(delkey) )
         ARG(del).count=1;
 
     // Some sanity check of the options
     if( EXISTS(decrypt) ) {
         if( EXISTS(keysize) )
-            throw rscerror("Cannot specify key size for decryption");
+            throw rscerror(_T("Cannot specify key size for decryption"));
         if( EXISTS(fr) || EXISTS(fk) )
-            throw rscerror("\"force\" options incompatible with -d option");
-        if( strcmp(FILENAME(src), "-")==0 && !EXISTS(filelist) ) {
+            throw rscerror(_T("\"force\" options incompatible with -d option"));
+        if( _tcscmp(FILENAME(src), _T("-"))==0 && !EXISTS(filelist) ) {
             // Plaintext file is standard input/output
             if( !EXISTS(noarch) ) {
-                throw rscerror("Must use \"--no-archive-mode\" if plaintext file is stdin");
+                throw rscerror(_T("Must use \"--no-archive-mode\" if plaintext file is stdin"));
             }
         }
         if( EXISTS(export_changes) ) {
-            throw rscerror("Log export not supported in decrypt mode");
+            throw rscerror(_T("Log export not supported in decrypt mode"));
         }
     }
 
@@ -95,7 +95,7 @@ void parse_cmdline( int argc, char *argv[] )
         VAL(mod_win)=0;
 }
 
-int main( int argc, char *argv[] )
+int _tmain( int argc, TCHAR *argv[] )
 {
     int ret=0;
     
@@ -125,7 +125,7 @@ int main( int argc, char *argv[] )
             rsa_key=extract_public_key(FILENAME(master));
 
             if( rsa_key==NULL ) {
-                throw rscerror( "Couldn't parse RSA key", 0, FILENAME(master) );
+                throw rscerror( _T("Couldn't parse RSA key"), 0, FILENAME(master) );
             }
         }
 
@@ -133,18 +133,18 @@ int main( int argc, char *argv[] )
             changes_log=std::auto_ptr<std::ofstream>(new std::ofstream(FILENAME(export_changes), std::ofstream::trunc));
         }
 
-        const char *opname=NULL;
+        const TCHAR *opname=NULL;
 	encryptfunc op;
 	namefunc srcnameop=name_concat, dstnameop=name_concat, keynameop=name_concat;
 	bool encrypt=true;
 
 	if( EXISTS(decrypt) ) {
 	    op=file_decrypt;
-	    opname="Decrypting";
+	    opname=_T("Decrypting");
 	    encrypt=false;
 	} else {
 	    op=file_encrypt;
-	    opname="Encrypting";
+	    opname=_T("Encrypting");
 	}
 
 	if( EXISTS(nameenc) ) {
@@ -182,7 +182,7 @@ int main( int argc, char *argv[] )
 	    }
 	} else {
             struct stat status, *pstat=&status;
-            if( strcmp( FILENAME(src), "-" )!=0 ) {
+            if( _tcscmp( FILENAME(src), _T("-") )!=0 ) {
                 status=autofd::stat(FILENAME(src));
             } else
                 pstat=NULL;
