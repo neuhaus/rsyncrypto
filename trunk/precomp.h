@@ -16,6 +16,10 @@ typedef _off_t off_t;
 #include <windows.h>
 #include "win32/types.h"
 
+#else
+
+#include "tchar_filler.h"
+
 #endif
 
 // "sys" includes

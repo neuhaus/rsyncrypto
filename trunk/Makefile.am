@@ -3,7 +3,7 @@ noinst_PROGRAMS = blocksizes
 man1_MANS = rsyncrypto.man rsyncrypto_recover.man
 
 rsyncrypto_SOURCES = main.cpp crypto.cpp crypt_key.cpp aes_crypt.cpp file.cpp process.cpp \
-	redir.cpp filemap.cpp bufferfd.cpp
+	redir.cpp filemap.cpp bufferfd.cpp platform.cpp
 blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
 
 rsyncrypto_recover_SOURCES=recover.cpp
