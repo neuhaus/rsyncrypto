@@ -114,6 +114,8 @@ AC_CHECK_FUNCS([bzero dup2 memset mkdir munmap rmdir strchr strerror strtoul])
 dnl Define a few necessary stuff
 AC_DEFINE([DIRSEP_S], ["/"], [Directory separator as string])
 AC_DEFINE([DIRSEP_C], ['/'], [Directory separator as char])
+AC_DEFINE([TCHAR], [char], [Unix always works in "ANSI" mode])
+AC_DEFINE([_T(str)], [str], [Unix always works in "ANSI" mode])
 
 dnl Find out whether we have a "rsyncable" supporting gzip
 AC_MSG_CHECKING([for gzip with "rsyncable" support])

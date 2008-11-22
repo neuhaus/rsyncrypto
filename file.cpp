@@ -317,12 +317,7 @@ static void file_delete( const TCHAR *source_file, const TCHAR *dst_file, const 
                     if( VERBOSE(1) )
                         std::cout<<"Delete "<<key_file<<std::endl;
 
-                    try {
-                        autofd::unlink( key_file );
-                    } catch( const rscerror &err ) {
-                        if( err.errornum()!=ENOENT )
-                            throw;
-                    }
+                    autofd::unlink( key_file );
                 }
                 break;
             default:
