@@ -103,7 +103,7 @@ typedef std::wstring TSTRING;
 // Fill in the output operators
 static inline std::ostream &operator<< ( std::ostream &stream, const TSTRING &str )
 {
-    return stream<<(std::wstring &)str;
+    return stream<<str.c_str();
 }
 #else
 

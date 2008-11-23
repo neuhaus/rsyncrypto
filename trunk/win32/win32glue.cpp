@@ -76,3 +76,92 @@ int Error2errno( DWORD Error ) {
             return Error;
         }
 }
+
+// Unconditionally convert from ANSI to Wide
+static auto_array<wchar_t> a2u( const char *str, size_t len, bool utf8 )
+{
+    int mbcs_len= len==0 ? -1 : len;
+    int newlen=MultiByteToWideChar(utf8 ? CP_UTF8 : CP_ACP, MB_ERR_INVALID_CHARS, str, mbcs_len, NULL, 0 );
+
+    if( newlen==0 ) {
+        throw( rscerror( _T("Ansi to Unicode conversion error"), GetLastError()) );
+    }
+
+    auto_array<wchar_t> buffer(new TCHAR[newlen+1]);
+
+    if( MultiByteToWideChar(utf8 ? CP_UTF8 : CP_ACP, MB_ERR_INVALID_CHARS, str, mbcs_len, buffer.get(), newlen )==0 ) {
+        throw( rscerror( _T("Ansi to Unicode conversion error"), GetLastError()) );
+    }
+
+    buffer[newlen]=L'\0';
+
+    return buffer;
+}
+
+// Unconditionally convert from Wide to ANSI
+static auto_array<char> u2a( const wchar_t *str, size_t len, bool utf8 )
+{
+    int wide_len= len==0 ? -1 : len;
+    DWORD flags= utf8 ? WC_ERR_INVALID_CHARS : WC_NO_BEST_FIT_CHARS;
+    int newlen=WideCharToMultiByte(utf8 ? CP_UTF8 : CP_ACP, flags, str, wide_len, NULL, 0, NULL, NULL );
+
+    if( newlen==0 ) {
+        throw( rscerror( _T("Unicode to Ansi conversion error"), GetLastError()) );
+    }
+
+    auto_array<char> buffer(new char[newlen+1]);
+
+    if( WideCharToMultiByte(utf8 ? CP_UTF8 : CP_ACP, flags, str, wide_len, buffer.get(), newlen, NULL, NULL )==0 ) {
+        throw( rscerror( _T("Ansi to Unicode conversion error"), GetLastError()) );
+    }
+
+    buffer[newlen]='\0';
+
+    return buffer;
+}
+
+#ifdef UNICODE
+
+TSTRING a2t( const char *str, size_t len, bool utf8 )
+{
+    return a2u( str, len, utf8 ).get();
+}
+
+std::string t2a( const wchar_t *str, size_t len, bool utf8 )
+{
+    return u2a( str, len, utf8 ).get();
+}
+
+#else // ANSI build
+
+TSTRING a2t( const char *str, size_t len, bool utf8 )
+{
+    if( !utf8 ) {
+        // This is a NOP function
+        if( len==0 )
+            return std::string(str);
+        else
+            return std::string(str, len);
+    }
+
+    // We need to convert the string from UTF8 to the local locale
+    return u2a( a2u( str, len, true ).get(), 0, false ).get();
+}
+
+std::string t2a( const TCHAR *str, size_t len, bool utf8 )
+{
+    // Does almost exactly the same as a2t in ANSI mode
+
+    if( !utf8 ) {
+        // This is a NOP function
+        if( len==0 )
+            return std::string(str);
+        else
+            return std::string(str, len);
+    }
+
+    // We need to convert the string from UTF8 to the local locale
+    return u2a( a2u( str, len, false ).get(), 0, true ).get();
+}
+
+#endif

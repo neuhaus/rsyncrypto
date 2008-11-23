@@ -47,8 +47,8 @@ void version()
 void usage()
 {
     fprintf(stderr, "%s ", PACKAGE_STRING );
-    arg_print_syntax(stderr, options.argtable, "\n\n");
-    arg_print_glossary(stderr, options.argtable, "%-22s %s\n");
+    arg_print_syntax(stderr, options.argtable, _T("\n\n"));
+    arg_print_glossary(stderr, options.argtable, _T("%-22s %s\n"));
     exit(0);
 }
 
