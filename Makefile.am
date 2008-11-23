@@ -6,7 +6,7 @@ rsyncrypto_SOURCES = main.cpp crypto.cpp crypt_key.cpp aes_crypt.cpp file.cpp pr
 	redir.cpp filemap.cpp bufferfd.cpp platform.cpp
 blocksizes_SOURCES = crypt_key.cpp aes_crypt.cpp blocksizes.cpp
 
-rsyncrypto_recover_SOURCES=recover.cpp
+rsyncrypto_recover_SOURCES=recover.cpp platform.cpp
 
 .PHONY: test docs
 test: rsyncrypto
