@@ -87,7 +87,7 @@ static auto_array<wchar_t> a2u( const char *str, size_t len, bool utf8 )
         throw( rscerror( _T("Ansi to Unicode conversion error"), GetLastError()) );
     }
 
-    auto_array<wchar_t> buffer(new TCHAR[newlen+1]);
+    auto_array<wchar_t> buffer(new wchar_t[newlen+1]);
 
     if( MultiByteToWideChar(utf8 ? CP_UTF8 : CP_ACP, MB_ERR_INVALID_CHARS, str, mbcs_len, buffer.get(), newlen )==0 ) {
         throw( rscerror( _T("Ansi to Unicode conversion error"), GetLastError()) );
