@@ -78,7 +78,7 @@ int Error2errno( DWORD Error ) {
 }
 
 // Unconditionally convert from ANSI to Wide
-static auto_array<wchar_t> a2u( const char *str, size_t len, bool utf8 )
+static auto_array<wchar_t> a2u( const char *str, size_t len=0, bool utf8=false )
 {
     int mbcs_len= len==0 ? -1 : len;
     int newlen=MultiByteToWideChar(utf8 ? CP_UTF8 : CP_ACP, MB_ERR_INVALID_CHARS, str, mbcs_len, NULL, 0 );
@@ -99,7 +99,7 @@ static auto_array<wchar_t> a2u( const char *str, size_t len, bool utf8 )
 }
 
 // Unconditionally convert from Wide to ANSI
-static auto_array<char> u2a( const wchar_t *str, size_t len, bool utf8 )
+static auto_array<char> u2a( const wchar_t *str, size_t len=0, bool utf8=false )
 {
     int wide_len= len==0 ? -1 : len;
     DWORD flags= utf8 ? WC_ERR_INVALID_CHARS : WC_NO_BEST_FIT_CHARS;
@@ -165,3 +165,8 @@ std::string t2a( const TCHAR *str, size_t len, bool utf8 )
 }
 
 #endif
+
+std::ostream &operator<< ( std::ostream &stream, const TSTRING &str )
+{
+    return stream<<u2a( str.c_str() ).get();
+}

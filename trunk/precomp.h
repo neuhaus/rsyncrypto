@@ -101,10 +101,8 @@ typedef _off_t off_t;
 typedef std::wstring TSTRING;
 
 // Fill in the output operators
-static inline std::ostream &operator<< ( std::ostream &stream, const TSTRING &str )
-{
-    return stream<<str.c_str();
-}
+std::ostream &operator<< ( std::ostream &stream, const TSTRING &str );
+
 #else
 
 #define _tmain main
