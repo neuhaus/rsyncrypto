@@ -379,10 +379,6 @@
 				RelativePath="..\..\argtable2\src\getopt.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\argtable2\src\tchar_filler.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

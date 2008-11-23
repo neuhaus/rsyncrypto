@@ -626,7 +626,7 @@ RCS file: /cvsroot/argtable/argtable2/src/argtable2.c,v
 retrieving revision 1.18
 diff -u -r1.18 argtable2.c
 --- src/argtable2.c	1 Jan 2008 07:24:04 -0000	1.18
-+++ src/argtable2.c	22 Nov 2008 15:32:38 -0000
++++ src/argtable2.c	23 Nov 2008 15:38:30 -0000
 @@ -37,8 +37,6 @@
  
  #ifdef HAVE_GETOPT_H
@@ -670,7 +670,13 @@ diff -u -r1.18 argtable2.c
              }
          }while(!(table[tabindex++]->flag&ARG_TERMINATOR));
      /*printf("%d long options consuming %d chars in total\n",noptions,longoptlen);*/
-@@ -151,20 +149,20 @@
+@@ -146,25 +144,25 @@
+     /* (struct longoptions) + (struct options)[noptions] + char[longoptlen] */
+     nbytes = sizeof(struct longoptions)
+            + sizeof(struct option)*noptions
+-           + longoptlen;
++           + longoptlen*sizeof(TCHAR);
+     result = (struct longoptions*)malloc(nbytes);
      if (result)
          {
          int option_index=0;
@@ -1172,12 +1178,12 @@ RCS file: /cvsroot/argtable/argtable2/src/argtable2.h,v
 retrieving revision 1.11
 diff -u -r1.11 argtable2.h
 --- src/argtable2.h	1 Jan 2008 07:24:04 -0000	1.11
-+++ src/argtable2.h	22 Nov 2008 14:54:51 -0000
++++ src/argtable2.h	23 Nov 2008 14:19:57 -0000
 @@ -25,10 +25,24 @@
  #include <time.h>       /* struct tm */
  #include <sys/types.h>
  
-+#ifdef UNICODE
++#ifdef _WIN32
 +#include <tchar.h>
 +#else
 +
@@ -1745,7 +1751,7 @@ RCS file: /cvsroot/argtable/argtable2/src/getopt.h,v
 retrieving revision 1.1
 diff -u -r1.1 getopt.h
 --- src/getopt.h	16 Oct 2003 08:38:13 -0000	1.1
-+++ src/getopt.h	22 Nov 2008 15:04:36 -0000
++++ src/getopt.h	23 Nov 2008 14:27:59 -0000
 @@ -33,7 +33,7 @@
     Also, when `ordering' is RETURN_IN_ORDER,
     each non-option ARGV-element is returned here.  */
@@ -1777,7 +1783,7 @@ diff -u -r1.1 getopt.h
  
 -	extern int _getopt_internal();
 +	extern int getopt(int argc, TCHAR *const *argv, const TCHAR *optstring);
-+    int getopt_long(int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options,
++    extern int getopt_long(int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options,
 +        int *opt_index);
 +	extern int getopt_long_only(int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options,
 +        int *opt_index);
@@ -1793,17 +1799,26 @@ RCS file: /cvsroot/argtable/argtable2/src/getopt1.c,v
 retrieving revision 1.2
 diff -u -r1.2 getopt1.c
 --- src/getopt1.c	9 Nov 2003 11:14:00 -0000	1.2
-+++ src/getopt1.c	22 Nov 2008 14:37:39 -0000
-@@ -23,6 +23,8 @@
++++ src/getopt1.c	23 Nov 2008 14:28:55 -0000
+@@ -23,15 +23,9 @@
  #include "config.h"
  #endif
  
+-#include "getopt.h"
 +#include "argtable2.h"
-+
- #include "getopt.h"
  
- #if !defined (__STDC__) || !__STDC__
-@@ -64,12 +66,7 @@
+-#if !defined (__STDC__) || !__STDC__
+-/* This is a separate conditional since some stdc systems
+-   reject `defined (const)'.  */
+-#ifndef const
+-#define const
+-#endif
+-#endif
++#include "getopt.h"
+ 
+ #include <stdio.h>
+ 
+@@ -64,12 +58,7 @@
  #endif
  
  int
@@ -1817,7 +1832,7 @@ diff -u -r1.2 getopt1.c
  {
  	return _getopt_internal(argc, argv, options, long_options, opt_index, 0);
  }
-@@ -80,12 +77,7 @@
+@@ -80,12 +69,7 @@
     instead.  */
  
  int

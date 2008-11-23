@@ -74,11 +74,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib Ws2_32.lib odbc32.lib odbccp32.lib"
-				OutputFile=".\Debug/rsyncrypto.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/rsyncrypto.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -166,7 +164,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib libeay32.lib Ws2_32.lib"
-				OutputFile=".\Release/rsyncrypto.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/rsyncrypto.pdb"
@@ -237,7 +234,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="precomp.h"
 				PrecompiledHeaderFile="$(OutDir)\$(TargetName).pch"
-				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -258,11 +254,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib Ws2_32.lib odbc32.lib odbccp32.lib"
-				OutputFile=".\DebugU/rsyncrypto.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/rsyncrypto.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -350,7 +344,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib libeay32.lib Ws2_32.lib"
-				OutputFile=".\Release/rsyncrypto.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/rsyncrypto.pdb"
