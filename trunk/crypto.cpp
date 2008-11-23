@@ -55,7 +55,7 @@ RSA *extract_public_key( const TCHAR *pem_filename )
     if( in==NULL )
         throw rscerror( _T("Error allocating public key"), ENOMEM );
 
-    if( BIO_read_filename(in, pem_filename)<=0 ) /* <=0 is error */
+    if( BIO_read_filename(in, t2a(pem_filename).c_str())<=0 ) /* <=0 is error */
         throw rscerror( _T("Error reading public key file"), errno, pem_filename );
 
     /* Next, extract the X509 certificate from it */
@@ -85,7 +85,7 @@ RSA *extract_private_key( const TCHAR *key_filename )
     in=BIO_new(BIO_s_file()); /* NULL is error */
     if( in==NULL )
         throw rscerror( _T("Error allocating private key") );
-    if( BIO_read_filename(in, key_filename)<=0 ) /* <=0 is error */
+    if( BIO_read_filename(in, t2a(key_filename).c_str())<=0 ) /* <=0 is error */
         throw rscerror( _T("Error reading private key file"), errno, key_filename );
     
     /* And finally, we get the actual RSA key */
