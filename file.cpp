@@ -174,7 +174,7 @@ void filelist_encrypt( const TCHAR *src, const TCHAR *dst_dir, const TCHAR *key_
                 std::cerr<<"Unsupported file type. Skipping "<<src<<std::endl;
                 break;
             }
-        } catch( const delayed_error &err ) {
+        } catch( const delayed_error & ) {
             error=true;
         } catch( const rscerror &err ) {
             std::cerr<<"Error in encryption of "<<srcname<<": "<<err.error()<<std::endl;
@@ -252,7 +252,7 @@ static void recurse_dir_enc( const TCHAR *src_dir, const TCHAR *dst_dir, const T
                     break;
                 }
             }
-        } catch( const delayed_error &err ) {
+        } catch( const delayed_error & ) {
             error=true;
         } catch( const rscerror &err ) {
             std::cerr<<err.error()<<std::endl;

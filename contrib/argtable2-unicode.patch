@@ -1,0 +1,1961 @@
+Index: src/arg_dbl.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/arg_dbl.c,v
+retrieving revision 1.10
+diff -u -r1.10 arg_dbl.c
+--- src/arg_dbl.c	1 Jan 2008 07:24:04 -0000	1.10
++++ src/arg_dbl.c	22 Nov 2008 10:58:11 -0000
+@@ -81,59 +81,59 @@
+     return errorcode;
+     }
+ 
+-static void errorfn(struct arg_dbl *parent, FILE *fp, int errorcode, const char *argval, const char *progname)
++static void errorfn(struct arg_dbl *parent, FILE *fp, int errorcode, const TCHAR *argval, const TCHAR *progname)
+     {
+-    const char *shortopts = parent->hdr.shortopts;
+-    const char *longopts  = parent->hdr.longopts;
+-    const char *datatype  = parent->hdr.datatype;
++    const TCHAR *shortopts = parent->hdr.shortopts;
++    const TCHAR *longopts  = parent->hdr.longopts;
++    const TCHAR *datatype  = parent->hdr.datatype;
+ 
+     /* make argval NULL safe */
+-    argval = argval ? argval : "";
++    argval = argval ? argval : _T("");
+ 
+-    fprintf(fp,"%s: ",progname);
++    _ftprintf(fp,_T("%s: "),progname);
+     switch(errorcode)
+         {
+         case EMINCOUNT:
+             fputs("missing option ",fp);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
+             break;
+ 
+         case EMAXCOUNT:
+             fputs("excess option ",fp);
+-            arg_print_option(fp,shortopts,longopts,argval,"\n");
++            arg_print_option(fp,shortopts,longopts,argval,_T("\n"));
+             break;
+ 
+         case EBADDOUBLE:
+-            fprintf(fp,"invalid argument \"%s\" to option ",argval);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
++            _ftprintf(fp,_T("invalid argument \"%s\" to option "),argval);
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
+             break;
+         }
+     }
+ 
+ 
+-struct arg_dbl* arg_dbl0(const char* shortopts,
+-                               const char* longopts,
+-                               const char *datatype,
+-                               const char *glossary)
++struct arg_dbl* arg_dbl0(const TCHAR* shortopts,
++                               const TCHAR* longopts,
++                               const TCHAR *datatype,
++                               const TCHAR *glossary)
+     {
+     return arg_dbln(shortopts,longopts,datatype,0,1,glossary);
+     }
+ 
+-struct arg_dbl* arg_dbl1(const char* shortopts,
+-                               const char* longopts,
+-                               const char *datatype,
+-                               const char *glossary)
++struct arg_dbl* arg_dbl1(const TCHAR* shortopts,
++                               const TCHAR* longopts,
++                               const TCHAR *datatype,
++                               const TCHAR *glossary)
+     {
+     return arg_dbln(shortopts,longopts,datatype,1,1,glossary);
+     }
+ 
+ 
+-struct arg_dbl* arg_dbln(const char* shortopts,
+-                               const char* longopts,
+-                               const char *datatype,
++struct arg_dbl* arg_dbln(const TCHAR* shortopts,
++                               const TCHAR* longopts,
++                               const TCHAR *datatype,
+                                int mincount,
+                                int maxcount,
+-                               const char *glossary)
++                               const TCHAR *glossary)
+     {
+     size_t nbytes;
+     struct arg_dbl *result;
+@@ -154,7 +154,7 @@
+         result->hdr.flag      = ARG_HASVALUE;
+         result->hdr.shortopts = shortopts;
+         result->hdr.longopts  = longopts;
+-        result->hdr.datatype  = datatype ? datatype : "<double>";
++        result->hdr.datatype  = datatype ? datatype : _T("<double>");
+         result->hdr.glossary  = glossary;
+         result->hdr.mincount  = mincount;
+         result->hdr.maxcount  = maxcount;
+Index: src/arg_end.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/arg_end.c,v
+retrieving revision 1.10
+diff -u -r1.10 arg_end.c
+--- src/arg_end.c	1 Jan 2008 07:24:04 -0000	1.10
++++ src/arg_end.c	22 Nov 2008 15:31:13 -0000
+@@ -36,12 +36,12 @@
+     parent->count = 0;
+     }
+ 
+-static void errorfn(void *parent, FILE *fp, int error, const char *argval, const char *progname)
++static void errorfn(void *parent, FILE *fp, int error, const TCHAR *argval, const TCHAR *progname)
+     {
+-    progname = progname ? progname : "";
+-    argval = argval ? argval : "";
++    progname = progname ? progname : _T("");
++    argval = argval ? argval : _T("");
+ 
+-    fprintf(fp,"%s: ",progname);
++    _ftprintf(fp,_T("%s: "),progname);
+     switch(error)
+         {
+         case ARG_ELIMIT:
+@@ -75,7 +75,7 @@
+     nbytes = sizeof(struct arg_end)
+            + maxcount * sizeof(int)             /* storage for int error[maxcount] array*/
+            + maxcount * sizeof(void*)           /* storage for void* parent[maxcount] array */
+-           + maxcount * sizeof(char*);          /* storage for char* argval[maxcount] array */
++           + maxcount * sizeof(TCHAR*);          /* storage for char* argval[maxcount] array */
+ 
+     result = (struct arg_end*)malloc(nbytes);
+     if (result)
+@@ -101,7 +101,7 @@
+         result->parent = (void**)(result->error + maxcount );
+ 
+         /* store argval[maxcount] array immediately after parent[] array */
+-        result->argval = (const char**)(result->parent + maxcount );
++        result->argval = (const TCHAR**)(result->parent + maxcount );
+         }
+ 
+     /*printf("arg_end(%d) returns %p\n",maxcount,result);*/
+@@ -109,7 +109,7 @@
+     }
+ 
+ 
+-void arg_print_errors(FILE* fp, struct arg_end* end, const char* progname)
++void arg_print_errors(FILE* fp, struct arg_end* end, const TCHAR* progname)
+     {
+     int i;
+     /*printf("arg_errors()\n");*/
+Index: src/arg_file.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/arg_file.c,v
+retrieving revision 1.10
+diff -u -r1.10 arg_file.c
+--- src/arg_file.c	1 Jan 2008 07:24:04 -0000	1.10
++++ src/arg_file.c	22 Nov 2008 15:31:29 -0000
+@@ -52,9 +52,9 @@
+ 
+ 
+ /* Returns ptr to the base filename within *filename */
+-static const char* arg_basename(const char *filename)
++static const TCHAR* arg_basename(const TCHAR *filename)
+     {
+-    const char *result = (filename ? strrchr(filename,FILESEPARATOR) : NULL);
++    const TCHAR *result = (filename ? _tcsrchr(filename,FILESEPARATOR) : NULL);
+     if (result)
+         result++;
+     else
+@@ -64,16 +64,16 @@
+ 
+ 
+ /* Returns ptr to the file extension within *filename */
+-static const char* arg_extension(const char *filename)
++static const TCHAR* arg_extension(const TCHAR *filename)
+     {
+-    const char *result = (filename ? strrchr(filename,'.') : NULL);
++    const TCHAR *result = (filename ? _tcsrchr(filename,'.') : NULL);
+     if (filename && !result)
+-        result = filename+strlen(filename);
++        result = filename+_tcslen(filename);
+     return result;
+     }
+ 
+ 
+-static int scanfn(struct arg_file *parent, const char *argval)
++static int scanfn(struct arg_file *parent, const TCHAR *argval)
+     {
+     int errorcode = 0;
+ 
+@@ -110,58 +110,58 @@
+     }
+ 
+ 
+-static void errorfn(struct arg_file *parent, FILE *fp, int errorcode, const char *argval, const char *progname)
++static void errorfn(struct arg_file *parent, FILE *fp, int errorcode, const TCHAR *argval, const TCHAR *progname)
+     {
+-    const char *shortopts = parent->hdr.shortopts;
+-    const char *longopts  = parent->hdr.longopts;
+-    const char *datatype  = parent->hdr.datatype;
++    const TCHAR *shortopts = parent->hdr.shortopts;
++    const TCHAR *longopts  = parent->hdr.longopts;
++    const TCHAR *datatype  = parent->hdr.datatype;
+ 
+     /* make argval NULL safe */
+-    argval = argval ? argval : "";
++    argval = argval ? argval : _T("");
+ 
+-    fprintf(fp,"%s: ",progname);
++    _ftprintf(fp,_T("%s: "),progname);
+     switch(errorcode)
+         {
+         case EMINCOUNT:
+             fputs("missing option ",fp);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
+             break;
+ 
+         case EMAXCOUNT:
+             fputs("excess option ",fp);
+-            arg_print_option(fp,shortopts,longopts,argval,"\n");
++            arg_print_option(fp,shortopts,longopts,argval,_T("\n"));
+             break;
+ 
+         default:
+-            fprintf(fp,"unknown error at \"%s\"\n",argval);
++            _ftprintf(fp,_T("unknown error at \"%s\"\n"),argval);
+         }
+     }
+ 
+ 
+-struct arg_file* arg_file0(const char* shortopts,
+-                           const char* longopts,
+-                           const char *datatype,
+-                           const char *glossary)
++struct arg_file* arg_file0(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR *datatype,
++                           const TCHAR *glossary)
+     {
+     return arg_filen(shortopts,longopts,datatype,0,1,glossary);
+     }
+ 
+ 
+-struct arg_file* arg_file1(const char* shortopts,
+-                           const char* longopts,
+-                           const char *datatype,
+-                           const char *glossary)
++struct arg_file* arg_file1(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR *datatype,
++                           const TCHAR *glossary)
+     {
+     return arg_filen(shortopts,longopts,datatype,1,1,glossary);
+     }
+ 
+ 
+-struct arg_file* arg_filen(const char* shortopts,
+-                           const char* longopts,
+-                           const char *datatype,
++struct arg_file* arg_filen(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR *datatype,
+                            int mincount,
+                            int maxcount,
+-                           const char *glossary)
++                           const TCHAR *glossary)
+     {
+     size_t nbytes;
+     struct arg_file *result;
+@@ -170,9 +170,9 @@
+ 	maxcount = (maxcount<mincount) ? mincount : maxcount;
+ 
+     nbytes = sizeof(struct arg_file)     /* storage for struct arg_file */
+-           + sizeof(char*) * maxcount    /* storage for filename[maxcount] array */
+-           + sizeof(char*) * maxcount    /* storage for basename[maxcount] array */
+-           + sizeof(char*) * maxcount;   /* storage for extension[maxcount] array */
++           + sizeof(TCHAR*) * maxcount    /* storage for filename[maxcount] array */
++           + sizeof(TCHAR*) * maxcount    /* storage for basename[maxcount] array */
++           + sizeof(TCHAR*) * maxcount;   /* storage for extension[maxcount] array */
+ 
+     result = (struct arg_file*)malloc(nbytes);
+     if (result)
+@@ -184,7 +184,7 @@
+         result->hdr.shortopts = shortopts;
+         result->hdr.longopts  = longopts;
+         result->hdr.glossary  = glossary;
+-        result->hdr.datatype  = datatype ? datatype : "<file>";
++        result->hdr.datatype  = datatype ? datatype : _T("<file>");
+         result->hdr.mincount  = mincount;
+         result->hdr.maxcount  = maxcount;
+         result->hdr.parent    = result;
+@@ -194,7 +194,7 @@
+         result->hdr.errorfn   = (arg_errorfn*)errorfn;
+ 
+         /* store the filename,basename,extension arrays immediately after the arg_file struct */
+-        result->filename  = (const char**)(result+1);
++        result->filename  = (const TCHAR**)(result+1);
+         result->basename  = result->filename + maxcount;
+         result->extension = result->basename + maxcount;
+         result->count = 0;
+@@ -202,9 +202,9 @@
+         /* foolproof the string pointers by initialising them with empty strings */
+         for (i=0; i<maxcount; i++)
+             {
+-            result->filename[i] = "";
+-            result->basename[i] = "";
+-            result->extension[i] = "";
++            result->filename[i] = _T("");
++            result->basename[i] = _T("");
++            result->extension[i] = _T("");
+             }
+         }
+     /*printf("arg_filen() returns %p\n",result);*/
+Index: src/arg_int.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/arg_int.c,v
+retrieving revision 1.11
+diff -u -r1.11 arg_int.c
+--- src/arg_int.c	1 Jan 2008 07:24:04 -0000	1.11
++++ src/arg_int.c	22 Nov 2008 13:52:20 -0000
+@@ -81,59 +81,59 @@
+     return errorcode;
+     }
+ 
+-static void errorfn(struct arg_int *parent, FILE *fp, int errorcode, const char *argval, const char *progname)
++static void errorfn(struct arg_int *parent, FILE *fp, int errorcode, const TCHAR *argval, const TCHAR *progname)
+     {
+-    const char *shortopts = parent->hdr.shortopts;
+-    const char *longopts  = parent->hdr.longopts;
+-    const char *datatype  = parent->hdr.datatype;
++    const TCHAR *shortopts = parent->hdr.shortopts;
++    const TCHAR *longopts  = parent->hdr.longopts;
++    const TCHAR *datatype  = parent->hdr.datatype;
+ 
+     /* make argval NULL safe */
+-    argval = argval ? argval : "";
++    argval = argval ? argval : _T("");
+ 
+-    fprintf(fp,"%s: ",progname);
++    _ftprintf(fp,_T("%s: "),progname);
+     switch(errorcode)
+         {
+         case EMINCOUNT:
+             fputs("missing option ",fp);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
+             break;
+ 
+         case EMAXCOUNT:
+             fputs("excess option ",fp);
+-            arg_print_option(fp,shortopts,longopts,argval,"\n");
++            arg_print_option(fp,shortopts,longopts,argval,_T("\n"));
+             break;
+ 
+         case EBADINT:
+-            fprintf(fp,"invalid argument \"%s\" to option ",argval);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
++            _ftprintf(fp,_T("invalid argument \"%s\" to option "),argval);
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
+             break;
+         }
+     }
+ 
+ 
+-struct arg_int* arg_int0(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
+-                         const char *glossary)
++struct arg_int* arg_int0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
++                         const TCHAR *glossary)
+     {
+     return arg_intn(shortopts,longopts,datatype,0,1,glossary);
+     }
+ 
+-struct arg_int* arg_int1(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
+-                         const char *glossary)
++struct arg_int* arg_int1(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
++                         const TCHAR *glossary)
+     {
+     return arg_intn(shortopts,longopts,datatype,1,1,glossary);
+     }
+ 
+ 
+-struct arg_int* arg_intn(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
++struct arg_int* arg_intn(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
+                          int mincount,
+                          int maxcount,
+-                         const char *glossary)
++                         const TCHAR *glossary)
+     {
+     size_t nbytes;
+     struct arg_int *result;
+@@ -151,7 +151,7 @@
+         result->hdr.flag      = ARG_HASVALUE;
+         result->hdr.shortopts = shortopts;
+         result->hdr.longopts  = longopts;
+-        result->hdr.datatype  = datatype ? datatype : "<int>";
++        result->hdr.datatype  = datatype ? datatype : _T("<int>");
+         result->hdr.glossary  = glossary;
+         result->hdr.mincount  = mincount;
+         result->hdr.maxcount  = maxcount;
+Index: src/arg_lit.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/arg_lit.c,v
+retrieving revision 1.8
+diff -u -r1.8 arg_lit.c
+--- src/arg_lit.c	1 Jan 2008 07:24:04 -0000	1.8
++++ src/arg_lit.c	22 Nov 2008 13:53:59 -0000
+@@ -57,43 +57,43 @@
+     return errorcode;
+     }
+ 
+-static void errorfn(struct arg_lit *parent, FILE *fp, int errorcode, const char *argval, const char *progname)
++static void errorfn(struct arg_lit *parent, FILE *fp, int errorcode, const TCHAR *argval, const TCHAR *progname)
+     {
+-    const char *shortopts = parent->hdr.shortopts;
+-    const char *longopts  = parent->hdr.longopts;
+-    const char *datatype  = parent->hdr.datatype;
++    const TCHAR *shortopts = parent->hdr.shortopts;
++    const TCHAR *longopts  = parent->hdr.longopts;
++    const TCHAR *datatype  = parent->hdr.datatype;
+ 
+     switch(errorcode)
+         {
+         case EMINCOUNT:
+-            fprintf(fp,"%s: missing option ",progname);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
+-            fprintf(fp,"\n");
++            _ftprintf(fp,_T("%s: missing option "),progname);
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
++            _ftprintf(fp,_T("\n"));
+             break;
+ 
+         case EMAXCOUNT:
+-            fprintf(fp,"%s: extraneous option ",progname);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
++            _ftprintf(fp,_T("%s: extraneous option "),progname);
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
+             break;
+         }
+     }
+ 
+-struct arg_lit* arg_lit0(const char* shortopts,
+-                         const char* longopts,
+-                         const char* glossary)
++struct arg_lit* arg_lit0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* glossary)
+     {return arg_litn(shortopts,longopts,0,1,glossary);}
+ 
+-struct arg_lit* arg_lit1(const char* shortopts,
+-                         const char* longopts,
+-                         const char* glossary)
++struct arg_lit* arg_lit1(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* glossary)
+     {return arg_litn(shortopts,longopts,1,1,glossary);}
+ 
+ 
+-struct arg_lit* arg_litn(const char* shortopts,
+-                         const char* longopts,
++struct arg_lit* arg_litn(const TCHAR* shortopts,
++                         const TCHAR* longopts,
+                          int mincount,
+                          int maxcount,
+-                         const char *glossary)
++                         const TCHAR *glossary)
+     {
+ 	struct arg_lit *result;
+ 
+Index: src/arg_rem.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/arg_rem.c,v
+retrieving revision 1.8
+diff -u -r1.8 arg_rem.c
+--- src/arg_rem.c	1 Jan 2008 07:24:04 -0000	1.8
++++ src/arg_rem.c	22 Nov 2008 13:54:16 -0000
+@@ -30,8 +30,8 @@
+ 
+ #include "argtable2.h"
+ 
+-struct arg_rem* arg_rem(const char *datatype,
+-                        const char *glossary)
++struct arg_rem* arg_rem(const TCHAR *datatype,
++                        const TCHAR *glossary)
+     {
+     struct arg_rem *result = (struct arg_rem*)malloc(sizeof(struct arg_rem));
+     if (result)
+Index: src/arg_str.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/arg_str.c,v
+retrieving revision 1.11
+diff -u -r1.11 arg_str.c
+--- src/arg_str.c	1 Jan 2008 07:24:04 -0000	1.11
++++ src/arg_str.c	22 Nov 2008 15:32:05 -0000
+@@ -39,7 +39,7 @@
+     parent->count=0;
+     }
+ 
+-static int scanfn(struct arg_str *parent, const char *argval)
++static int scanfn(struct arg_str *parent, const TCHAR *argval)
+     {
+     int errorcode = 0;
+ 
+@@ -71,54 +71,54 @@
+     return errorcode;
+     }
+ 
+-static void errorfn(struct arg_str *parent, FILE *fp, int errorcode, const char *argval, const char *progname)
++static void errorfn(struct arg_str *parent, FILE *fp, int errorcode, const TCHAR *argval, const TCHAR *progname)
+     {
+-    const char *shortopts = parent->hdr.shortopts;
+-    const char *longopts  = parent->hdr.longopts;
+-    const char *datatype  = parent->hdr.datatype;
++    const TCHAR *shortopts = parent->hdr.shortopts;
++    const TCHAR *longopts  = parent->hdr.longopts;
++    const TCHAR *datatype  = parent->hdr.datatype;
+ 
+     /* make argval NULL safe */
+-    argval = argval ? argval : "";
++    argval = argval ? argval : _T("");
+ 
+-    fprintf(fp,"%s: ",progname);
++    _ftprintf(fp,_T("%s: "),progname);
+     switch(errorcode)
+         {
+         case EMINCOUNT:
+             fputs("missing option ",fp);
+-            arg_print_option(fp,shortopts,longopts,datatype,"\n");
++            arg_print_option(fp,shortopts,longopts,datatype,_T("\n"));
+             break;
+ 
+         case EMAXCOUNT:
+             fputs("excess option ",fp);
+-            arg_print_option(fp,shortopts,longopts,argval,"\n");
++            arg_print_option(fp,shortopts,longopts,argval,_T("\n"));
+             break;
+         }
+     }
+ 
+ 
+-struct arg_str* arg_str0(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
+-                         const char *glossary)
++struct arg_str* arg_str0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
++                         const TCHAR *glossary)
+     {
+     return arg_strn(shortopts,longopts,datatype,0,1,glossary);
+     }
+ 
+-struct arg_str* arg_str1(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
+-                         const char *glossary)
++struct arg_str* arg_str1(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
++                         const TCHAR *glossary)
+     {
+     return arg_strn(shortopts,longopts,datatype,1,1,glossary);
+     }
+ 
+ 
+-struct arg_str* arg_strn(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
++struct arg_str* arg_strn(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
+                          int mincount,
+                          int maxcount,
+-                         const char *glossary)
++                         const TCHAR *glossary)
+     {
+     size_t nbytes;
+     struct arg_str *result;
+@@ -127,7 +127,7 @@
+ 	maxcount = (maxcount<mincount) ? mincount : maxcount;
+ 
+     nbytes = sizeof(struct arg_str)     /* storage for struct arg_str */
+-           + maxcount * sizeof(char*);  /* storage for sval[maxcount] array */
++           + maxcount * sizeof(TCHAR*);  /* storage for sval[maxcount] array */
+ 
+     result = (struct arg_str*)malloc(nbytes);
+     if (result)
+@@ -138,7 +138,7 @@
+         result->hdr.flag      = ARG_HASVALUE;
+         result->hdr.shortopts = shortopts;
+         result->hdr.longopts  = longopts;
+-        result->hdr.datatype  = datatype ? datatype : "<string>";
++        result->hdr.datatype  = datatype ? datatype : _T("<string>");
+         result->hdr.glossary  = glossary;
+         result->hdr.mincount  = mincount;
+         result->hdr.maxcount  = maxcount;
+@@ -149,12 +149,12 @@
+         result->hdr.errorfn   = (arg_errorfn*)errorfn;
+ 
+         /* store the sval[maxcount] array immediately after the arg_str struct */
+-        result->sval  = (const char**)(result+1);
++        result->sval  = (const TCHAR**)(result+1);
+         result->count = 0;
+ 
+         /* foolproof the string pointers by initialising them to reference empty strings */
+         for (i=0; i<maxcount; i++)
+-            { result->sval[i] = ""; }
++            { result->sval[i] = _T(""); }
+         }
+     /*printf("arg_strn() returns %p\n",result);*/
+     return result;
+Index: src/argtable2.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/argtable2.c,v
+retrieving revision 1.18
+diff -u -r1.18 argtable2.c
+--- src/argtable2.c	1 Jan 2008 07:24:04 -0000	1.18
++++ src/argtable2.c	22 Nov 2008 15:32:38 -0000
+@@ -37,8 +37,6 @@
+ 
+ #ifdef HAVE_GETOPT_H
+ #include <getopt.h>
+-#else
+-#include "./getopt.h"
+ #endif
+ 
+ #ifdef HAVE_UNISTD_H
+@@ -49,7 +47,7 @@
+ #include "./getopt.h"
+ 
+ static
+-void arg_register_error(struct arg_end *end, void *parent, int error, const char *argval)
++void arg_register_error(struct arg_end *end, void *parent, int error, const TCHAR *argval)
+     {
+     /* printf("arg_register_error(%p,%p,%d,%s)\n",end,parent,error,argval); */
+     if (end->count < end->hdr.maxcount)
+@@ -78,7 +76,7 @@
+     int tabindex;
+     for(tabindex=0; !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+         {
+-        if (table[tabindex]->shortopts && strchr(table[tabindex]->shortopts,shortopt))
++        if (table[tabindex]->shortopts && _tcschr(table[tabindex]->shortopts,shortopt))
+             return tabindex;
+         }
+     return -1;
+@@ -131,12 +129,12 @@
+      tabindex=0;
+      do
+         {
+-        const char *longopts = table[tabindex]->longopts;
+-        longoptlen += (longopts?strlen(longopts):0) + 1;
++        const TCHAR *longopts = table[tabindex]->longopts;
++        longoptlen += (longopts?_tcslen(longopts):0) + 1;
+         while (longopts)
+             {
+             noptions++;
+-            longopts = strchr(longopts+1,',');
++            longopts = _tcschr(longopts+1,_T(','));
+             }
+         }while(!(table[tabindex++]->flag&ARG_TERMINATOR));
+     /*printf("%d long options consuming %d chars in total\n",noptions,longoptlen);*/
+@@ -151,20 +149,20 @@
+     if (result)
+         {
+         int option_index=0;
+-        char *store;
++        TCHAR *store;
+ 
+         result->getoptval=0;
+         result->noptions = noptions;
+         result->options = (struct option*)(result + 1);
+-        store = (char*)(result->options + noptions);
++        store = (TCHAR*)(result->options + noptions);
+ 
+         for(tabindex=0; !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+             {
+-            const char *longopts = table[tabindex]->longopts;
++            const TCHAR *longopts = table[tabindex]->longopts;
+ 
+             while(longopts && *longopts)
+                 {
+-                char *storestart = store;
++                TCHAR *storestart = store;
+ 
+                 /* copy progressive longopt strings into the store */
+                 while (*longopts!=0 && *longopts!=',')
+@@ -199,9 +197,9 @@
+     }
+ 
+ static
+-char* alloc_shortoptions(struct arg_hdr **table)
++TCHAR* alloc_shortoptions(struct arg_hdr **table)
+    {
+-   char *result;
++   TCHAR *result;
+    size_t len = 2;
+    int tabindex;
+ 
+@@ -209,22 +207,22 @@
+    for(tabindex=0; !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+        {
+        struct arg_hdr *hdr = table[tabindex];
+-       len += 3 * (hdr->shortopts?strlen(hdr->shortopts):0);
++       len += 3 * (hdr->shortopts?_tcslen(hdr->shortopts):0);
+        }
+ 
+-   result = malloc(len);
++   result = malloc(len*sizeof(TCHAR));
+    if (result)
+         {
+-        char *res = result;
++        TCHAR *res = result;
+ 
+         /* add a leading ':' so getopt return codes distinguish    */
+         /* unrecognised option and options missing argument values */
+-        *res++=':';
++        *res++=_T(':');
+ 
+         for(tabindex=0; !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+             {
+             struct arg_hdr *hdr = table[tabindex];
+-            const char *shortopts = hdr->shortopts;
++            const TCHAR *shortopts = hdr->shortopts;
+             while(shortopts && *shortopts)
+                 {
+                 *res++ = *shortopts++;
+@@ -255,10 +253,10 @@
+ 
+ 
+ static
+-void arg_parse_tagged(int argc, char **argv, struct arg_hdr **table, struct arg_end *endtable)
++void arg_parse_tagged(int argc, TCHAR **argv, struct arg_hdr **table, struct arg_end *endtable)
+     {
+     struct longoptions *longoptions;
+-    char *shortoptions;
++    TCHAR *shortoptions;
+     int copt;
+ 
+     /*printf("arg_parse_tagged(%d,%p,%p,%p)\n",argc,argv,table,endtable);*/
+@@ -373,11 +371,11 @@
+ 
+ 
+ static
+-void arg_parse_untagged(int argc, char **argv, struct arg_hdr **table, struct arg_end *endtable)
++void arg_parse_untagged(int argc, TCHAR **argv, struct arg_hdr **table, struct arg_end *endtable)
+     {
+     int tabindex=0;
+     int errorlast=0;
+-    const char *optarglast = NULL;
++    const TCHAR *optarglast = NULL;
+     void *parentlast = NULL;
+ 
+     /*printf("arg_parse_untagged(%d,%p,%p,%p)\n",argc,argv,table,endtable);*/
+@@ -488,12 +486,12 @@
+     }
+ 
+     
+-int arg_parse(int argc, char **argv, void **argtable)
++int arg_parse(int argc, TCHAR **argv, void **argtable)
+     {
+     struct arg_hdr **table = (struct arg_hdr **)argtable;
+     struct arg_end *endtable;
+     int endindex;
+-    char **argvcopy = NULL;
++    TCHAR **argvcopy = NULL;
+ 
+     /*printf("arg_parse(%d,%p,%p)\n",argc,argv,argtable);*/
+ 
+@@ -516,7 +514,7 @@
+         return endtable->count;
+         }
+ 
+-    argvcopy = malloc(sizeof(char *) * argc);
++    argvcopy = malloc(sizeof(TCHAR *) * argc);
+     if (argvcopy)
+         {
+         int i;
+@@ -573,10 +571,10 @@
+  *   ndest  == 10
+  */
+ static
+-void arg_cat(char **pdest, const char *src, size_t *pndest)
++void arg_cat(TCHAR **pdest, const TCHAR *src, size_t *pndest)
+     {
+-    char *dest = *pdest;
+-    char *end  = dest + *pndest;
++    TCHAR *dest = *pdest;
++    TCHAR *end  = dest + *pndest;
+ 
+     /*locate null terminator of dest string */
+     while(dest<end && *dest!=0)
+@@ -596,27 +594,27 @@
+ 
+ 
+ static
+-void arg_cat_option(char *dest, size_t ndest, const char *shortopts, const char *longopts, const char *datatype, int optvalue)
++void arg_cat_option(TCHAR *dest, size_t ndest, const TCHAR *shortopts, const TCHAR *longopts, const TCHAR *datatype, int optvalue)
+     {
+     if (shortopts)
+         {
+-        char option[3];
++        TCHAR option[3];
+         
+         /* note: option array[] is initialiazed dynamically here to satisfy   */
+         /* a deficiency in the watcom compiler wrt static array initializers. */
+-        option[0] = '-';
++        option[0] = _T('-');
+         option[1] = shortopts[0];
+         option[2] = 0;
+         
+         arg_cat(&dest,option,&ndest);
+         if (datatype)
+             {
+-            arg_cat(&dest," ",&ndest);
++            arg_cat(&dest,_T(" "),&ndest);
+             if (optvalue)
+                 {
+-                arg_cat(&dest,"[",&ndest);
++                arg_cat(&dest,_T("["),&ndest);
+                 arg_cat(&dest,datatype,&ndest);
+-                arg_cat(&dest,"]",&ndest);
++                arg_cat(&dest,_T("]"),&ndest);
+                 }
+             else
+                 arg_cat(&dest,datatype,&ndest);
+@@ -627,20 +625,20 @@
+         size_t ncspn;
+ 
+         /* add "--" tag prefix */
+-        arg_cat(&dest,"--",&ndest);
++        arg_cat(&dest,_T("--"),&ndest);
+ 
+         /* add comma separated option tag */
+-        ncspn = strcspn(longopts,",");
+-        strncat(dest,longopts,(ncspn<ndest)?ncspn:ndest);
++        ncspn = _tcscspn(longopts,_T(","));
++        _tcsncat(dest,longopts,(ncspn<ndest)?ncspn:ndest);
+ 
+         if (datatype)
+             {
+-            arg_cat(&dest,"=",&ndest);
++            arg_cat(&dest,_T("="),&ndest);
+             if (optvalue)
+                 {
+-                arg_cat(&dest,"[",&ndest);
++                arg_cat(&dest,_T("["),&ndest);
+                 arg_cat(&dest,datatype,&ndest);
+-                arg_cat(&dest,"]",&ndest);
++                arg_cat(&dest,_T("]"),&ndest);
+                 }
+             else
+                 arg_cat(&dest,datatype,&ndest);
+@@ -650,9 +648,9 @@
+         {
+         if (optvalue)
+             {
+-            arg_cat(&dest,"[",&ndest);
++            arg_cat(&dest,_T("["),&ndest);
+             arg_cat(&dest,datatype,&ndest);
+-            arg_cat(&dest,"]",&ndest);
++            arg_cat(&dest,_T("]"),&ndest);
+             }
+         else
+             arg_cat(&dest,datatype,&ndest);
+@@ -660,17 +658,17 @@
+     }
+ 
+ static
+-void arg_cat_optionv(char *dest, size_t ndest, const char *shortopts, const char *longopts, const char *datatype,  int optvalue, const char *separator)
++void arg_cat_optionv(TCHAR *dest, size_t ndest, const TCHAR *shortopts, const TCHAR *longopts, const TCHAR *datatype,  int optvalue, const TCHAR *separator)
+     {
+-    separator = separator ? separator : "";
++    separator = separator ? separator : _T("");
+ 
+     if (shortopts)
+         {
+-        const char *c = shortopts;
++        const TCHAR *c = shortopts;
+         while(*c)
+             {
+             /* "-a|-b|-c" */
+-            char shortopt[3];
++            TCHAR shortopt[3];
+         
+             /* note: shortopt array[] is initialiazed dynamically here to satisfy */
+             /* a deficiency in the watcom compiler wrt static array initializers. */
+@@ -690,17 +688,17 @@
+ 
+     if (longopts)
+         {
+-        const char *c = longopts;
++        const TCHAR *c = longopts;
+         while(*c)
+             {
+             size_t ncspn;
+ 
+             /* add "--" tag prefix */
+-            arg_cat(&dest,"--",&ndest);
++            arg_cat(&dest,_T("--"),&ndest);
+ 
+             /* add comma separated option tag */
+-            ncspn = strcspn(c,",");
+-            strncat(dest,c,(ncspn<ndest)?ncspn:ndest);
++            ncspn = _tcscspn(c,_T(","));
++            _tcsncat(dest,c,(ncspn<ndest)?ncspn:ndest);
+             c+=ncspn;
+ 
+             /* add given separator in place of comma */
+@@ -715,15 +713,15 @@
+     if (datatype)
+         {
+         if (longopts)
+-            arg_cat(&dest,"=",&ndest);
++            arg_cat(&dest,_T("="),&ndest);
+         else if (shortopts)
+-            arg_cat(&dest," ",&ndest);
++            arg_cat(&dest,_T(" "),&ndest);
+ 
+         if (optvalue)
+             {
+-            arg_cat(&dest,"[",&ndest);
++            arg_cat(&dest,_T("["),&ndest);
+             arg_cat(&dest,datatype,&ndest);
+-            arg_cat(&dest,"]",&ndest);
++            arg_cat(&dest,_T("]"),&ndest);
+             }
+         else
+             arg_cat(&dest,datatype,&ndest);
+@@ -732,16 +730,16 @@
+ 
+ 
+ /* this function should be deprecated because it doesnt consider optional argument values (ARG_HASOPTVALUE) */
+-void arg_print_option(FILE *fp, const char *shortopts, const char *longopts, const char *datatype, const char *suffix)
++void arg_print_option(FILE *fp, const TCHAR *shortopts, const TCHAR *longopts, const TCHAR *datatype, const TCHAR *suffix)
+     {
+-    char syntax[200]="";
+-    suffix = suffix ? suffix : "";
++    TCHAR syntax[200]=_T("");
++    suffix = suffix ? suffix : _T("");
+ 
+     /* there is no way of passing the proper optvalue for optional argument values here, so we must ignore it */
+-    arg_cat_optionv(syntax,sizeof(syntax),shortopts,longopts,datatype,0,"|");
++    arg_cat_optionv(syntax,NUM_ELEMENTS(syntax),shortopts,longopts,datatype,0,_T("|"));
+ 
+-    fputs(syntax,fp);
+-    fputs(suffix,fp);
++    _fputts(syntax,fp);
++    _fputts(suffix,fp);
+     }
+ 
+ 
+@@ -754,9 +752,9 @@
+ void arg_print_gnuswitch(FILE *fp, struct arg_hdr **table)
+     {
+     int tabindex;
+-    char *format1=" -%c";
+-    char *format2=" [-%c";
+-    char *suffix="";
++    TCHAR *format1=_T(" -%c");
++    TCHAR *format2=_T(" [-%c");
++    TCHAR *suffix=_T("");
+ 
+     /* print all mandatory switches that are without argument values */
+     for(tabindex=0; table[tabindex] && !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+@@ -774,9 +772,9 @@
+             continue;
+ 
+         /* print the short option (only the first short option char, ignore multiple choices)*/
+-        fprintf(fp,format1,table[tabindex]->shortopts[0]);
+-        format1="%c";
+-        format2="[%c";
++        _ftprintf(fp,format1,table[tabindex]->shortopts[0]);
++        format1=_T("%c");
++        format2=_T("[%c");
+         }
+ 
+     /* print all optional switches that are without argument values */
+@@ -795,16 +793,16 @@
+             continue;
+ 
+         /* print first short option */
+-        fprintf(fp,format2,table[tabindex]->shortopts[0]);
+-        format2="%c";
+-        suffix="]";
++        _ftprintf(fp,format2,table[tabindex]->shortopts[0]);
++        format2=_T("%c");
++        suffix=_T("]");
+         }
+ 
+-    fprintf(fp,suffix);
++    _ftprintf(fp,suffix);
+     }
+ 
+ 
+-void arg_print_syntax(FILE *fp, void **argtable, const char *suffix)
++void arg_print_syntax(FILE *fp, void **argtable, const TCHAR *suffix)
+     {
+     struct arg_hdr **table = (struct arg_hdr**)argtable;
+     int i,tabindex;
+@@ -815,8 +813,8 @@
+     /* print remaining options in abbreviated style */
+     for(tabindex=0; table[tabindex] && !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+         {
+-        char syntax[200]="";
+-        const char *shortopts, *longopts, *datatype;
++        TCHAR syntax[200]=_T("");
++        const TCHAR *shortopts, *longopts, *datatype;
+ 
+         /* skip short options without arg values (they were printed by arg_print_gnu_switch) */
+         if (table[tabindex]->shortopts && !(table[tabindex]->flag&ARG_HASVALUE))
+@@ -825,13 +823,13 @@
+         shortopts = table[tabindex]->shortopts;
+         longopts  = table[tabindex]->longopts;
+         datatype  = table[tabindex]->datatype;
+-        arg_cat_option(syntax,sizeof(syntax),shortopts,longopts,datatype, table[tabindex]->flag&ARG_HASOPTVALUE);
++        arg_cat_option(syntax,NUM_ELEMENTS(syntax),shortopts,longopts,datatype, table[tabindex]->flag&ARG_HASOPTVALUE);
+ 
+-        if (strlen(syntax)>0)
++        if (_tcslen(syntax)>0)
+             {
+             /* print mandatory instances of this option */
+             for (i=0; i<table[tabindex]->mincount; i++)
+-                fprintf(fp, " %s",syntax);
++                _ftprintf(fp, _T(" %s"),syntax);
+ 
+             /* print optional instances enclosed in "[..]" */
+             switch ( table[tabindex]->maxcount - table[tabindex]->mincount )
+@@ -856,7 +854,7 @@
+     }
+ 
+ 
+-void arg_print_syntaxv(FILE *fp, void **argtable, const char *suffix)
++void arg_print_syntaxv(FILE *fp, void **argtable, const TCHAR *suffix)
+     {
+     struct arg_hdr **table = (struct arg_hdr**)argtable;
+     int i,tabindex;
+@@ -864,13 +862,13 @@
+     /* print remaining options in abbreviated style */
+     for(tabindex=0; table[tabindex] && !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+         {
+-        char syntax[200]="";
+-        const char *shortopts, *longopts, *datatype;
++        TCHAR syntax[200]=_T("");
++        const TCHAR *shortopts, *longopts, *datatype;
+ 
+         shortopts = table[tabindex]->shortopts;
+         longopts  = table[tabindex]->longopts;
+         datatype  = table[tabindex]->datatype;
+-        arg_cat_optionv(syntax,sizeof(syntax),shortopts,longopts,datatype,table[tabindex]->flag&ARG_HASOPTVALUE, "|");
++        arg_cat_optionv(syntax,NUM_ELEMENTS(syntax),shortopts,longopts,datatype,table[tabindex]->flag&ARG_HASOPTVALUE, _T("|"));
+ 
+         /* print mandatory options */
+         for (i=0; i<table[tabindex]->mincount; i++)
+@@ -898,23 +896,23 @@
+     }
+ 
+ 
+-void arg_print_glossary(FILE *fp, void **argtable, const char *format)
++void arg_print_glossary(FILE *fp, void **argtable, const TCHAR *format)
+     {
+     struct arg_hdr **table = (struct arg_hdr**)argtable;
+     int tabindex;
+ 
+-    format = format ? format : "  %-20s %s\n";
++    format = format ? format : _T("  %-20s %s\n");
+     for(tabindex=0; !(table[tabindex]->flag&ARG_TERMINATOR); tabindex++)
+         {
+         if (table[tabindex]->glossary)
+             {
+-            char syntax[200]="";
+-            const char *shortopts = table[tabindex]->shortopts;
+-            const char *longopts  = table[tabindex]->longopts;
+-            const char *datatype  = table[tabindex]->datatype;
+-            const char *glossary  = table[tabindex]->glossary;
+-            arg_cat_optionv(syntax,sizeof(syntax),shortopts,longopts,datatype,table[tabindex]->flag&ARG_HASOPTVALUE,", ");
+-            fprintf(fp,format,syntax,glossary);
++            TCHAR syntax[200]=_T("");
++            const TCHAR *shortopts = table[tabindex]->shortopts;
++            const TCHAR *longopts  = table[tabindex]->longopts;
++            const TCHAR *datatype  = table[tabindex]->datatype;
++            const TCHAR *glossary  = table[tabindex]->glossary;
++            arg_cat_optionv(syntax,NUM_ELEMENTS(syntax),shortopts,longopts,datatype,table[tabindex]->flag&ARG_HASOPTVALUE,_T(", "));
++            _ftprintf(fp,format,syntax,glossary);
+             }
+         }
+     }
+@@ -953,16 +951,16 @@
+  * Author: Uli Fouquet
+  */
+ static
+-void arg_print_formatted( FILE *fp, const unsigned lmargin, const unsigned rmargin, const char *text )
++void arg_print_formatted( FILE *fp, const unsigned lmargin, const unsigned rmargin, const TCHAR *text )
+     {
+-    const unsigned textlen = strlen( text );
++    const unsigned textlen = _tcslen( text );
+     unsigned line_start = 0;
+     unsigned line_end = textlen + 1;
+     const unsigned colwidth = (rmargin - lmargin) + 1;
+ 
+     /* Someone doesn't like us... */
+     if ( line_end < line_start )
+-        { fprintf( fp, "%s\n", text ); }
++        { _ftprintf( fp, _T("%s\n"), text ); }
+ 
+     while (line_end-1 > line_start ) 
+         {
+@@ -1029,29 +1027,29 @@
+         {
+         if (table[tabindex]->glossary)
+             {
+-            char syntax[200]="";
+-            const char *shortopts = table[tabindex]->shortopts;
+-            const char *longopts  = table[tabindex]->longopts;
+-            const char *datatype  = table[tabindex]->datatype;
+-            const char *glossary  = table[tabindex]->glossary;
++            TCHAR syntax[200]=_T("");
++            const TCHAR *shortopts = table[tabindex]->shortopts;
++            const TCHAR *longopts  = table[tabindex]->longopts;
++            const TCHAR *datatype  = table[tabindex]->datatype;
++            const TCHAR *glossary  = table[tabindex]->glossary;
+ 
+             if ( !shortopts && longopts ) 
+                 {
+                 /* Indent trailing line by 4 spaces... */
+-                memset( syntax, ' ', 4 );
+-                *(syntax+4) = '\0';
++                _tcsnset( syntax, _T(' '), 4 );
++                *(syntax+4) = _T('\0');
+                 }
+ 
+-            arg_cat_optionv(syntax,sizeof(syntax),shortopts,longopts,datatype,table[tabindex]->flag&ARG_HASOPTVALUE,", ");
++            arg_cat_optionv(syntax,NUM_ELEMENTS(syntax),shortopts,longopts,datatype,table[tabindex]->flag&ARG_HASOPTVALUE,_T(", "));
+ 
+             /* If syntax fits not into column, print glossary in new line... */
+-            if ( strlen(syntax) > 25 ) 
++            if ( _tcslen(syntax) > 25 ) 
+                 {
+-                fprintf( fp, "  %-25s %s\n", syntax, "" );
+-                *syntax = '\0';
++                _ftprintf( fp, _T("  %-25s %s\n"), syntax, _T("") );
++                *syntax = _T('\0');
+                 }
+ 
+-            fprintf( fp, "  %-25s ", syntax );
++            _ftprintf( fp, _T("  %-25s "), syntax );
+             arg_print_formatted( fp, 28, 79, glossary );
+             }
+         } /* for each table entry */
+@@ -1124,7 +1122,7 @@
+ void arg_freetable(void **argtable, size_t n)
+     {
+     struct arg_hdr **table=(struct arg_hdr**)argtable;
+-    int tabindex=0;
++    unsigned int tabindex=0;
+     /*printf("arg_freetable(%p)\n",argtable);*/
+     for (tabindex=0; tabindex<n; tabindex++)
+         {
+Index: src/argtable2.h
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/argtable2.h,v
+retrieving revision 1.11
+diff -u -r1.11 argtable2.h
+--- src/argtable2.h	1 Jan 2008 07:24:04 -0000	1.11
++++ src/argtable2.h	22 Nov 2008 14:54:51 -0000
+@@ -25,10 +25,24 @@
+ #include <time.h>       /* struct tm */
+ #include <sys/types.h>
+ 
++#ifdef UNICODE
++#include <tchar.h>
++#else
++
++#ifndef TCHAR
++#define TCHAR char
++#endif
++
++#include "tchar_filler.h"   /* _tcs* functions alias to str* functions */
++
++#endif
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+ 
++/* Return number of elements in an array */
++#define NUM_ELEMENTS(arr) (sizeof(arr)/sizeof(*(arr)))
+ 
+ /* bit masks for arg_hdr.flag */
+ enum
+@@ -39,9 +53,9 @@
+     };
+ 
+ typedef void (arg_resetfn)(void *parent);
+-typedef int  (arg_scanfn)(void *parent, const char *argval);
++typedef int  (arg_scanfn)(void *parent, const TCHAR *argval);
+ typedef int  (arg_checkfn)(void *parent);
+-typedef void (arg_errorfn)(void *parent, FILE *fp, int error, const char *argval, const char *progname);
++typedef void (arg_errorfn)(void *parent, FILE *fp, int error, const TCHAR *argval, const TCHAR *progname);
+ 
+ 
+ /*
+@@ -64,10 +78,10 @@
+ struct arg_hdr
+    {
+    char         flag;        /* Modifier flags: ARG_TERMINATOR, ARG_HASVALUE. */
+-   const char  *shortopts;   /* String defining the short options */
+-   const char  *longopts;    /* String defiing the long options */
+-   const char  *datatype;    /* Description of the argument data type */
+-   const char  *glossary;    /* Description of the option as shown by arg_print_glossary function */
++   const TCHAR  *shortopts;   /* String defining the short options */
++   const TCHAR  *longopts;    /* String defiing the long options */
++   const TCHAR  *datatype;    /* Description of the argument data type */
++   const TCHAR  *glossary;    /* Description of the option as shown by arg_print_glossary function */
+    int          mincount;    /* Minimum number of occurences of this option accepted */
+    int          maxcount;    /* Maximum number of occurences if this option accepted */
+    void        *parent;      /* Pointer to parent arg_xxx struct */
+@@ -107,7 +121,7 @@
+    {
+    struct arg_hdr hdr;      /* The mandatory argtable header struct */
+    int count;               /* Number of matching command line args */
+-   const char **sval;       /* Array of parsed argument values */
++   const TCHAR **sval;       /* Array of parsed argument values */
+    };
+ 
+ struct arg_rex
+@@ -121,9 +135,9 @@
+    {
+    struct arg_hdr hdr;      /* The mandatory argtable header struct */
+    int count;               /* Number of matching command line args*/
+-   const char **filename;   /* Array of parsed filenames  (eg: /home/foo.bar) */
+-   const char **basename;   /* Array of parsed basenames  (eg: foo.bar) */
+-   const char **extension;  /* Array of parsed extensions (eg: bar) */
++   const TCHAR **filename;   /* Array of parsed filenames  (eg: /home/foo.bar) */
++   const TCHAR **basename;   /* Array of parsed basenames  (eg: foo.bar) */
++   const TCHAR **extension;  /* Array of parsed extensions (eg: bar) */
+    };
+ 
+ struct arg_date
+@@ -141,149 +155,149 @@
+    int count;               /* Number of errors encountered */
+    int *error;              /* Array of error codes */
+    void **parent;           /* Array of pointers to offending arg_xxx struct */
+-   const char **argval;     /* Array of pointers to offending argv[] string */
++   const TCHAR **argval;     /* Array of pointers to offending argv[] string */
+    };
+ 
+ 
+ /**** arg_xxx constructor functions *********************************/
+ 
+-struct arg_rem* arg_rem(const char* datatype, const char* glossary);
++struct arg_rem* arg_rem(const TCHAR* datatype, const TCHAR* glossary);
+ 
+-struct arg_lit* arg_lit0(const char* shortopts,
+-                         const char* longopts,
+-                         const char* glossary);
+-struct arg_lit* arg_lit1(const char* shortopts,
+-                         const char* longopts,
+-                         const char *glossary);
+-struct arg_lit* arg_litn(const char* shortopts,
+-                         const char* longopts,
++struct arg_lit* arg_lit0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* glossary);
++struct arg_lit* arg_lit1(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *glossary);
++struct arg_lit* arg_litn(const TCHAR* shortopts,
++                         const TCHAR* longopts,
+                          int mincount,
+                          int maxcount,
+-                         const char *glossary);
++                         const TCHAR *glossary);
+ 
+-struct arg_key* arg_key0(const char* keyword,
++struct arg_key* arg_key0(const TCHAR* keyword,
+                          int flags,
+-                         const char* glossary);
+-struct arg_key* arg_key1(const char* keyword,
++                         const TCHAR* glossary);
++struct arg_key* arg_key1(const TCHAR* keyword,
+                          int flags,
+-                         const char* glossary);
+-struct arg_key* arg_keyn(const char* keyword,
++                         const TCHAR* glossary);
++struct arg_key* arg_keyn(const TCHAR* keyword,
+                          int flags,
+                          int mincount,
+                          int maxcount,
+-                         const char* glossary);
++                         const TCHAR* glossary);
+ 
+-struct arg_int* arg_int0(const char* shortopts,
+-                         const char* longopts,
+-                         const char* datatype,
+-                         const char* glossary);
+-struct arg_int* arg_int1(const char* shortopts,
+-                         const char* longopts,
+-                         const char* datatype,
+-                         const char *glossary);
+-struct arg_int* arg_intn(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
++struct arg_int* arg_int0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* datatype,
++                         const TCHAR* glossary);
++struct arg_int* arg_int1(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* datatype,
++                         const TCHAR *glossary);
++struct arg_int* arg_intn(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
+                          int mincount,
+                          int maxcount,
+-                         const char *glossary);
++                         const TCHAR *glossary);
+ 
+-struct arg_dbl* arg_dbl0(const char* shortopts,
+-                         const char* longopts,
+-                         const char* datatype,
+-                         const char* glossary);
+-struct arg_dbl* arg_dbl1(const char* shortopts,
+-                         const char* longopts,
+-                         const char* datatype,
+-                         const char *glossary);
+-struct arg_dbl* arg_dbln(const char* shortopts,
+-                         const char* longopts,
+-                         const char *datatype,
++struct arg_dbl* arg_dbl0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* datatype,
++                         const TCHAR* glossary);
++struct arg_dbl* arg_dbl1(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* datatype,
++                         const TCHAR *glossary);
++struct arg_dbl* arg_dbln(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR *datatype,
+                          int mincount,
+                          int maxcount,
+-                         const char *glossary);
++                         const TCHAR *glossary);
+ 
+-struct arg_str* arg_str0(const char* shortopts,
+-                         const char* longopts,
+-                         const char* datatype,
+-                         const char* glossary);
+-struct arg_str* arg_str1(const char* shortopts,
+-                         const char* longopts,                    
+-                         const char* datatype,
+-                         const char *glossary);
+-struct arg_str* arg_strn(const char* shortopts,
+-                         const char* longopts,
+-                         const char* datatype,
++struct arg_str* arg_str0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* datatype,
++                         const TCHAR* glossary);
++struct arg_str* arg_str1(const TCHAR* shortopts,
++                         const TCHAR* longopts,                    
++                         const TCHAR* datatype,
++                         const TCHAR *glossary);
++struct arg_str* arg_strn(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* datatype,
+                          int mincount,
+                          int maxcount,
+-                         const char *glossary);
++                         const TCHAR *glossary);
+ 
+-struct arg_rex* arg_rex0(const char* shortopts,
+-                         const char* longopts,
+-                         const char* pattern,
+-                         const char* datatype,
++struct arg_rex* arg_rex0(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* pattern,
++                         const TCHAR* datatype,
+                          int flags,
+-                         const char* glossary);
+-struct arg_rex* arg_rex1(const char* shortopts,
+-                         const char* longopts,
+-                         const char* pattern,
+-                         const char* datatype,
++                         const TCHAR* glossary);
++struct arg_rex* arg_rex1(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* pattern,
++                         const TCHAR* datatype,
+                          int flags,
+-                         const char *glossary);
+-struct arg_rex* arg_rexn(const char* shortopts,
+-                         const char* longopts,
+-                         const char* pattern,
+-                         const char* datatype,
++                         const TCHAR *glossary);
++struct arg_rex* arg_rexn(const TCHAR* shortopts,
++                         const TCHAR* longopts,
++                         const TCHAR* pattern,
++                         const TCHAR* datatype,
+                          int mincount,
+                          int maxcount,
+                          int flags,
+-                         const char *glossary);
++                         const TCHAR *glossary);
+ 
+-struct arg_file* arg_file0(const char* shortopts,
+-                           const char* longopts,
+-                           const char* datatype,
+-                           const char* glossary);
+-struct arg_file* arg_file1(const char* shortopts,
+-                           const char* longopts,
+-                           const char* datatype,
+-                           const char *glossary);
+-struct arg_file* arg_filen(const char* shortopts,
+-                           const char* longopts,
+-                           const char* datatype,
++struct arg_file* arg_file0(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR* datatype,
++                           const TCHAR* glossary);
++struct arg_file* arg_file1(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR* datatype,
++                           const TCHAR *glossary);
++struct arg_file* arg_filen(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR* datatype,
+                            int mincount,
+                            int maxcount,
+-                           const char *glossary);
++                           const TCHAR *glossary);
+ 
+-struct arg_date* arg_date0(const char* shortopts,
+-                           const char* longopts,
+-                           const char* format,
+-                           const char* datatype,
+-                           const char* glossary);
+-struct arg_date* arg_date1(const char* shortopts,
+-                           const char* longopts,
+-                           const char* format,
+-                           const char* datatype,
+-                           const char *glossary);
+-struct arg_date* arg_daten(const char* shortopts,
+-                           const char* longopts,
+-                           const char* format,
+-                           const char* datatype,
++struct arg_date* arg_date0(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR* format,
++                           const TCHAR* datatype,
++                           const TCHAR* glossary);
++struct arg_date* arg_date1(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR* format,
++                           const TCHAR* datatype,
++                           const TCHAR *glossary);
++struct arg_date* arg_daten(const TCHAR* shortopts,
++                           const TCHAR* longopts,
++                           const TCHAR* format,
++                           const TCHAR* datatype,
+                            int mincount,
+                            int maxcount,
+-                           const char *glossary);
++                           const TCHAR *glossary);
+ 
+ struct arg_end* arg_end(int maxerrors);
+ 
+ 
+ /**** other functions *******************************************/
+ int arg_nullcheck(void **argtable);
+-int arg_parse(int argc, char **argv, void **argtable);
+-void arg_print_option(FILE *fp, const char *shortopts, const char *longopts, const char *datatype, const char *suffix);
+-void arg_print_syntax(FILE *fp, void **argtable, const char *suffix);
+-void arg_print_syntaxv(FILE *fp, void **argtable, const char *suffix);
+-void arg_print_glossary(FILE *fp, void **argtable, const char *format);
++int arg_parse(int argc, TCHAR **argv, void **argtable);
++void arg_print_option(FILE *fp, const TCHAR *shortopts, const TCHAR *longopts, const TCHAR *datatype, const TCHAR *suffix);
++void arg_print_syntax(FILE *fp, void **argtable, const TCHAR *suffix);
++void arg_print_syntaxv(FILE *fp, void **argtable, const TCHAR *suffix);
++void arg_print_glossary(FILE *fp, void **argtable, const TCHAR *format);
+ void arg_print_glossary_gnu(FILE *fp, void **argtable);
+-void arg_print_errors(FILE* fp, struct arg_end* end, const char* progname);
++void arg_print_errors(FILE* fp, struct arg_end* end, const TCHAR* progname);
+ void arg_freetable(void **argtable, size_t n);
+ 
+ /**** deprecated functions, for back-compatibility only ********/
+Index: src/getopt.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/getopt.c,v
+retrieving revision 1.3
+diff -u -r1.3 getopt.c
+--- src/getopt.c	15 Jan 2004 23:05:46 -0000	1.3
++++ src/getopt.c	22 Nov 2008 14:59:15 -0000
+@@ -88,7 +88,10 @@
+ #if defined (WIN32) && !defined (__CYGWIN32__)
+ /* It's not Unix, really.  See?  Capital letters.  */
+ #include <windows.h>
++#include <tchar.h>
+ #define getpid() GetCurrentProcessId()
++#else
++#include "tchar_filler.h"
+ #endif
+ 
+ #ifndef _
+@@ -124,7 +127,7 @@
+    Also, when `ordering' is RETURN_IN_ORDER,
+    each non-option ARGV-element is returned here.  */
+ 
+-char *optarg = NULL;
++TCHAR *optarg = NULL;
+ 
+ /* Index in ARGV of the next element to be scanned.
+    This is used for communication to and from the caller
+@@ -154,7 +157,7 @@
+    If this is zero, or a null string, it means resume the scan
+    by advancing to the next ARGV-element.  */
+ 
+-static char *nextchar;
++static TCHAR *nextchar;
+ 
+ /* Callers store zero here to inhibit the error message
+    for unrecognized options.  */
+@@ -219,15 +222,13 @@
+ 
+ char *getenv();
+ 
+-static char *
+-     my_index(str, chr)
+-     const char *str;
+-     int chr;
++static TCHAR *
++     my_index(const TCHAR *str, int chr)
+ {
+ 	while (*str)
+ 	{
+ 		if (*str == chr)
+-			return (char *) str;
++			return (TCHAR *) str;
+ 		str++;
+ 	}
+ 	return 0;
+@@ -358,11 +359,8 @@
+ static const char *_getopt_initialize(int, char *const *, const char *);
+ 
+ #endif
+-static const char *
+-     _getopt_initialize(argc, argv, optstring)
+-     int argc;
+-     char *const *argv;
+-     const char *optstring;
++static const TCHAR *
++     _getopt_initialize(int argc, TCHAR *const *argv, const TCHAR *optstring)
+ {
+ 	/* Start processing options with ARGV-element 1 (since ARGV-element 0
+ 	   is the program name); the sequence of previously skipped
+@@ -472,13 +470,8 @@
+    long-named options.  */
+ 
+ int
+-    _getopt_internal(argc, argv, optstring, longopts, longind, long_only)
+-     int argc;
+-     char *const *argv;
+-     const char *optstring;
+-     const struct option *longopts;
+-     int *longind;
+-     int long_only;
++    _getopt_internal(int argc, TCHAR *const *argv, const TCHAR *optstring, const struct option *longopts,
++        int *longind, int long_only)
+ {
+ 	optarg = NULL;
+ 
+@@ -535,7 +528,7 @@
+ 		   then exchange with previous non-options as if it were an option,
+ 		   then skip everything else like a non-option.  */
+ 
+-		if (optind != argc && !strcmp(argv[optind], "--"))
++		if (optind != argc && !_tcscmp(argv[optind], _T("--")))
+ 		{
+ 			optind++;
+ 
+@@ -597,7 +590,7 @@
+ 	    && (argv[optind][1] == '-'
+ 		|| (long_only && (argv[optind][2] || !my_index(optstring, argv[optind][1])))))
+ 	{
+-		char *nameend;
++		TCHAR *nameend;
+ 		const struct option *p;
+ 		const struct option *pfound = NULL;
+ 		int exact = 0;
+@@ -611,10 +604,10 @@
+ 		/* Test all long options for either exact match
+ 		   or abbreviated matches.  */
+ 		for (p = longopts, option_index = 0; p->name; p++, option_index++)
+-			if (!strncmp(p->name, nextchar, nameend - nextchar))
++			if (!_tcsncmp(p->name, nextchar, nameend - nextchar))
+ 			{
+ 				if ((unsigned int) (nameend - nextchar)
+-				    == (unsigned int) strlen(p->name))
++				    == (unsigned int) _tcslen(p->name))
+ 				{
+ 					/* Exact match found.  */
+ 					pfound = p;
+@@ -638,7 +631,7 @@
+ 			if (opterr)
+ 				fprintf(stderr, _("%s: option `%s' is ambiguous\n"),
+ 					argv[0], argv[optind]);
+-			nextchar += strlen(nextchar);
++			nextchar += _tcslen(nextchar);
+ 			optind++;
+ 			optopt = 0;
+ 			return '?';
+@@ -670,7 +663,7 @@
+ 								argv[0], argv[optind - 1][0], pfound->name);
+ 					}
+ 
+-					nextchar += strlen(nextchar);
++					nextchar += _tcslen(nextchar);
+ 
+ 					optopt = pfound->val;
+ 					return '?';
+@@ -686,12 +679,12 @@
+ 						fprintf(stderr,
+ 							_("%s: option `%s' requires an argument\n"),
+ 						 argv[0], argv[optind - 1]);
+-					nextchar += strlen(nextchar);
++					nextchar += _tcslen(nextchar);
+ 					optopt = pfound->val;
+ 					return optstring[0] == ':' ? ':' : '?';
+ 				}
+ 			}
+-			nextchar += strlen(nextchar);
++			nextchar += _tcslen(nextchar);
+ 			if (longind != NULL)
+ 				*longind = option_index;
+ 			if (pfound->flag)
+@@ -720,7 +713,7 @@
+ 					fprintf(stderr, _("%s: unrecognized option `%c%s'\n"),
+ 					argv[0], argv[optind][0], nextchar);
+ 			}
+-			nextchar = (char *) "";
++			nextchar = (TCHAR *) _T("");
+ 			optind++;
+ 			optopt = 0;
+ 			return '?';
+@@ -730,8 +723,8 @@
+ 	/* Look at and handle the next short option-character.  */
+ 
+ 	{
+-		char c = *nextchar++;
+-		char *temp = my_index(optstring, c);
++		TCHAR c = *nextchar++;
++		TCHAR *temp = my_index(optstring, c);
+ 
+ 		/* Increment `optind' when we start to process its last character.  */
+ 		if (*nextchar == '\0')
+@@ -755,7 +748,7 @@
+ 		/* Convenience. Treat POSIX -W foo same as long option --foo */
+ 		if (temp[0] == 'W' && temp[1] == ';')
+ 		{
+-			char *nameend;
++			TCHAR *nameend;
+ 			const struct option *p;
+ 			const struct option *pfound = NULL;
+ 			int exact = 0;
+@@ -794,15 +787,15 @@
+ 			/* optarg is now the argument, see if it's in the
+ 			   table of longopts.  */
+ 
+-			for (nextchar = nameend = optarg; *nameend && *nameend != '='; nameend++)
++			for (nextchar = nameend = optarg; *nameend && *nameend != _T('='); nameend++)
+ 				/* Do nothing.  */ ;
+ 
+ 			/* Test all long options for either exact match
+ 			   or abbreviated matches.  */
+ 			for (p = longopts, option_index = 0; p->name; p++, option_index++)
+-				if (!strncmp(p->name, nextchar, nameend - nextchar))
++				if (!_tcsncmp(p->name, nextchar, nameend - nextchar))
+ 				{
+-					if ((unsigned int) (nameend - nextchar) == strlen(p->name))
++					if ((unsigned int) (nameend - nextchar) == _tcslen(p->name))
+ 					{
+ 						/* Exact match found.  */
+ 						pfound = p;
+@@ -825,7 +818,7 @@
+ 				if (opterr)
+ 					fprintf(stderr, _("%s: option `-W %s' is ambiguous\n"),
+ 						argv[0], argv[optind]);
+-				nextchar += strlen(nextchar);
++				nextchar += _tcslen(nextchar);
+ 				optind++;
+ 				return '?';
+ 			}
+@@ -845,7 +838,7 @@
+ %s: option `-W %s' doesn't allow an argument\n"),
+ 								argv[0], pfound->name);
+ 
+-						nextchar += strlen(nextchar);
++						nextchar += _tcslen(nextchar);
+ 						return '?';
+ 					}
+ 				}
+@@ -859,11 +852,11 @@
+ 							fprintf(stderr,
+ 								_("%s: option `%s' requires an argument\n"),
+ 								argv[0], argv[optind - 1]);
+-						nextchar += strlen(nextchar);
++						nextchar += _tcslen(nextchar);
+ 						return optstring[0] == ':' ? ':' : '?';
+ 					}
+ 				}
+-				nextchar += strlen(nextchar);
++				nextchar += _tcslen(nextchar);
+ 				if (longind != NULL)
+ 					*longind = option_index;
+ 				if (pfound->flag)
+@@ -927,10 +920,7 @@
+ }
+ 
+ int
+-    getopt(argc, argv, optstring)
+-     int argc;
+-     char *const *argv;
+-     const char *optstring;
++    getopt(int argc, TCHAR *const *argv, const TCHAR *optstring)
+ {
+ 	return _getopt_internal(argc, argv, optstring,
+ 				(const struct option *) 0,
+Index: src/getopt.h
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/getopt.h,v
+retrieving revision 1.1
+diff -u -r1.1 getopt.h
+--- src/getopt.h	16 Oct 2003 08:38:13 -0000	1.1
++++ src/getopt.h	22 Nov 2008 15:04:36 -0000
+@@ -33,7 +33,7 @@
+    Also, when `ordering' is RETURN_IN_ORDER,
+    each non-option ARGV-element is returned here.  */
+ 
+-	extern char *optarg;
++	extern TCHAR *optarg;
+ 
+ /* Index in ARGV of the next element to be scanned.
+    This is used for communication to and from the caller
+@@ -82,9 +82,9 @@
+ 	struct option
+ 	{
+ #if defined (__STDC__) && __STDC__
+-		const char *name;
++		const TCHAR *name;
+ #else
+-		char *name;
++		TCHAR *name;
+ #endif
+ 		/* has_arg can't be an enum because some compilers complain about
+ 		   type mismatches in all the code that assumes it is an int.  */
+@@ -120,11 +120,15 @@
+ 				const struct option *longopts, int *longind,
+ 				    int long_only);
+ #else				/* not __STDC__ */
+-	extern int getopt();
+-	extern int getopt_long();
+-	extern int getopt_long_only();
+ 
+-	extern int _getopt_internal();
++	extern int getopt(int argc, TCHAR *const *argv, const TCHAR *optstring);
++    int getopt_long(int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options,
++        int *opt_index);
++	extern int getopt_long_only(int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options,
++        int *opt_index);
++
++	extern int _getopt_internal(int argc, TCHAR *const *argv, const TCHAR *optstring, const struct option *longopts,
++        int *longind, int long_only);
+ #endif				/* __STDC__ */
+ 
+ #ifdef	__cplusplus
+Index: src/getopt1.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/src/getopt1.c,v
+retrieving revision 1.2
+diff -u -r1.2 getopt1.c
+--- src/getopt1.c	9 Nov 2003 11:14:00 -0000	1.2
++++ src/getopt1.c	22 Nov 2008 14:37:39 -0000
+@@ -23,6 +23,8 @@
+ #include "config.h"
+ #endif
+ 
++#include "argtable2.h"
++
+ #include "getopt.h"
+ 
+ #if !defined (__STDC__) || !__STDC__
+@@ -64,12 +66,7 @@
+ #endif
+ 
+ int
+-    getopt_long(argc, argv, options, long_options, opt_index)
+-     int argc;
+-     char *const *argv;
+-     const char *options;
+-     const struct option *long_options;
+-     int *opt_index;
++    getopt_long(int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options, int *opt_index)
+ {
+ 	return _getopt_internal(argc, argv, options, long_options, opt_index, 0);
+ }
+@@ -80,12 +77,7 @@
+    instead.  */
+ 
+ int
+-    getopt_long_only(argc, argv, options, long_options, opt_index)
+-     int argc;
+-     char *const *argv;
+-     const char *options;
+-     const struct option *long_options;
+-     int *opt_index;
++    getopt_long_only(int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options, int *opt_index)
+ {
+ 	return _getopt_internal(argc, argv, options, long_options, opt_index, 1);
+ }
+Index: tests/fntests.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/tests/fntests.c,v
+retrieving revision 1.5
+diff -u -r1.5 fntests.c
+--- tests/fntests.c	1 Jan 2008 07:21:33 -0000	1.5
++++ tests/fntests.c	22 Nov 2008 15:33:29 -0000
+@@ -38,7 +38,7 @@
+     assert( argtable[8]!=NULL );
+     assert( argtable[9]!=NULL );
+     
+-    arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
++    arg_freetable(argtable,NUM_ELEMENTS(argtable));
+     
+     assert( argtable[0]==NULL );
+     assert( argtable[1]==NULL );
+@@ -170,7 +170,7 @@
+     assert(nerrors==0);
+ 
+     /* deallocate each non-null entry in argtable[] */
+-    arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));    
++    arg_freetable(argtable,NUM_ELEMENTS(argtable));    
+     }
+ 
+ 
+@@ -203,7 +203,7 @@
+         }
+ 
+     /* deallocate each non-null entry in argtable[] */
+-    arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));    
++    arg_freetable(argtable,NUM_ELEMENTS(argtable));    
+     }
+ 
+ 
+Index: tests/test_dbl.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/tests/test_dbl.c,v
+retrieving revision 1.8
+diff -u -r1.8 test_dbl.c
+--- tests/test_dbl.c	1 Jan 2008 07:24:04 -0000	1.8
++++ tests/test_dbl.c	22 Nov 2008 15:33:57 -0000
+@@ -126,7 +126,7 @@
+         
+     exit:
+     /* deallocate each non-null entry in argtable[] */
+-    arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
++    arg_freetable(argtable,NUM_ELEMENTS(argtable));
+     
+     printf("%s: exitcode=%d\n\n",argv[0],exitcode);
+ 
+Index: tests/test_int.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/tests/test_int.c,v
+retrieving revision 1.10
+diff -u -r1.10 test_int.c
+--- tests/test_int.c	1 Jan 2008 07:24:04 -0000	1.10
++++ tests/test_int.c	22 Nov 2008 15:34:07 -0000
+@@ -138,7 +138,7 @@
+         
+     exit:
+     /* deallocate each non-null entry in argtable[] */
+-    arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));    
++    arg_freetable(argtable,NUM_ELEMENTS(argtable));    
+     
+     printf("%s: exitcode=%d\n\n",argv[0],exitcode);
+ 
+Index: tests/test_lit.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/tests/test_lit.c,v
+retrieving revision 1.9
+diff -u -r1.9 test_lit.c
+--- tests/test_lit.c	1 Jan 2008 07:24:04 -0000	1.9
++++ tests/test_lit.c	22 Nov 2008 15:34:16 -0000
+@@ -78,7 +78,7 @@
+ 
+     exit:
+     /* deallocate each non-null entry in argtable[] */
+-    arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0]));
++    arg_freetable(argtable,NUM_ELEMENTS(argtable));
+ 
+     /* close stdin and stdout to stop memcheck whining about their memory not being freed */
+     fclose(stdin);
+Index: tests/test_rex.c
+===================================================================
+RCS file: /cvsroot/argtable/argtable2/tests/test_rex.c,v
+retrieving revision 1.6
+diff -u -r1.6 test_rex.c
+--- tests/test_rex.c	1 Jan 2008 07:24:04 -0000	1.6
++++ tests/test_rex.c	22 Nov 2008 15:34:29 -0000
+@@ -84,7 +84,7 @@
+         
+     exit:
+     /* deallocate each non-null entry in argtable[] */
+-    arg_freetable(argtable,sizeof(argtable)/sizeof(argtable[0])); 
++    arg_freetable(argtable,NUM_ELEMENTS(argtable)); 
+     
+     printf("exitcode=%d\n\n",exitcode);
+     return exitcode;
+--- tchar_filler.h
++++ tchar_filler.h
+@@ -0,0 +1,25 @@
++#ifndef TCHAR_FILLER_H
++#define TCHAR_FILLER_H
++
++/* This file is used to stub-define the functions provided by Windows' tchar support.
++ * These functions are just other names for the standard string manipulation functions
++ */
++
++#define TCHAR char
++#define _T(str) str
++
++#define _tcscmp strcmp
++#define _tcsncmp strncmp
++#define _tcscpy strcpy
++#define _tcsncat strncat
++#define _tcschr strchr
++#define _tcsrchr strrchr
++#define _tcslen strlen
++#define _tcscspn strcspn
++
++#define _tcsnset _strnset
++
++#define _ftprintf fprintf
++#define _fputts fputs
++
++#endif // TCHAR_FILLER_H
+
+
