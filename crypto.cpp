@@ -184,7 +184,7 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
 
     redir_pipe ipipe(8000);
     redir_fd redir_from(fromfd);
-    process_ctl gzip_process( const_cast<TCHAR *>(FILENAME(gzip)), &redir_from, &ipipe, NULL,  "--rsyncable", NULL );
+    process_ctl gzip_process( const_cast<TCHAR *>(FILENAME(gzip)), &redir_from, &ipipe, NULL,  _T("--rsyncable"), NULL );
 
     // Run through gzip's output, and encrypt it
     const size_t block_size=header->block_size(); // Let's cache the block size
