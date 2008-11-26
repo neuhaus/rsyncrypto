@@ -382,6 +382,11 @@ public:
 
         return ret;
     }
+    // Return the length of the absolute specifier of the path
+    static size_t is_absolute( const char *path ) {
+        return path[0]=='\\' || path[0]!='\0' && path[1]==':';
+    }
+    
     // Status queries
     bool eof() const
     {
