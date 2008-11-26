@@ -317,6 +317,20 @@ public:
             throw rscerror("rename failed", Error2errno(GetLastError()), dst );
         }
     }
+    static int unlink(const char *pathname)
+    {
+        DWORD error=ERROR_SUCCESS;
+        if( !DeleteFile( pathname ) && (error=GetLastError())!=ERROR_FILE_NOT_FOUND )
+            throw rscerror("Erasing file", Error2errno(GetLastError()), pathname );
+
+        if( error!=ERROR_SUCCESS ) {
+            errno=Error2errno(error);
+            
+            return -1;
+        }
+
+        return 0;
+    }
 
     // Recursively create directories
     // mode is the permissions of the end directory
