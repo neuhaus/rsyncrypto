@@ -174,7 +174,7 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
                 std::cerr<<"Unsupported file type. Skipping "<<src<<std::endl;
                 break;
             }
-        } catch( const delayed_error &err ) {
+        } catch( const delayed_error & ) {
             error=true;
         } catch( const rscerror &err ) {
             std::cerr<<"Error in encryption of "<<srcname<<": "<<err.error()<<std::endl;
@@ -252,7 +252,7 @@ static void recurse_dir_enc( const char *src_dir, const char *dst_dir, const cha
                     break;
                 }
             }
-        } catch( const delayed_error &err ) {
+        } catch( const delayed_error & ) {
             error=true;
         } catch( const rscerror &err ) {
             std::cerr<<err.error()<<std::endl;
@@ -312,13 +312,12 @@ static void file_delete( const char *source_file, const char *dst_file, const ch
                 // If an execution log is active - report the operation
                 if( changes_log.get()!=NULL )
                     (*changes_log.get())<<source_file<<std::endl;
-                if( unlink( source_file )!=0 )
+                if( autofd::unlink( source_file )!=0 )
                     throw rscerror("Erasing file", errno, source_file );
                 if( EXISTS(delkey) ) {
                     if( VERBOSE(1) )
                         std::cout<<"Delete "<<key_file<<std::endl;
-                    if( unlink( key_file )!=0 && errno!=ENOENT )
-                        throw rscerror("Erasing file", errno, key_file );
+                    autofd::unlink( key_file );
                 }
                 break;
             default:

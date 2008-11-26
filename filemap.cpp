@@ -330,13 +330,11 @@ void filemap::enc_file_delete( const char *source_dir, const char *dst_dir, cons
                 std::cout<<"Delete "<<orig_ciphername<<" ("<<plainname<<")"<<std::endl;
             if( changes_log.get()!=NULL )
                 (*changes_log.get())<<src_file<<std::endl;
-            if( unlink( src_file.c_str() )!=0 && errno!=ENOENT )
-                throw rscerror("Erasing file", errno, src_file.c_str());
+            autofd::unlink( src_file.c_str() );
             if( EXISTS(delkey) ) {
                 if( VERBOSE(1) )
                     std::cout<<"Delete key "<<orig_ciphername<<" ("<<plainname<<")"<<std::endl;
-                if( unlink( key_file.c_str() )!=0 && errno!=ENOENT )
-                    throw rscerror("Erasing key file", errno, key_file.c_str());
+                autofd::unlink( key_file.c_str() );
                 reversemap.erase( orig_ciphername );
                 namemap.erase( item );
             }

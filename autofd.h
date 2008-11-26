@@ -212,6 +212,17 @@ public:
         }
     }
 
+    // Perform an unlink (delete file). Throw an exception if the operation fails,
+    // unless it failed with ENOENT - the file already doesn't exist
+    static int unlink(const char *pathname)
+    {
+        bool success=unlink( pathname )==0;
+        if( !success && errno!=ENOENT )
+            throw rscerror("Erasing file", errno, pathname );
+
+        return success ? 0 : -1;
+    }
+
     // Recursively create directories
     // mode is the permissions of the end directory
     // int_mode is the permissions of all intermediately created dirs
