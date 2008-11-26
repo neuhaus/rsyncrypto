@@ -1,0 +1,2 @@
+A new tool has been introduced, called rsyncrypto_recover. It allows extracting
+all good mapping from an otherwise corrupt file map.
