@@ -233,6 +233,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\win32\autofd.cpp"
+				>
+			</File>
+			<File
 				RelativePath="bufferfd.cpp"
 				>
 				<FileConfiguration
@@ -476,11 +480,11 @@
 				>
 			</File>
 			<File
-				RelativePath="autodir.h"
+				RelativePath="win32\autodir.h"
 				>
 			</File>
 			<File
-				RelativePath="win32\autodir.h"
+				RelativePath="autodir.h"
 				>
 			</File>
 			<File
@@ -496,11 +500,11 @@
 				>
 			</File>
 			<File
-				RelativePath="win32\autopipe.h"
+				RelativePath="autopipe.h"
 				>
 			</File>
 			<File
-				RelativePath="autopipe.h"
+				RelativePath="win32\autopipe.h"
 				>
 			</File>
 			<File
@@ -532,11 +536,11 @@
 				>
 			</File>
 			<File
-				RelativePath="process.h"
+				RelativePath="win32\process.h"
 				>
 			</File>
 			<File
-				RelativePath="win32\process.h"
+				RelativePath="process.h"
 				>
 			</File>
 			<File
