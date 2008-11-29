@@ -16,19 +16,16 @@ class autodir {
     WIN32_FIND_DATA finddata;
     dirent posixdir;
     bool eof;
+    bool utf8;
 
     // Disable default copy constructor
     autodir( const autodir & );
     autodir &operator=( const autodir & );
+
+    // Convert wide find data to UTF8
+    void data_w2a( const WIN32_FIND_DATAW *data );
 public:
-    explicit autodir( const char *dirname ) : eof(false)
-    {
-        h_dirscan=FindFirstFile((std::string(dirname)+"\\*").c_str(), &finddata );
-#if defined(EXCEPT_CLASS)
-        if( h_dirscan==INVALID_HANDLE_VALUE )
-            throw rscerror("opendir failed", Error2errno(GetLastError()), dirname);
-#endif
-    }
+    explicit autodir( const char *dirname, bool _utf8=false );
     ~autodir()
     {
         clear();
@@ -43,22 +40,8 @@ public:
         }
     }
 
-    struct dirent *read()
-    {
-        if( !eof ) {
-            strcpy_s(posixdir.d_name, finddata.cFileName);
-            if( !FindNextFile(h_dirscan, &finddata) ) {
-                eof=true;
-                DWORD error=GetLastError();
-                if( error!=ERROR_NO_MORE_FILES ) {
-                    throw rscerror("Error getting directory listing", Error2errno(error));
-                }
-            }
-            return &posixdir;
-        } else {
-            return NULL;
-        }
-    }
+    struct dirent *read();
+    
     /*
     void rewind()
     {

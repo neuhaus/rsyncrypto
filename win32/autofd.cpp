@@ -1,5 +1,8 @@
 #include <precomp.h>
 #include "autofd.h"
+#include "autodir.h"
+
+// Due to common implementation considerations, autofd and autodir's implementation are both in this file
 
 // Translate utf-8 to wide characters
 static auto_array<wchar_t> a2u( const char *str )
@@ -384,4 +387,72 @@ std::string autofd::readline() const
         ret.resize(ret.length()-1);
 
     return ret;
+}
+
+// autodir implementation
+autodir::autodir( const char *dirname, bool _utf8 ) : eof(false), utf8(_utf8)
+{
+    if( utf8 ) {
+        WIN32_FIND_DATAW wide_find_data;
+        h_dirscan=FindFirstFileW((std::basic_string<wchar_t>(a2u(dirname).get())+L"\\*").c_str(), &wide_find_data );
+
+        if( h_dirscan!=INVALID_HANDLE_VALUE )
+            data_w2a(&wide_find_data);
+    } else
+        h_dirscan=FindFirstFile((std::string(dirname)+"\\*").c_str(), &finddata );
+
+#if defined(EXCEPT_CLASS)
+    if( h_dirscan==INVALID_HANDLE_VALUE )
+        throw rscerror("opendir failed", Error2errno(GetLastError()), dirname);
+#endif
+}
+
+struct dirent *autodir::read()
+{
+    if( !eof ) {
+        strcpy_s(posixdir.d_name, finddata.cFileName);
+
+        BOOL res;
+        if( utf8 ) {
+            WIN32_FIND_DATAW wide_data;
+            res=FindNextFileW(h_dirscan, &wide_data);
+
+            if( res )
+                data_w2a(&wide_data);
+        } else {
+            res=FindNextFileA(h_dirscan, &finddata);
+        }
+
+        if( !res ) {
+            eof=true;
+            DWORD error=GetLastError();
+            if( error!=ERROR_NO_MORE_FILES ) {
+                throw rscerror("Error getting directory listing", Error2errno(error));
+            }
+        }
+        return &posixdir;
+    } else {
+        return NULL;
+    }
+}
+
+void autodir::data_w2a( const WIN32_FIND_DATAW *data )
+{
+    // Copy all identical file elements
+    finddata.dwFileAttributes=data->dwFileAttributes;
+    finddata.ftCreationTime=data->ftCreationTime;
+    finddata.ftLastAccessTime=data->ftLastAccessTime;
+    finddata.ftLastWriteTime=data->ftLastWriteTime;
+    finddata.nFileSizeHigh=data->nFileSizeHigh;
+    finddata.nFileSizeLow=data->nFileSizeLow;
+    finddata.dwReserved0=data->dwReserved0;
+    finddata.dwReserved1=data->dwReserved1;
+
+    // XXX What happens if the name is too long?
+    strncpy( finddata.cFileName, u2a(data->cFileName).get(), MAX_PATH );
+
+    for( int i=0; i<sizeof(finddata.cAlternateFileName); ++i ) {
+        // The short path is only ASCII characters
+        finddata.cAlternateFileName[i]=static_cast<CHAR>(data->cAlternateFileName[i]);
+    }
 }
