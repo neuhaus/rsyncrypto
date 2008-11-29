@@ -150,12 +150,18 @@ ssize_t autofd::write( file_t fd, const void *buf, size_t count )
     return written;
 }
 
-struct stat autofd::stat( const char *file_name )
+struct stat autofd::stat( const char *file_name, bool utf8 )
 {
     struct stat ret;
     WIN32_FILE_ATTRIBUTE_DATA data;
-    if( !GetFileAttributesEx( file_name, GetFileExInfoStandard, &data ) )
-        throw rscerror("stat failed", Error2errno(GetLastError()), file_name);
+
+    if( !utf8 ) {
+        if( !GetFileAttributesExA( file_name, GetFileExInfoStandard, &data ) )
+            throw rscerror("stat failed", Error2errno(GetLastError()), file_name);
+    } else {
+        if( !GetFileAttributesExW( a2u(file_name).get(), GetFileExInfoStandard, &data ) )
+            throw rscerror("stat failed", Error2errno(GetLastError()), file_name);
+    }
 
     ZeroMemory( &ret, sizeof(ret) );
     ret.st_atime=ft2ut(data.ftLastAccessTime);
@@ -234,7 +240,7 @@ default:
     return offset;
 }
 
-int autofd::utimes( const char *filename, const struct timeval tv[2])
+int autofd::utimes( const char *filename, const struct timeval tv[2], bool utf8)
 {
     FILETIME modtime, accesstime;
 
@@ -243,7 +249,7 @@ int autofd::utimes( const char *filename, const struct timeval tv[2])
 
     // The only function in Windows that sets file modification/access times does so for
     // open files only, so we have no choice but to open the file for write access
-    autofd file(filename, O_WRONLY);
+    autofd file(filename, O_WRONLY, utf8);
     if( SetFileTime(file, NULL, &accesstime, &modtime ) )
         return 0;
     else {
@@ -260,14 +266,109 @@ autofd autofd::dup( int filedes )
     return ret;
 }
 
-void autofd::rmdir( const char *pathname )
+void autofd::rmdir( const char *pathname, bool utf8 )
 {
-    if( !RemoveDirectory(pathname) ) {
+    if( !(utf8?RemoveDirectoryW(a2u(pathname).get()):RemoveDirectoryA(pathname)) ) {
         DWORD error=GetLastError();
 
         if( error!=ERROR_FILE_NOT_FOUND && error!=ERROR_PATH_NOT_FOUND )
             throw rscerror("Error removing directory", Error2errno(error), pathname);
     }
+}
+
+void autofd::mv( const char *src, const char *dst, bool utf8 ) {
+    if( !(utf8?
+            MoveFileExW( a2u(src).get(), a2u(dst).get(), MOVEFILE_REPLACE_EXISTING):
+            MoveFileExA( src, dst, MOVEFILE_REPLACE_EXISTING)) )
+    {
+        throw rscerror("rename failed", Error2errno(GetLastError()), dst );
+    }
+}
+
+int autofd::unlink(const char *pathname, bool utf8)
+{
+    DWORD error=ERROR_SUCCESS;
+    if( !(utf8?DeleteFileW( a2u(pathname).get() ):DeleteFileA( pathname ))
+        && (error=GetLastError())!=ERROR_FILE_NOT_FOUND )
+            throw rscerror("Erasing file", Error2errno(GetLastError()), pathname );
+
+    if( error!=ERROR_SUCCESS ) {
+        errno=Error2errno(error);
+
+        return -1;
+    }
+
+    return 0;
+}
+
+    // Recursively create directories
+    // mode is the permissions of the end directory
+    // int_mode is the permissions of all intermediately created dirs
+static void mkpath_actual(const std::string &path, mode_t mode, bool utf8)
+{
+    BOOL res;
+    if( utf8 )
+        res=CreateDirectoryW( a2u(path.c_str()).get(), NULL );
+    else
+        res=CreateDirectoryA( path.c_str(), NULL );
+
+    if( !res && GetLastError()!=ERROR_ALREADY_EXISTS ) {
+        // "Creating" a drive letter may fail for a whole host of reasons while actually succeeding
+        if( path.length()!=2 || path[1]!=':' ||
+            // Got this far in the "if" only if we tried to create something of the form C:
+            // Only a ERROR_INVALID_DRIVE actually means an error
+            GetLastError()==ERROR_INVALID_DRIVE )
+
+            throw rscerror("mkdir failed", Error2errno(GetLastError()), path.c_str() );
+    }
+}
+
+void autofd::mkpath(const char *path, mode_t mode, bool utf8)
+{
+    if( path[0]!='\0' ) {
+        for( int sublen=0; path[sublen]!='\0'; sublen++ ) {
+            if( sublen>0 && path[sublen]==DIRSEP_C && path[sublen+1]!=DIRSEP_C ) {
+                std::string subpath(path, sublen);
+                mkpath_actual(subpath, mode, utf8);
+            }
+        }
+
+        mkpath_actual(path, mode, utf8);
+    }
+}
+
+// Return the dir part of the name
+int autofd::dirpart( const char *path, bool utf8 )
+{
+    int i, last=0;
+
+    for( i=0; path[i]!='\0'; ++i ) {
+        if( path[i]==DIRSEP_C )
+            last=i;
+    }
+
+    return last;
+}
+
+std::string autofd::combine_paths( const char *left, const char *right, bool utf8 )
+{
+    std::string ret(left);
+
+    int i;
+    // Trim trailing slashes
+    for( i=ret.length()-1; i>0 && ret[i]==DIRSEP_C; --i )
+        ;
+
+    ret.resize(++i);
+    if( i>0 )
+        ret+=DIRSEP_S;
+
+    // Trim leading slashes
+    for( i=0; right[i]==DIRSEP_C; ++i )
+        ;
+    ret+=right+i;
+
+    return ret;
 }
 
 std::string autofd::readline() const
