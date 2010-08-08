@@ -3,7 +3,6 @@
 
 #include "crypt_key.h"
 #include "autoarray.h"
-#include <openssl/aes.h>
 
 class aes_key : public key {
     struct aes_export {
