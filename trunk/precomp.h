@@ -8,6 +8,7 @@
 #if defined(_WIN32)
 #define STRICT
 #include <windows.h>
+#include <tchar.h>
 #include "win32/types.h"
 #endif
 
@@ -85,6 +86,7 @@
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
+#include <openssl/aes.h>
 
 // Argtable includes
 #include <argtable2.h>
