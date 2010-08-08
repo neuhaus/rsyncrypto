@@ -165,21 +165,21 @@ int main( int argc, char *argv[] )
 	}
 
 	if( EXISTS(recurse) || EXISTS(filelist) ) {
-	    if( EXISTS(recurse) )
-		dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
-			dstnameop, keynameop);
-	    else
-		filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
-			srcnameop, dstnameop, keynameop);
+        if( EXISTS(filelist) )
+            filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
+                srcnameop, dstnameop, keynameop);
+        else
+            dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
+                dstnameop, keynameop);
 
-	    if( encrypt && EXISTS(nameenc) ) {
-		// Write the (possibly changed) filelist back to the file
-		filemap::write_map(FILENAME(nameenc));
-		// Encrypt the filelist file itself
-		file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).
-                    c_str(), autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key,
-                    NULL );
-	    }
+        if( encrypt && EXISTS(nameenc) ) {
+            // Write the (possibly changed) filelist back to the file
+            filemap::write_map(FILENAME(nameenc));
+            // Encrypt the filelist file itself
+            file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).
+                c_str(), autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key,
+                NULL );
+        }
 	} else {
             struct stat status, *pstat=&status;
             if( strcmp( FILENAME(src), "-" )!=0 ) {
