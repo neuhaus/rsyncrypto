@@ -119,7 +119,7 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
             size_t trim_offset=0; // How much has been added to the source prefix
 
             // We may need to add to the prefix the relative directory
-            if( !autofd::is_absolute( src_prefix.c_str() ) ) {
+            if( !autofd::is_absolute( srcname.c_str() ) ) {
                 trim_offset=src_prefix.length();
                 src_prefix=autofd::combine_paths( FILENAME(src), src_prefix.c_str() );
                 trim_offset=src_prefix.length()-trim_offset;
