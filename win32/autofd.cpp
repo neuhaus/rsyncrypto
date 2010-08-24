@@ -84,6 +84,14 @@ autofd::autofd( const char *pathname, int flags, mode_t mode, bool utf8 ) : f_eo
 {
     DWORD access=0, disposition=0;
 
+    WIN32_FILE_ATTRIBUTE_DATA file_attr;
+    if( GetFileAttributesEx( pathname, GetFileExInfoStandard, &file_attr ) ) {
+        if( file_attr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
+            // Cannot open a directory
+            throw EXCEPT_CLASS("file open failed", EISDIR, pathname );
+        }
+    }
+
 #define CHECK_MASK(a) ((flags&(a))==(a))
     if( CHECK_MASK(O_CREAT|O_EXCL) )
         disposition=CREATE_NEW;
@@ -392,6 +400,14 @@ std::string autofd::readline() const
 // autodir implementation
 autodir::autodir( const char *dirname, bool _utf8 ) : eof(false), utf8(_utf8)
 {
+    WIN32_FILE_ATTRIBUTE_DATA file_attr;
+    if( GetFileAttributesEx( dirname, GetFileExInfoStandard, &file_attr ) ) {
+        if( !(file_attr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ) {
+            // Cannot open a directory
+            throw EXCEPT_CLASS("opendir failed", ENOTDIR, dirname );
+        }
+    }
+
     if( utf8 ) {
         WIN32_FIND_DATAW wide_find_data;
         h_dirscan=FindFirstFileW((std::basic_string<wchar_t>(a2u(dirname).get())+L"\\*").c_str(), &wide_find_data );
