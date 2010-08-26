@@ -292,11 +292,11 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
             new_block=header->calc_boundry(buffer[i]);
         }
 
-        if( currpos>=filestat.st_size-block_size ) {
+        if( currpos>=filestat.st_size-static_cast<off_t>(block_size) ) {
             done=true;
 
             // Oops - file is not a whole multiple of block size
-            if( currpos>filestat.st_size-block_size )
+            if( currpos>filestat.st_size-static_cast<off_t>(block_size) )
                 throw rscerror("Uneven file end");
         } else {
             writefd->write( buffer.get(), i );
