@@ -364,7 +364,7 @@ static void real_dir_encrypt( const char *src_dir, size_t rel, const char *dst_d
 void dir_encrypt( const char *src_dir, const char *dst_dir, const char *key_dir, RSA *rsa_key,
                  encryptfunc op, const char *opname, namefunc dstname, namefunc keyname )
 {
-    real_dir_encrypt( src_dir, NULL, dst_dir, key_dir, rsa_key, op, opname, dstname, keyname );
+    real_dir_encrypt( src_dir, 0, dst_dir, key_dir, rsa_key, op, opname, dstname, keyname );
 }
 
 void file_encrypt( const char *source_file, const char *dst_file, const char *key_file,
