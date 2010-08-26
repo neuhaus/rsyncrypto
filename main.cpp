@@ -164,31 +164,31 @@ int main( int argc, char *argv[] )
 	    filemap::fill_map(FILENAME(nameenc), encrypt);
 	}
 
-	if( EXISTS(recurse) || EXISTS(filelist) ) {
-        if( EXISTS(filelist) )
-            filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
-                srcnameop, dstnameop, keynameop);
-        else
-            dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
-                dstnameop, keynameop);
+        if( EXISTS(recurse) || EXISTS(filelist) ) {
+            if( EXISTS(filelist) )
+                filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
+                        srcnameop, dstnameop, keynameop);
+            else
+                dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
+                        dstnameop, keynameop);
 
-        if( encrypt && EXISTS(nameenc) ) {
-            // Write the (possibly changed) filelist back to the file
-            filemap::write_map(FILENAME(nameenc));
-            // Encrypt the filelist file itself
-            file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).
-                c_str(), autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key,
-                NULL );
-        }
-	} else {
+            if( encrypt && EXISTS(nameenc) ) {
+                // Write the (possibly changed) filelist back to the file
+                filemap::write_map(FILENAME(nameenc));
+                // Encrypt the filelist file itself
+                file_encrypt(FILENAME(nameenc), autofd::combine_paths(FILENAME(dst), FILEMAPNAME).
+                        c_str(), autofd::combine_paths(FILENAME(key), FILEMAPNAME).c_str(), rsa_key,
+                        NULL );
+            }
+        } else {
             struct stat status, *pstat=&status;
             if( strcmp( FILENAME(src), "-" )!=0 ) {
                 status=autofd::stat(FILENAME(src));
             } else
                 pstat=NULL;
 
-	    op( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, pstat );
-	}
+            op( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, pstat );
+        }
     } catch( const rscerror &err ) {
         std::cerr<<err.error()<<std::endl;
         ret=1;
