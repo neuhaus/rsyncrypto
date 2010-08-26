@@ -51,7 +51,7 @@ public:
     }
 
     // This is not exactly the copy constructor, as the right hand side is not const
-    write_bufferfd( write_bufferfd &rhs ) : buf_size(rhs.buf_size), error(false)
+    write_bufferfd( write_bufferfd &rhs ) : autofd(rhs), buf_size(rhs.buf_size), error(false)
     {
         rhs.flush();
 
