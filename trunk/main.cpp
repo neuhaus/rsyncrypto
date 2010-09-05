@@ -57,9 +57,13 @@ startup_options options;
 void parse_cmdline( int argc, char *argv[] )
 {
     int nerrors=arg_parse( argc, argv, options.argtable );
-	if( nerrors!=0 ) {
-		std::cerr<<"Incorrect arguments"<<std::endl;
-		usage();
+    if( nerrors!=0 ) {
+        if( !EXISTS(version) && !EXISTS(help) ) {
+            std::cerr<<"Incorrect arguments"<<std::endl;
+            usage();
+        } else {
+            return;
+        }
     }
 
     if( EXISTS(trim) && !EXISTS(recurse) && !EXISTS(filelist) )
@@ -153,7 +157,7 @@ int main( int argc, char *argv[] )
 		keynameop=dstnameop;
 	    } else {
 		if( EXISTS(recurse) || EXISTS(filelist) ) {
-		    // First decrypt the encrypted file list
+		    // First decrypt the encrypted file map
 		    file_decrypt(autofd::combine_paths(FILENAME(src), FILEMAPNAME).c_str(),
                         FILENAME(nameenc), autofd::combine_paths(FILENAME(key),
                         FILEMAPNAME).c_str(), rsa_key, NULL );
