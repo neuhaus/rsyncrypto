@@ -62,6 +62,7 @@ void parse_cmdline( int argc, char *argv[] )
             std::cerr<<"Incorrect arguments"<<std::endl;
             usage();
         } else {
+            // Do not complain about missing arguments if the user asked for --help or --version
             return;
         }
     }
