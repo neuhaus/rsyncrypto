@@ -64,19 +64,8 @@ int calc_trim( const char *path, int trim_count )
     if( path[0]=='\0' )
         throw rscerror("Cannot trim empty path");
 
-    // Advance to the last character of the root element
-    if( autofd::is_absolute( path ) ) {
-        while( path[ret]!=DIRSEP_C )
-            ret++;
-    }
-
     if( trim_count==0 ) {
-        // Even if the trim is 0, we still want to seperate out the leading slashes
-        int i;
-        for( i=0; path[i]==DIRSEP_C; ++i )
-            ;
-
-	return i;
+        return 0;
     }
 
     do {
@@ -95,7 +84,8 @@ int calc_trim( const char *path, int trim_count )
 }
 
 void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir, RSA *rsa_key,
-        encryptfunc op, const char *opname, namefunc srcnameop, namefunc dstnameop, namefunc keynameop )
+        encryptfunc op, const char *opname, prefix_func prefix_op, namefunc srcnameop, namefunc dstnameop,
+        namefunc keynameop )
 {
     autofd srcfd;
 
@@ -112,67 +102,57 @@ void filelist_encrypt( const char *src, const char *dst_dir, const char *key_dir
         std::string srcname=srcfd.readline();
 
         if( srcname!="" ) try {
-            // Seperate the prefix from the actual name
+            // Seperate the prefix from the actual name, and reconnect them using the prefix_op
+            bool is_dir = srcname[srcname.length()-1]==DIRSEP_C;
+
             size_t src_offset=calc_trim( srcname.c_str(), VAL(trim) );
-            std::string src_prefix(srcname.c_str(), src_offset);
-
-            size_t trim_offset=0; // How much has been added to the source prefix
-
-            // We may need to add to the prefix the relative directory
-            if( !autofd::is_absolute( srcname.c_str() ) ) {
-                trim_offset=src_prefix.length();
-                src_prefix=autofd::combine_paths( FILENAME(src), src_prefix.c_str() );
-                trim_offset=src_prefix.length()-trim_offset;
+            // Create the string for the prefix part
+            std::string src_prefix(
+                prefix_op( FILENAME(src), std::string(srcname.c_str(), src_offset).c_str(),
+                    autofd::is_absolute(srcname.c_str())));
+            
+            if( src_offset!=0 ) {
+                srcname = srcname.c_str()+src_offset;
             }
-            srcname=std::string(srcname.c_str()+src_offset);
 
-            // Perform name (de)mangling
-            std::string src=srcnameop( src_prefix.c_str(), srcname.c_str(), 0 );
+            size_t trim_offset=srcname.length(); // How much has been added to the source prefix
+            std::string src( srcnameop( src_prefix.c_str(), srcname.c_str(), S_IFREG ) );
+            trim_offset=src.length()-trim_offset;
 
-            struct stat filestat=autofd::stat( src.c_str() );
+            int st_mode = is_dir ? S_IFDIR : S_IFREG;
+            std::string dstfile( dstnameop( dst_dir, srcname.c_str(), st_mode ) );
+            std::string keyfile( keynameop( key_dir, srcname.c_str(), st_mode ) );
 
-            switch( filestat.st_mode&S_IFMT ) {
-            case S_IFREG:
-                {
-                    std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
-                    std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
+            struct stat srcstat;
+            srcstat = autofd::stat( src.c_str() );
 
-                    struct stat dststat;
-                    bool found=true;
+            if( !is_dir ) {
+                // File list points at a regular file
+                struct stat dststat;
 
-                    try {
-                        dststat=autofd::lstat( dstfile.c_str() );
-                    } catch( const rscerror & ) {
-                        found=false;
-                    }
-                    if( !EXISTS(changed) || !found ||
-                            abs(dststat.st_mtime-filestat.st_mtime)>VAL(mod_win) )
-                    {
-                        // Report to stderr the operation
-                        if( VERBOSE(1) )
-                            std::cerr<<opname<<" file: "<<srcname<<std::endl;
-
-                        op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key, &filestat );
-                    } else if( VERBOSE(1) ) {
-                        std::cerr<<opname<<": skipped unchanged file: "<<srcname<<std::endl;
-                    }
+                bool found=true;
+                try {
+                    dststat=autofd::lstat( dstfile.c_str() );
+                } catch( const rscerror & ) {
+                    found=false;
                 }
-                break;
-            case S_IFDIR:
+                if( !EXISTS(changed) || !found ||
+                        abs(dststat.st_mtime-srcstat.st_mtime)>VAL(mod_win) )
                 {
+                    // Report to stderr the operation
                     if( VERBOSE(1) )
-                        std::cerr<<opname<<" directory: "<<srcname<<std::endl;
+                        std::cerr<<opname<<" file: "<<srcname<<std::endl;
 
-                    // XXX What happens if there is an actual directory inside a meta-encrypted dir?
-                    std::string dstfile=dstnameop( dst_dir, srcname.c_str(), filestat.st_mode );
-                    std::string keyfile=keynameop( key_dir, srcname.c_str(), filestat.st_mode );
-
-                    real_dir_encrypt( src.c_str(), trim_offset, dst_dir, key_dir, rsa_key, op, opname, dstnameop, keynameop );
+                    op( src.c_str(), dstfile.c_str(), keyfile.c_str(), rsa_key, &srcstat );
+                } else if( VERBOSE(1) ) {
+                    std::cerr<<opname<<": skipped unchanged file: "<<srcname<<std::endl;
                 }
-                break;
-            default:
-                std::cerr<<"Unsupported file type. Skipping "<<src<<std::endl;
-                break;
+            } else {
+                if( VERBOSE(1) )
+                    std::cerr<<opname<<" directory: "<<srcname<<std::endl;
+
+                real_dir_encrypt( src.c_str(), trim_offset, dst_dir, key_dir, rsa_key, op, opname, dstnameop,
+                        keynameop );
             }
         } catch( const delayed_error & ) {
             error=true;
@@ -503,4 +483,17 @@ std::string name_concat( const char *left, const char *right, mode_t mode )
         return right;
 
     return autofd::combine_paths( left, right );
+}
+
+std::string cond_name_concat( const char *left, const char *right, bool abs )
+{
+    if( abs )
+        return right;
+
+    return name_concat( left, right, 0 );
+}
+
+std::string left_only_concat( const char *left, const char *right, bool abs )
+{
+    return left;
 }
