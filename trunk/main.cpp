@@ -141,16 +141,18 @@ int main( int argc, char *argv[] )
         const char *opname=NULL;
 	encryptfunc op;
 	namefunc srcnameop=name_concat, dstnameop=name_concat, keynameop=name_concat;
+        prefix_func prefix_op=cond_name_concat;
 	bool encrypt=true;
 
-	if( EXISTS(decrypt) ) {
-	    op=file_decrypt;
-	    opname="Decrypting";
-	    encrypt=false;
-	} else {
-	    op=file_encrypt;
-	    opname="Encrypting";
-	}
+        if( EXISTS(decrypt) ) {
+            op=file_decrypt;
+            prefix_op=left_only_concat;
+            opname="Decrypting";
+            encrypt=false;
+        } else {
+            op=file_encrypt;
+            opname="Encrypting";
+        }
 
 	if( EXISTS(nameenc) ) {
             if( encrypt ) {
@@ -172,7 +174,7 @@ int main( int argc, char *argv[] )
         if( EXISTS(recurse) || EXISTS(filelist) ) {
             if( EXISTS(filelist) )
                 filelist_encrypt( FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
-                        srcnameop, dstnameop, keynameop);
+                        prefix_op, srcnameop, dstnameop, keynameop);
             else
                 dir_encrypt(FILENAME(src), FILENAME(dst), FILENAME(key), rsa_key, op, opname,
                         dstnameop, keynameop);
