@@ -32,6 +32,7 @@ case "$withval" in
     ;;
   esac])
 AC_CHECK_LIB([crypto], [AES_encrypt],,[AC_MSG_FAILURE([AES implementation in openssl not found])])
+AC_CHECK_LIB([crypto], [RSA_get0_factors],,[AC_MSG_FAILURE([Need openssl 1.1.0 or higher])])
 
 dnl Checks for libargtable2
 AC_ARG_WITH([argtable2],AC_HELP_STRING([--with-argtable2=DIR],[use argtable2 build directory]),
