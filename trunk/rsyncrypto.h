@@ -94,7 +94,7 @@ extern startup_options options;
 #define ARG(arg) (*(options.arg))
 #define VERBOSE(val) (ARG(verbosity).count>=(val))
 extern std::ostream *report0, *report1, *report2, *report3;
-extern std::auto_ptr<std::ostream> changes_log;
+extern std::unique_ptr<std::ostream> changes_log;
 
 #define EXCEPT_CLASS rscerror
 

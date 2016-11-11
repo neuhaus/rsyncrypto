@@ -355,7 +355,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
         (*changes_log.get())<<dst_file<<std::endl;
     }
 
-    std::auto_ptr<key> head;
+    std::unique_ptr<key> head;
     autofd headfd;
 
     // Read in the header, or generate a new one if can't
@@ -368,7 +368,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
         }
         if( headfd.valid() ) {
             autommap headmap( headfd, PROT_READ );
-            head=std::auto_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
+            head=std::unique_ptr<key>(key::read_key( static_cast<unsigned char *>(headmap.get()) ));
 
             if( ( EXISTS(fr) && ( head->get_sum_span()!=static_cast<uint32_t>(VAL(rollwin)) ||
                         head->get_sum_mod()!=static_cast<uint32_t>(VAL(rollsens)) ||
@@ -379,7 +379,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
                 
         }
         if( !headfd.valid() ) {
-            head=std::auto_ptr<key>(key::new_key(key::CYPHER_AES, VAL(keysize), VAL(rollwin),
+            head=std::unique_ptr<key>(key::new_key(key::CYPHER_AES, VAL(keysize), VAL(rollwin),
                         VAL(rollsens), VAL(rollmin)));
         }
     }
@@ -432,7 +432,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
 void file_decrypt( const char *src_file, const char *dst_file, const char *key_file, RSA *rsa_key,
     const struct stat *stat )
 {
-    std::auto_ptr<key> head;
+    std::unique_ptr<key> head;
     // int infd, outfd, headfd;
     struct stat status;
 
@@ -447,7 +447,7 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     bool headeread=headfd.valid();
     // headread indicates whether we need to write a new header to disk.
     if( headeread ) {
-        head=std::auto_ptr<key>(read_header( headfd ));
+        head=std::unique_ptr<key>(read_header( headfd ));
         headfd.clear();
     }
 
@@ -463,7 +463,7 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     }
 
     write_bufferfd outfd(autofd(tmpname.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0666));
-    head=std::auto_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
+    head=std::unique_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
     if( !headeread ) {
         write_header( key_file, head.get());
     }

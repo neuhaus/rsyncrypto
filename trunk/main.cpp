@@ -35,7 +35,7 @@
 #include "argtable2.h"
 #include "filemap.h"
 
-std::auto_ptr<std::ostream> changes_log;
+std::unique_ptr<std::ostream> changes_log;
 
 void version()
 {
@@ -135,7 +135,7 @@ int main( int argc, char *argv[] )
         }
 
         if( EXISTS(export_changes) ) {
-            changes_log=std::auto_ptr<std::ofstream>(new std::ofstream(FILENAME(export_changes), std::ofstream::trunc));
+            changes_log=std::unique_ptr<std::ofstream>(new std::ofstream(FILENAME(export_changes), std::ofstream::trunc));
         }
 
         const char *opname=NULL;

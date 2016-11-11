@@ -1,3 +1,4 @@
+    * Upgrade the source to be C++11 compilable, if not compliant.
     * --filelist determines whether to treat the name as a directory or a file
       based on whether the name ends with a slash.
     * --filelist now accepts as mandatory parameter the file list source. The
