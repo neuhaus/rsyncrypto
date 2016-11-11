@@ -1,3 +1,5 @@
+    * --filelist determines whether to treat the name as a directory or a file
+      based on whether the name ends with a slash.
     * --filelist now accepts as mandatory parameter the file list source. The
       first argument is now the directory in relation to which relative paths
       are interpreted.

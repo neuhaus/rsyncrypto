@@ -30,13 +30,13 @@ class autommap {
     // Disable default copy constructor
     autommap( const autommap & );
 public:
-    autommap() : ptr(reinterpret_cast<void *>(-1)), size(0)
+    autommap() : ptr(reinterpret_cast<void *>(-1l)), size(0)
     {
     }
     autommap(void *start, size_t length, int prot, int flags, int fd, off_t offset ) : 
                 ptr(mmap(start, length, prot, flags, fd, offset)), size(length)
     {
-        if( ptr==reinterpret_cast<void *>(-1) ) {
+        if( ptr==reinterpret_cast<void *>(-1l) ) {
             size=0;
 #if defined(EXCEPT_CLASS)
             throw EXCEPT_CLASS("mmap failed", errno);
@@ -44,7 +44,7 @@ public:
         }
     }
     // Map an entire file into memory
-    autommap(file_t fd, int prot) : ptr(reinterpret_cast<void *>(-1)), size(0)
+    autommap(file_t fd, int prot) : ptr(reinterpret_cast<void *>(-1l)), size(0)
     {
         struct stat filestat;
         if( fstat(fd, &filestat)==0 ) {
@@ -76,17 +76,17 @@ public:
         clear();
         ptr=that.ptr;
         size=that.size;
-        that.ptr=reinterpret_cast<void *>(-1);
+        that.ptr=reinterpret_cast<void *>(-1l);
         that.size=0;
 
         return *this;
     }
     void clear()
     {
-        if( ptr!=reinterpret_cast<void *>(-1) ) {
+        if( ptr!=reinterpret_cast<void *>(-1l) ) {
             munmap( ptr, size );
         }
-        ptr=reinterpret_cast<void *>(-1);
+        ptr=reinterpret_cast<void *>(-1l);
         size=0;
     }
 
