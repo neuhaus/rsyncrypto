@@ -52,7 +52,7 @@ int main( int argc, char *argv[] )
 
     ARG(verbosity).count=3;
 
-    std::auto_ptr<key> testkey(key::new_key( key::CYPHER_AES, 0, VAL(rollwin), VAL(rollmin),
+    std::unique_ptr<key> testkey(key::new_key( key::CYPHER_AES, 0, VAL(rollwin), VAL(rollmin),
                 VAL(rollsens) ));
 
     bool border=true;

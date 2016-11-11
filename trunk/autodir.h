@@ -58,7 +58,7 @@ public:
         std::string ret;
 
         while (ret.empty() ) {
-            std::auto_ptr<char> wd(new char[maxlen]);
+            std::unique_ptr<char> wd(new char[maxlen]);
 
             if( getcwd( wd.get(), maxlen )!=NULL ) {
                 ret=wd.get();
