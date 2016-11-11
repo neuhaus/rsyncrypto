@@ -51,8 +51,8 @@ public:
     // export_key returns the number of bytes the exported key took
     virtual size_t export_key( void *buffer ) const;
     virtual size_t block_size() const=0;
-    static key *read_key( const unsigned char *buffer );
-    static key *new_key( CYPHER_TYPES cypher=CYPHER_AES, size_t keybits=0, uint32_t sum_span=256,
+    static std::unique_ptr<key> read_key( const unsigned char *buffer );
+    static std::unique_ptr<key> new_key( CYPHER_TYPES cypher=CYPHER_AES, size_t keybits=0, uint32_t sum_span=256,
             uint32_t sum_mod=8192, uint32_t sum_min_dist=8192 );
 
     // Encryption/decryption functions

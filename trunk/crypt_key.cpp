@@ -37,7 +37,7 @@ const uint32_t key::VERSION_MAGIC_1=0xD657EA1Cul;
 const uint32_t key::VERSION_MAGIC_CUR=VERSION_MAGIC_1;
 
 
-key *key::read_key( const unsigned char *buffer )
+std::unique_ptr<key> key::read_key( const unsigned char *buffer )
 {
     const ext_key_header *buff=reinterpret_cast<const ext_key_header *>(buffer);
 
@@ -56,10 +56,10 @@ key *key::read_key( const unsigned char *buffer )
         throw rscerror("Invalid block cypher");
     }
 
-    return ret.release();
+    return std::move(ret);
 }
 
-key *key::new_key( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint32_t sum_mod,
+std::unique_ptr<key> key::new_key( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint32_t sum_mod,
         uint32_t sum_min_dist )
 {
     std::unique_ptr<key> ret;
@@ -72,7 +72,7 @@ key *key::new_key( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint3
         throw rscerror("Invalid block cypher");
     }
 
-    return ret.release();
+    return std::move(ret);
 }
 
 size_t key::export_key( void *buffer ) const
