@@ -44,12 +44,12 @@ key *key::read_key( const unsigned char *buffer )
     if( buff->version!=htonl(VERSION_MAGIC_1) )
         throw rscerror("Invalid version magic");
 
-    std::auto_ptr<key> ret;
+    std::unique_ptr<key> ret;
     
     switch( static_cast<CYPHER_TYPES>(buff->cypher) )
     {
     case CYPHER_AES:
-        ret=std::auto_ptr<key>(new aes_key( ntohs(buff->key_size), ntohl(buff->sum_span), ntohl(buff->sum_mod),
+        ret=std::unique_ptr<key>(new aes_key( ntohs(buff->key_size), ntohl(buff->sum_span), ntohl(buff->sum_mod),
                 ntohl(buff->sum_min_dist), buffer+sizeof(*buff) ));
         break;
     default:
@@ -62,11 +62,11 @@ key *key::read_key( const unsigned char *buffer )
 key *key::new_key( CYPHER_TYPES cypher, size_t keybits, uint32_t sum_span, uint32_t sum_mod,
         uint32_t sum_min_dist )
 {
-    std::auto_ptr<key> ret;
+    std::unique_ptr<key> ret;
 
     switch( static_cast<CYPHER_TYPES>(cypher) ) {
     case CYPHER_AES:
-        ret=std::auto_ptr<key>(new aes_key( keybits, sum_span, sum_mod, sum_min_dist ));
+        ret=std::unique_ptr<key>(new aes_key( keybits, sum_span, sum_mod, sum_min_dist ));
         break;
     default:
         throw rscerror("Invalid block cypher");
@@ -92,7 +92,7 @@ size_t key::export_key( void *buffer ) const
 
 void key::pad_area( unsigned char *buffer, size_t size ) const
 {
-    std::auto_ptr<key> pad_key(gen_pad_key());
+    std::unique_ptr<key> pad_key(gen_pad_key());
 
     bzero( buffer, size );
     pad_key->init_encrypt();

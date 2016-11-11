@@ -165,7 +165,7 @@ key *decrypt_header( file_t fromfd, RSA *prv )
         throw rscerror(ERR_error_string(rsaerr, NULL));
     }
 
-    std::auto_ptr<key> ret(key::read_key( decrypted.get() ));
+    std::unique_ptr<key> ret(key::read_key( decrypted.get() ));
 
     // Let's verify that we have read the correct data from the file, by reencoding the key we got and comparing
     // the cyphertexts.
@@ -244,10 +244,10 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
 // "decrypt_file" will also close the from and to file handles.
 key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd &tofd )
 {
-    std::auto_ptr<key> new_header;
+    std::unique_ptr<key> new_header;
     if( header==NULL ) {
         /* Need to reconstruct the header from the encrypted file */
-        new_header=std::auto_ptr<key>(decrypt_header( fromfd, prv ));
+        new_header=std::unique_ptr<key>(decrypt_header( fromfd, prv ));
         header=new_header.get();
     }
 

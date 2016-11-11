@@ -79,7 +79,7 @@ size_t aes_key::export_key( void *buffer ) const
 
 key *aes_key::gen_pad_key() const
 {
-    std::auto_ptr<aes_key> ret(new aes_key(*this));
+    std::unique_ptr<aes_key> ret(new aes_key(*this));
 
     for( unsigned int i=0; i<sizeof(aes_header.iv); ++i )
         ret->aes_header.iv[i]=~ret->aes_header.iv[i];
