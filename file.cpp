@@ -379,8 +379,7 @@ void file_encrypt( const char *source_file, const char *dst_file, const char *ke
                 
         }
         if( !headfd.valid() ) {
-            head=std::unique_ptr<key>(key::new_key(key::CYPHER_AES, VAL(keysize), VAL(rollwin),
-                        VAL(rollsens), VAL(rollmin)));
+            head=key::new_key(key::CYPHER_AES, VAL(keysize), VAL(rollwin), VAL(rollsens), VAL(rollmin));
         }
     }
 
@@ -447,7 +446,7 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     bool headeread=headfd.valid();
     // headread indicates whether we need to write a new header to disk.
     if( headeread ) {
-        head=std::unique_ptr<key>(read_header( headfd ));
+        head=read_header( headfd );
         headfd.clear();
     }
 
@@ -463,7 +462,7 @@ void file_decrypt( const char *src_file, const char *dst_file, const char *key_f
     }
 
     write_bufferfd outfd(autofd(tmpname.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0666));
-    head=std::unique_ptr<key>(decrypt_file( head.get(), rsa_key, infd, outfd ));
+    head=decrypt_file( std::move(head), rsa_key, infd, outfd );
     if( !headeread ) {
         write_header( key_file, head.get());
     }

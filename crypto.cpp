@@ -96,7 +96,7 @@ RSA *extract_private_key( const char *key_filename )
     return rsa;
 }
 
-key *read_header( const autofd &headfd )
+std::unique_ptr<key> read_header( const autofd &headfd )
 {
     autommap headmap( headfd, PROT_READ );
     return key::read_key( headmap.get_uc() );
@@ -143,7 +143,7 @@ void encrypt_header( const key *header, RSA *rsa, unsigned char *to )
 }
 
 /* Decrypt the file's header */
-key *decrypt_header( file_t fromfd, RSA *prv )
+std::unique_ptr<key> decrypt_header( file_t fromfd, RSA *prv )
 {
     const size_t key_size=RSA_size(prv);
     size_t headsize=header_size(prv);
@@ -173,7 +173,7 @@ key *decrypt_header( file_t fromfd, RSA *prv )
     // the cyphertexts.
     // On second thought - let's not. You never know if we don't change encoding at some future point.
 
-    return ret.release();
+    return ret;
 }
 
 // "encrypt_file" will also close the from and to file handles.
@@ -244,13 +244,11 @@ void encrypt_file( key *header, RSA *rsa, read_bufferfd &fromfd, write_bufferfd 
 }
 
 // "decrypt_file" will also close the from and to file handles.
-key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd &tofd )
+std::unique_ptr<key> decrypt_file( std::unique_ptr<key> header, RSA *prv, read_bufferfd &fromfd, write_bufferfd &tofd )
 {
-    std::unique_ptr<key> new_header;
     if( header==NULL ) {
         /* Need to reconstruct the header from the encrypted file */
-        new_header=std::unique_ptr<key>(decrypt_header( fromfd, prv ));
-        header=new_header.get();
+        header=decrypt_header( fromfd, prv );
     }
 
     /* If file does not contain a valid header - abort */
@@ -336,7 +334,6 @@ key *decrypt_file( key *header, RSA *prv, read_bufferfd &fromfd, write_bufferfd 
     if( child_status!=0 )
         throw rscerror("gunzip failed to run");
 
-    new_header.release();
     fromfd.clear();
     
     return header;
