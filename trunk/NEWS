@@ -1,2 +1,3 @@
-A new tool has been introduced, called rsyncrypto_recover. It allows extracting
-all good mapping from an otherwise corrupt file map.
+Version 1.13 dropped official Windows support through Visual Studio. If anyone
+wishes to re-attach the projects together, patches are welcome at the
+Rsyncrypto mailing list.

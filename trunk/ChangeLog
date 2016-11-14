@@ -1,3 +1,6 @@
+Version 1.13 - November 14 2016
+    * Only Posix support in this release, due to lack of time updating the
+      Visual Studio projects to VS 2015.
     * Upgrade the source to be C++11 compilable, if not compliant.
     * --filelist determines whether to treat the name as a directory or a file
       based on whether the name ends with a slash.
