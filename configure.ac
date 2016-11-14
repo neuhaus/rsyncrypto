@@ -2,12 +2,12 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([rsyncrypto],[1.12])
+AC_INIT([rsyncrypto],[1.13])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([rsyncrypto.h])
 AM_CONFIG_HEADER([config.h])
 #AM_MAINTAINER_MODE
-AC_COPYRIGHT([Copyright (C) 2005-2008 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
+AC_COPYRIGHT([Copyright (C) 2005-2008,2016 Shachar Shemesh for Lingnu Open Source Consulting ltd.])
 
 # Checks for programs.
 AC_PROG_CXX

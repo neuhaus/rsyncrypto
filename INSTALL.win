@@ -1,3 +1,9 @@
+My deepest apologies. Version 1.13 of rsyncrypto does not support Windows.
+It seems that Visual Studio 2015 is having a hard time of importing the
+Visual Studio 2008 projects, and things simply don't work. I am hoping to
+devise a work around. Until then, I'm leaving the instructions below, but
+cannot, otherwise, provide a solution at this time.
+
 Windows Compile and Installation Instructions
 =============================================
 
