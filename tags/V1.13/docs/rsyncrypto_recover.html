@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of RSYNCRYPTO_RECOVER</TITLE>
+</HEAD><BODY>
+<H1>RSYNCRYPTO_RECOVER</H1>
+Section: Rsyncrypto_recover User Manual (1)<BR>Updated: May 13, 2008<BR><A HREF="#index">Index</A>
+<A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+rsyncrypto_recover - recover all usable data from corrupted rsyncrypto filemaps
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>rsyncrypto_recover</B>
+
+<I>badfile</I><B> &gt; </B><I>goodfile</I>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+This manual page documents the <B>rsyncrypto_recover</B> command.
+<P>
+
+When the <B>rsyncrypto</B> command is used with the <B>--name-encrypt</B> command,
+a file containing the mapping from the plain text representation to the encrypted
+file names is formed. This file mapping has a strict format of records delimited
+by a NULL byte.
+<P>
+
+A bug introduced in version 1.07 or <B>rsyncrypto</B>, and solved in version 1.09,
+caused this file to be somewhat corrupted under certain circumstances, most notably
+the use of the <B>--delete-keys</B> command line option.
+<P>
+
+It is important to note that the only records corrupted are records that were due
+to be deleted anyways. <B>This bug did not result in any loss of actual important data.</B>
+It did, however, leave behind a file that <B>rsyncrypto</B> then refused to open.
+<P>
+
+<B>rsyncrypto_recover</B> will read in a file map, and output to the standard output
+only those records that are valid.
+<A NAME="lbAE">&nbsp;</A>
+<H2>PARAMETERS</H2>
+
+<DL COMPACT>
+<DT><I>badfile</I>
+
+<DD>
+A file map that contains some good and some corrupted records.
+</DL>
+<A NAME="lbAF">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<B><A HREF="/cgi-bin/man/man2html?1+rsyncrypto">rsyncrypto</A></B>(1)
+
+<A NAME="lbAG">&nbsp;</A>
+<H2>AUTHOR</H2>
+
+rsyncrypto was written by Shachar Shemesh for Lingnu Open Source Consulting ltd.
+<A HREF="http://www.lingnu.com">http://www.lingnu.com</A>
+<P>
+
+This manual page was written by Shachar Shemesh &lt;<A HREF="mailto:shachar@debian.org">shachar@debian.org</A>&gt;
+<A NAME="lbAH">&nbsp;</A>
+<H2>PROJECT HOMEPAGE</H2>
+
+<A HREF="http://rsyncrypto.lingnu.com">http://rsyncrypto.lingnu.com</A>
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">PARAMETERS</A><DD>
+<DT><A HREF="#lbAF">SEE ALSO</A><DD>
+<DT><A HREF="#lbAG">AUTHOR</A><DD>
+<DT><A HREF="#lbAH">PROJECT HOMEPAGE</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 19:42:25 GMT, June 24, 2008
+</BODY>
+</HTML>

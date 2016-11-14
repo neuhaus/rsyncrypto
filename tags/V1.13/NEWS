@@ -1,0 +1,3 @@
+Version 1.13 dropped official Windows support through Visual Studio. If anyone
+wishes to re-attach the projects together, patches are welcome at the
+Rsyncrypto mailing list.

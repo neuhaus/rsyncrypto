@@ -1,0 +1,97 @@
+My deepest apologies. Version 1.13 of rsyncrypto does not support Windows.
+It seems that Visual Studio 2015 is having a hard time of importing the
+Visual Studio 2008 projects, and things simply don't work. I am hoping to
+devise a work around. Until then, I'm leaving the instructions below, but
+cannot, otherwise, provide a solution at this time.
+
+Windows Compile and Installation Instructions
+=============================================
+
+You will need Visual Studio, as well as several pre-requisits in order to
+compile rsyncrypto on Windows. The following libraries are needed:
+OpenSSL (http://www.openssl.org/)
+Argtable2 (http://argtable.sourceforge.net/)
+
+In order to use rsyncrypto (not needed for the compilation stage) you will
+also need a patched version of gzip that support the "--rsyncable" flag. A
+compiled binary is available with rsyncrypto's windows binary release.
+Alternatively, you can also download the sources from http://www.gzip.org/ and
+apply the patch under the contrib folder of the rsyncrypto sources.
+
+The rsyncrypto sources contain a file called "rsyncrypto.sln", which is a
+standard Visual Studio 9 workspace file. Certain preliminary steps are
+necessary before compiling rsyncrypto.
+
+OpenSSL Installation
+====================
+Nothing special here. Follow the usual installation procedure. If you manage
+to get precompiled binaries, feel free to use them. Rsyncrypto requires a
+version of OpenSSL new enough to contain AES, but any relatively recent version
+of OpenSSL qualifies for that. Later versions fix security holes, so it is
+recommended to get a later one.
+
+As before, you will need to add both the OpenSSL include paths (directory inc32
+under the source compiled version) and the library path (out32dll) to Visual
+Studio's search path.
+
+If you are compiling your own, it is highly recommended that you use either
+MASM or NASM to compile assmebly versions of the encryption modules, as that
+will speed up rsyncrypto.
+
+The installer integrated into the rsyncrypto solution searches for the openssl
+binaries in C:\Openssl\bin. It is therefor recommended that you also perform
+the "make install" stage listed in the openssl compilation instructions. If you
+do, add c:\openssl\lib and c:\openssl\include to the relevant search paths.
+
+Argtable2 Installation
+======================
+Visual Studio does not play nice when passing stderr from a program to a
+library, unless they are both compiled with a dynamic copy of the runtime
+environment. In order to make things easier, rsyncrypto carries a project file
+for compiling argtable as well. This saves you the need to compile argtable
+yourself, but it does mean you will need to extract argtable into the right
+place if you want rsyncrypto to find it.
+
+As such, it is recommended that you extract argtable into the directory
+immediately ABOVE the one rsyncrypto resides in. It is also necessary to remove
+the version number from the argtable directory name. In other words, if
+rsyncrypto is, e.g., in C:\Sources\rsyncrypto-1.07, you will need to extract
+argtable and rename the directory so that the archive is extracted in
+C:\Sources\argtable2.
+
+The good news is that, other than extracting the sources, there is no need to
+do anything else. There is no need to explicitly compile argtable.
+
+Compiling Rsyncrypto
+====================
+Just double click on the rsyncrypto.sln file and press "compile solution". There
+are a couple of known warnings in crypto.cpp regarding signed/unsigned
+comparisons. They are a result of difference of signness of "off_t" between
+posix platforms, where it is unsigned, and Windows, where it is signed. If
+someone can come up with a platform independent solution, they will receive
+official "thanks" in the Authors file.
+
+Packaging and Distributing Rsyncrypto
+=====================================
+Sadly, because of the above mentioned bug in the Visual Studio runtime library,
+rsyncrypto cannot be compiled to use the runtime library statically. Microsoft,
+in a move all too typical, produced a runtime library (known as MSVCR90.DLL)
+that cannot be used unless installed with Microsoft's own installation process.
+The result is that it is no longer possible to simply copy everything needed
+into a zip file and pass it along.
+
+If you are using a bought version of Visual Studio 2008 (i.e. - standard or
+above), you will have a project called "Setup". Asking to build it (it is not
+built automatically as part of the solution) will create an MSI file that
+contains a complete installation of Rsyncrypto, including OpenSSL (assuming
+it's installed in C:\openssl) and the runtime library. If, however, the express
+version of Visual Studio is used, this option is unavailable.
+
+If that is the case, I recommend reading the following MSDN articles:
+http://msdn.microsoft.com/en-us/library/ms235299.aspx
+http://msdn.microsoft.com/en-us/library/ms235291.aspx
+
+Historical Note
+===============
+Rsyncrypto used to demand STLPort for compilation. As part of the move from
+Visual Studio 6 to Visual Studio 2008 this requirement was removed.
