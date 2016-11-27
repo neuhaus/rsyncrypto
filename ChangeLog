@@ -1,3 +1,5 @@
+    * Spelling mistake (begining => beginning)
+
 Version 1.13 - November 14 2016
     * Only Posix support in this release, due to lack of time updating the
       Visual Studio projects to VS 2015.

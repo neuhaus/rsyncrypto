@@ -105,4 +105,4 @@ Readers should skip this block type without processing it.
 2 bytes : block length, always 4
 2 bytes : block type, always FFFF
 
-Writers must place this block at the end of each chunk. Readers should assume that any data after this chunk is the begining of the next chunk.
+Writers must place this block at the end of each chunk. Readers should assume that any data after this chunk is the beginning of the next chunk.
